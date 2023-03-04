@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://bsobfyoyxyyjj"]
+
+[ext_resource type="Script" path="res://tiger-engine/singletons/TEAudioSingleton.gd" id="1_7y3ff"]
+
+[node name="Root" type="Node"]
+script = ExtResource("1_7y3ff")
+
+[node name="SongPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"Music"
+
+[node name="NextSongPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"Music"
+
+[node name="SoundPlayer" type="AudioStreamPlayer" parent="."]
+bus = &"SFX"
