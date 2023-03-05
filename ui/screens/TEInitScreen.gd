@@ -9,6 +9,10 @@ var title_screen: PackedScene = load(Global.options.title_screen)
 
 
 func _ready():
+	# run tests instead of launching game if cmd line arg is passed
+	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
+		get_tree().quit(TestRunner.run_tests())
+	
 	self.color = Global.options.init_color
 	self.theme = Global.options.default_theme
 	
@@ -20,8 +24,6 @@ func _ready():
 	if FileAccess.file_exists('res://translation.zip'):
 		var result = ProjectSettings.load_resource_pack('res://translation.zip', true)
 		Global.log_info('translation package loaded, ok: ' + str(result))
-	else:
-		Global.log_info('translation package not found')
 	
 	# read language options
 	Global.all_languages = TEInitScreen.get_languages()
