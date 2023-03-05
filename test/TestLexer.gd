@@ -109,7 +109,16 @@ func test_ending_backslash():
 	
 	assert_equals(
 		lexer.error_message,
-		'trailing empty tag in <test>'
+		'trailing empty tag in <test>:1'
+	)
+
+
+func test_stray_backslash():
+	assert_equals(tokenize('this is \\ wrong'), null)
+	
+	assert_equals(
+		lexer.error_message,
+		'trailing empty tag in <test>:1'
 	)
 
 

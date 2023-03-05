@@ -151,7 +151,7 @@ func tokenize_string(text: String, path: String):
 			var tag = text.substr(start, end-start)
 			
 			if len(tag) == 0:
-				error_message = 'trailing empty tag in %s' % path
+				error_message = 'trailing empty tag in %s' % [ path + ':' + str(line) ]
 				return null
 			else:
 				tokens.append(Token.tag(tag, path, line))
