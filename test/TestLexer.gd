@@ -123,8 +123,8 @@ func test_stray_backslash():
 
 
 func test_line_numbers():
-	var tokens = lexer.tokenize_file('res://tiger-engine/test/lexer_linenro_test.vt')
+	var tokens = lexer.tokenize_file('res://tiger-engine/test/lexer_linenro_test.tef')
 	assert_equals(
 		tokens[26].where(),
-		'res://tiger-engine/test/lexer_linenro_test.vt:25'
+		'res://tiger-engine/test/lexer_linenro_test.tef:25'
 	)

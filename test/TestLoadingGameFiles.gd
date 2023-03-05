@@ -1,9 +1,9 @@
-class_name TestParsingGameFiles extends TETest
+class_name ValidateGameFiles extends TETest
 # integration test that checks that all files in the assets folder
 # parse correctly
 
 
-func test_parsing_game_files():
+func test_loading_game_files():
 	var files: Array[String] = get_files_in('res://assets')
 	var lexer: Lexer = Lexer.new()
 	var parser: Parser = Parser.new()
@@ -26,7 +26,7 @@ func get_files_in(path):
 	var directory: DirAccess = DirAccess.open(path)
 	
 	for file in directory.get_files():
-		if file.ends_with('.vt'):
+		if file.ends_with('.tef'):
 			files.append(path + '/' + file)
 	
 	for dir in directory.get_directories():

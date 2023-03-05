@@ -12,6 +12,8 @@ func parse(str: String):
 func normalize(taglist: Variant):
 	if taglist is String:
 		return taglist
+	if taglist is Tag.Break:
+		return '<break>'
 	if taglist is Tag:
 		return { 'name' : taglist.name, 'args' : taglist.args.map(func(a): return normalize(a)) }
 	if taglist is Array:
@@ -35,7 +37,7 @@ func test_parsing_single_string():
 func test_parsing_multiple_strings():
 	assert_equals(
 		parse('string\n\n\nanother\nthird'),
-		[ 'string', 'another', 'third' ]
+		[ 'string', '<break>', 'another', '<break>', 'third' ]
 	)
 
 
@@ -78,7 +80,7 @@ func test_parsing_nested_tags():
 func test_parsing_tag_with_prose():
 	assert_equals(
 		parse('\\tag{line\n\nanother}'),
-		[ { 'name' : 'tag', 'args' : [['line', 'another']] } ]
+		[ { 'name' : 'tag', 'args' : [['line', '<break>', 'another']] } ]
 	)
 
 
@@ -94,7 +96,7 @@ func test_stripping_whitespace():
 	
 	assert_equals(
 		parse(text),
-		[ 'Line', 'and another', 'third' ]
+		[ 'Line', '<break>', 'and another', '<break>', 'third' ]
 	)
 
 

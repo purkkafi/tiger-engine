@@ -75,7 +75,7 @@ static func get_languages():
 	
 	var found = []
 	for folder in langs_folder.get_directories():
-		var lang: Lang = load(lang_path + '/' + folder + '/lang.vt')
+		var lang: Lang = load(lang_path + '/' + folder + '/lang.tef')
 		lang.id = folder
 		lang.path = lang_path + '/' + folder
 		

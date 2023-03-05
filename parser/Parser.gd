@@ -1,16 +1,10 @@
 class_name Parser extends RefCounted
 
 
-# placeholder object used while parsing to represent newlines
-class Break extends RefCounted:
-	func _to_string() -> String:
-		return "<break>"
-
-
 var index: int = 0
 var tokens: Array[Lexer.Token] = []
 var tree: Array[Variant]
-var BREAK: Break = Break.new()
+var BREAK: Tag.Break = Tag.Break.new()
 # will contain error message in case of parsing error
 var error_message: String
 
@@ -44,7 +38,7 @@ func _fix_tree(nodes: Array[Variant]) -> Array[Variant]:
 		
 		if value is String:
 			# trim strings after Break or at start of file
-			if last == null or last is Break:
+			if last == null or last is Tag.Break:
 				value = value.strip_edges(true, false)
 				if len(value) == 0:
 					_index += 1
@@ -54,9 +48,9 @@ func _fix_tree(nodes: Array[Variant]) -> Array[Variant]:
 			if _index == len(nodes)-1:
 				value = value.strip_edges(false, true)
 		
-		if value is Break:
+		if value is Tag.Break:
 			# don't repeat breaks
-			if last == null or last is Break:
+			if last == null or last is Tag.Break:
 				_index += 1
 				continue
 			
@@ -74,9 +68,6 @@ func _fix_tree(nodes: Array[Variant]) -> Array[Variant]:
 		new_nodes.append(value)
 		last = new_nodes[len(new_nodes)-1]
 		_index += 1
-	
-	# remove Breaks
-	new_nodes = new_nodes.filter(func(n): return !(n is Break))
 	
 	return new_nodes
 

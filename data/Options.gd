@@ -1,5 +1,5 @@
 class_name Options extends Resource
-# game engine options read from the file 'assets/options.vt' at startup
+# game engine options read from the file 'assets/options.tef' at startup
 
 
 # path to the title screen scene
