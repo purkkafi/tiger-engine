@@ -4,6 +4,9 @@ class_name Tag extends RefCounted
 # – strings (represented as Godot Strings)
 # – other tags
 # – breaks (represented by the type Tag.Break)
+#
+# there are several get_XXX methods for extracting the contents of
+# a Tag that has an idiomatic form
 
 
 # special object used in taglists as a separator
@@ -21,8 +24,56 @@ func _init(_name: String,_args):
 	self.args = _args
 
 
-# TODO add methods codifying the idioms for accessng data in Tags
-
-
 func _to_string() -> String:
 	return "\\%s%s" % [name, args]
+
+
+# returns the single String this Tag contains or null
+func get_string():
+	if len(args) != 1 or len(args[0]) != 1 or !(args[0][0] is String):
+		push_error('expected single string, got %s' % self)
+		return null
+	return args[0][0]
+
+
+# returns the single String at the given argument or null
+func get_string_at(index: int):
+	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String):
+		push_error('expected string at index %d, got %s' % [index, self])
+		return null
+	return args[index][0]
+
+
+# returns the single String or Tag at the given argument or null
+func get_value_at(index: int):
+	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String and !args[index][0] is Tag):
+		push_error('expected string or tag at index %d, got %s' % [index, self])
+		return null
+	return args[index][0]
+
+
+# returns the concatenated Strings and Breaks of the single argument or null
+func get_text():
+	if len(args) != 1:
+		return null
+	
+	var text: String = ''
+	
+	for node in args[0]:
+		if node is String:
+			text += node
+		elif node is Break:
+			text += '\n'
+		else:
+			push_error('expected text, got %s' % self)
+			return null
+	
+	return text
+
+
+# returns an Array of Tags contained in the first argument or null
+func get_tags():
+	if len(args) != 1:
+		push_error('expected tags, got %s' % self)
+		return null
+	return args[0].filter(func(n): return n is Tag)

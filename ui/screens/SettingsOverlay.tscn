@@ -1,0 +1,170 @@
+[gd_scene load_steps=2 format=3 uid="uid://uccko4wx3nlu"]
+
+[ext_resource type="Script" path="res://tiger-engine/ui/screens/SettingsOverlay.gd" id="2_2w7fv"]
+
+[node name="SettingsOverlay" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 400.0
+offset_top = 100.0
+offset_right = -400.0
+offset_bottom = -100.0
+script = ExtResource("2_2w7fv")
+
+[node name="Margins" type="MarginContainer" parent="."]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margins"]
+layout_mode = 2
+
+[node name="TopRow" type="HBoxContainer" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="SettingsLabel" type="Label" parent="Margins/VBox/TopRow"]
+layout_mode = 2
+theme_type_variation = &"Header"
+text = "%settings_title%"
+
+[node name="HSeparator2" type="HSeparator" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="Margins/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Sections" type="VBoxContainer" parent="Margins/VBox/Scroll"]
+layout_mode = 2
+
+[node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Video"]
+layout_mode = 2
+
+[node name="VideoHeader" type="Label" parent="Margins/VBox/Scroll/Sections/Video/VBox"]
+layout_mode = 2
+theme_type_variation = &"Subheader"
+text = "%settings_subheader_video%"
+
+[node name="WindowModeContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Video/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer"]
+layout_mode = 2
+text = "%settings_window_mode%"
+
+[node name="WindowOptions" type="OptionButton" parent="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "%settings_window_mode_tooltip%"
+
+[node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Audio"]
+layout_mode = 2
+
+[node name="AudioHeader" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox"]
+layout_mode = 2
+theme_type_variation = &"Subheader"
+text = "%settings_subheader_audio%"
+
+[node name="VolGrid" type="GridContainer" parent="Margins/VBox/Scroll/Sections/Audio/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="MusicVolume" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+layout_mode = 2
+text = "%settings_music_volume%"
+
+[node name="MusicVolSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 1
+tooltip_text = "%settings_music_volume_tooltip%"
+max_value = 1.0
+step = 0.01
+
+[node name="SFXVolume" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+layout_mode = 2
+text = "%settings_sfx_volume%"
+
+[node name="SFXVolSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 1
+tooltip_text = "%settings_sfx_volume_tooltip%"
+max_value = 1.0
+step = 0.01
+
+[node name="Text" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Text"]
+layout_mode = 2
+
+[node name="TextLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+layout_mode = 2
+theme_type_variation = &"Subheader"
+text = "%settings_subheader_text%"
+
+[node name="TextSpeed" type="GridContainer" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="TextSpeedLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox/TextSpeed"]
+layout_mode = 2
+text = "%settings_text_speed%"
+
+[node name="TextSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Text/VBox/TextSpeed"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+tooltip_text = "%settings_text_speed_tooltip%"
+max_value = 1.0
+step = 0.01
+
+[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+tooltip_text = "%settings_dynamic_text_speed_tooltip%"
+text = "%settings_dynamic_text_speed%"
+
+[node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+layout_mode = 2
+
+[node name="LanguageLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox/Language"]
+layout_mode = 2
+text = "%settings_language%"
+
+[node name="LangOptions" type="OptionButton" parent="Margins/VBox/Scroll/Sections/Text/VBox/Language"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "%settings_language_tooltip%"
+
+[node name="HSeparator" type="HSeparator" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="BottomRow" type="HBoxContainer" parent="Margins/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="Discard" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"DangerButton"
+text = "Discard"
+
+[node name="SaveExit" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save & Exit"
+
+[connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer/WindowOptions" to="." method="_window_mode_selected"]
+[connection signal="pressed" from="Margins/VBox/BottomRow/Discard" to="." method="_discard"]
+[connection signal="pressed" from="Margins/VBox/BottomRow/SaveExit" to="." method="_save_exit"]

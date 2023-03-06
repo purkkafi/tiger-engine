@@ -19,10 +19,10 @@ static func run_tests() -> int:
 				var result = instance.run_test(test)
 				if len(result) != 0:
 					fail += 1
-					var str = 'Test failed: ' + cls['class'] + '/' + test + ': '
+					var string = 'Test failed: ' + cls['class'] + '/' + test + ': '
 					for err in result:
-						str += '\n – ' + err
-					Global.log_error(str)
+						string += '\n – ' + err
+					Global.log_error(string)
 				else:
 					succ += 1
 					failed = true
