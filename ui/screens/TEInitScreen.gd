@@ -14,7 +14,6 @@ func _ready():
 		get_tree().quit(TestRunner.run_tests())
 	
 	self.color = Global.options.init_color
-	self.theme = Global.options.default_theme
 	
 	# set initial window settings
 	get_window().min_size = Vector2i(962, 542)

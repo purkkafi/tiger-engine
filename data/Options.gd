@@ -6,8 +6,6 @@ class_name Options extends Resource
 var title_screen: String
 # color of TEInitScreen's background, default to black
 var init_color: Color = Color.BLACK
-# default theme of the game
-var default_theme: Theme
 # methods used to animate overlays in and out, default to nothing
 # they should return null (to indicate no animation) or the Tween used
 var animate_overlay_in: Callable = func(overlay): return null
