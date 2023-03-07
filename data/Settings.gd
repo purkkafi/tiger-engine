@@ -7,12 +7,18 @@ var sfx_volume: float # volume of sfx, in range [0, 1]
 var text_speed: float # text speed, in range [0, 1]
 var dynamic_text_speed: bool # dynamic text speed on/off
 var fullscreen: bool # fullscreen on/off
-var pretend_android: bool # emulate android
 var lang_id # language id; String or null if unset
+var gui_scale: GUIScale # larger or smaller UI elements
+
+# hidden settings
+var pretend_mobile: bool # act as mobile even on desktop
 
 
 # path of file where settings are stored
 const SETTINGS_PATH: String = 'user://settings.cfg'
+
+
+enum GUIScale { NORMAL = 0, LARGE = 1 }
 
 
 # makes changes to game state
@@ -20,6 +26,8 @@ func change_settings():
 	Settings.change_music_volume(music_volume)
 	Settings.change_sfx_volume(sfx_volume)
 	Settings.change_fullscreen(fullscreen)
+	Settings.change_gui_scale(gui_scale)
+	Settings.change_language(lang_id)
 
 
 static func change_music_volume(vol_linear: float):
@@ -30,9 +38,24 @@ static func change_sfx_volume(vol_linear: float):
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index('SFX'), linear_to_db(vol_linear * 0.5))
 
 
-static func change_fullscreen(is_fullscreen: bool):
-	var mode = DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN if (is_fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
-	DisplayServer.window_set_mode(mode)
+static func change_fullscreen(to_fullscreen: bool):
+	var is_fullscreen = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	
+	if is_fullscreen != to_fullscreen:
+		var mode = DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN if (to_fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
+		DisplayServer.window_set_mode(mode)
+
+
+static func change_gui_scale(gui_scale: GUIScale):
+	MobileUI.change_gui_scale(Global.current_scene, gui_scale)
+
+
+static func change_language(lang_id: String):
+	if Global.language == null or Global.language.id != lang_id:
+		for lang in Global.all_languages:
+			if lang.id == lang_id:
+				Global.load_language(lang)
+				return
 
 
 # writes settings to the disk (see SETTINGS_PATH)
@@ -55,8 +78,9 @@ func _to_dict() -> Dictionary:
 		'text_speed' : text_speed,
 		'dynamic_text_speed' : dynamic_text_speed,
 		'fullscreen' : fullscreen,
-		'pretend_android' : pretend_android,
-		'lang_id' : lang_id
+		'pretend_mobile' : pretend_mobile,
+		'lang_id' : lang_id,
+		'gui_scale' : gui_scale
 	}
 
 
@@ -94,8 +118,10 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	settings.text_speed = dict.get('text_speed', defaults['text_speed'])
 	settings.dynamic_text_speed = dict.get('dynamic_text_speed', defaults['dynamic_text_speed'])
 	settings.fullscreen = dict.get('fullscreen', defaults['fullscreen'])
-	settings.pretend_android = dict.get('pretend_android', defaults['pretend_android'])
+	settings.pretend_mobile = dict.get('pretend_mobile', defaults['pretend_mobile'])
 	settings.lang_id = dict['lang_id']
+	settings.gui_scale = dict.get('gui_scale', defaults['gui_scale'])
+	
 	return settings
 
 
@@ -113,6 +139,8 @@ static func default_settings():
 	defs.text_speed = 0.5
 	defs.dynamic_text_speed = true
 	defs.fullscreen = false
-	defs.pretend_android = false
+	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
+	defs.gui_scale = GUIScale.LARGE if Global.is_mobile() else GUIScale.NORMAL
+	
 	return defs

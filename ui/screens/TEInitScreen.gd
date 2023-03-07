@@ -34,7 +34,7 @@ func _ready():
 		
 		for lang in Global.all_languages:
 			if lang.id == Global.settings.lang_id:
-				Global.switch_language(lang)
+				Global.load_language(lang)
 				Global.switch_scene(title_screen.instantiate())
 				return
 		
@@ -55,8 +55,9 @@ func display_language_choice():
 		$LanguageOptions.add_child(btn)
 
 
-func _language_selected(selected):
-	Global.switch_language(selected)
+func _language_selected(selected: Lang):
+	Global.load_language(selected)
+	Global.settings.lang_id = selected.id
 	Global.settings.save_to_file()
 	Global.switch_scene(title_screen.instantiate())
 
