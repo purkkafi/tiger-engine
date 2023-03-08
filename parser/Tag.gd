@@ -52,6 +52,14 @@ func get_value_at(index: int):
 	return args[index][0]
 
 
+# returns the single Tag at the given argument or null
+func get_tag_at(index: int):
+	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is Tag):
+		push_error('expected tag at index %d, got %s' % [index, self])
+		return null
+	return args[index][0]
+
+
 # returns the concatenated Strings and Breaks of the single argument or null
 func get_text():
 	if len(args) != 1:

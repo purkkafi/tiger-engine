@@ -13,7 +13,10 @@ var transitions: Dictionary = {}
 var songs: Dictionary = {}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
-
+# array of ids of unlockables
+var unlockables: Array[String] = []
+# ids of unlockables that should be unlocked automatically
+var unlocked_from_start: Array[String] = []
 
 const trans_types = {
 	'QUART': Tween.TRANS_QUART,

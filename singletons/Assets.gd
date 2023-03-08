@@ -10,7 +10,10 @@ var blockfiles: Cache = Cache.new(10)
 var scripts: Cache = Cache.new(10)
 
 # for misc resources that don't have to be cached
-var misc: Cache = Cache.new(0)
+var noncached: Cache = Cache.new(0)
+# for resources that are cached permanently
+# should only be used for small or frequently accessed resources
+var permanent: Cache = Cache.new(99999)
 
 
 static func localize_path(path):
@@ -20,6 +23,17 @@ static func localize_path(path):
 		return try_path
 	
 	return FAILED
+
+
+func _debug_message() -> String:
+	var msg: String = ''
+	msg += 'Songs:\n' + songs._debug_message() + '\n'
+	msg += 'Sounds:\n' + sounds._debug_message() + '\n'
+	msg += 'Bgs:\n' + bgs._debug_message() + '\n'
+	msg += 'Blockfiles:\n' + blockfiles._debug_message() + '\n'
+	msg += 'Scripts:\n' + scripts._debug_message() + '\n'
+	msg += 'Permanent:\n' + permanent._debug_message() + '\n'
+	return msg
 
 
 # an entry in a Cache, identified by the path to its resource
@@ -80,6 +94,11 @@ class Cache:
 	# queues a resource for loading in the background and adds it to
 	# the front of the cache
 	func queue(path: String):
+		# don't queue if already in cache/queued
+		for entry in cache:
+			if entry.path == path:
+				return
+		
 		print('[Assets] queued %s' % path)
 		var err = ResourceLoader.load_threaded_request(path)
 		_add_to_cache(Entry.new(path))
@@ -114,3 +133,9 @@ class Cache:
 			entry.resource = resource
 			_add_to_cache(entry)
 			return resource
+	
+	func _debug_message() -> String:
+		var msg: String = ''
+		for entry in cache:
+			msg += '  ' + entry.path + ': ' + entry.get_class()
+		return msg

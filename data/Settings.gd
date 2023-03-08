@@ -12,6 +12,8 @@ var gui_scale: GUIScale # larger or smaller UI elements
 
 # hidden settings
 var pretend_mobile: bool # act as mobile even on desktop
+# dict of ids of unlockables to bool (whether unlockeds)
+var unlocked: Dictionary
 
 
 # path of file where settings are stored
@@ -19,6 +21,25 @@ const SETTINGS_PATH: String = 'user://settings.cfg'
 
 
 enum GUIScale { NORMAL = 0, LARGE = 1 }
+
+
+# unlocks the given unlockable and saves settings to the disk
+# does nothing if it was already unlocked
+func unlock(unlockable_id: String):
+	if not unlockable_id in Global.definitions.unlockables:
+		Global.log_error('unknown unlockable: %s' % unlockable_id)
+		return false
+	if not unlockable_id in unlocked:
+		unlocked[unlockable_id] = true
+		save_to_file()
+
+
+# returns whether the given unlockable is unlocked
+func is_unlocked(unlockable_id: String) -> bool:
+	if not unlockable_id in Global.definitions.unlockables:
+		Global.log_error('unknown unlockable: %s' % unlockable_id)
+		return false
+	return unlockable_id in unlocked and unlocked[unlockable_id]
 
 
 # makes changes to game state
@@ -83,7 +104,8 @@ func _to_dict() -> Dictionary:
 		'fullscreen' : fullscreen,
 		'pretend_mobile' : pretend_mobile,
 		'lang_id' : lang_id,
-		'gui_scale' : gui_scale
+		'gui_scale' : gui_scale,
+		'unlocked' : unlocked
 	}
 
 
@@ -124,6 +146,17 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	settings.pretend_mobile = dict.get('pretend_mobile', defaults['pretend_mobile'])
 	settings.lang_id = dict['lang_id']
 	settings.gui_scale = dict.get('gui_scale', defaults['gui_scale'])
+	settings.unlocked = dict.get('unlocked', defaults['unlocked'])
+	
+	# auto-unlock unlockabes that should be available from the start
+	# this needs to be checked here because games can have save files from
+	# older versions where the definition didn't exist
+	# note: this may make the in-game Settings object out of sync with the file
+	# but the change will be applied whenever the file is updated for any reason
+	# is this fine? TODO think about it
+	for id in Global.definitions.unlocked_from_start:
+		if id not in settings.unlocked:
+			settings.unlocked[id] = true
 	
 	return settings
 
@@ -145,5 +178,6 @@ static func default_settings():
 	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
 	defs.gui_scale = GUIScale.LARGE if Global.is_mobile() else GUIScale.NORMAL
+	defs.unlocked = {}
 	
 	return defs
