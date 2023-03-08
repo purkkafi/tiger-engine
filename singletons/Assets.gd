@@ -9,6 +9,7 @@ var bgs: Cache = Cache.new(5)
 var blockfiles: Cache = Cache.new(10)
 var scripts: Cache = Cache.new(10)
 
+
 # for misc resources that don't have to be cached
 var noncached: Cache = Cache.new(0)
 # for resources that are cached permanently
@@ -99,7 +100,7 @@ class Cache:
 			if entry.path == path:
 				return
 		
-		print('[Assets] queued %s' % path)
+		print('[Assets] queued: %s' % path)
 		var err = ResourceLoader.load_threaded_request(path)
 		_add_to_cache(Entry.new(path))
 		return err
@@ -117,7 +118,7 @@ class Cache:
 		
 		# resource was not queued, load and add to cache
 		if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			print('[Assets] get not queued %s ' % path)
+			print('[Assets] get not queued: %s ' % path)
 			var resource = ResourceLoader.load(path)
 			var entry = Entry.new(path)
 			entry.resource = resource
@@ -137,5 +138,5 @@ class Cache:
 	func _debug_message() -> String:
 		var msg: String = ''
 		for entry in cache:
-			msg += '  ' + entry.path + ': ' + entry.get_class()
+			msg += '  ' + entry.path + ': ' + entry.get_class() + '\n'
 		return msg

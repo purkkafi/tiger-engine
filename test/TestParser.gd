@@ -132,3 +132,10 @@ func test_escaping_braces():
 		parse('\\tag\\{\\}'),
 		[ { 'name' : 'tag', 'args' : [] }, '{}' ]
 	)
+
+
+func test_raw_string():
+	assert_equals(
+		parse('\\rawstr{{ a={} b="\\n" }}'),
+		[ { 'name' : 'rawstr', 'args' : [[ 'a={} b="\\n"' ]]} ]
+	)

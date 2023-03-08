@@ -128,3 +128,42 @@ func test_line_numbers():
 		tokens[26].where(),
 		'res://tiger-engine/test/lexer_linenro_test.tef:25'
 	)
+
+
+func test_raw_string():
+	assert_token_contents_equal(
+		tokenize('\\raw{{string}}'),
+		[ tag('raw'), brace_open(), string('string'), brace_close() ]
+	)
+
+
+func test_special_characters_in_raw_string():
+	assert_token_contents_equal(
+		tokenize('{{raw{string}cool\\kissa}}'),
+		[ brace_open(), string('raw{string}cool\\kissa'), brace_close() ]
+	)
+
+
+func test_raw_string_line_numbers():
+	var tokens: Array = lexer.tokenize_file('res://tiger-engine/test/lexer_raw_string_linenro_test.tef')
+	
+	assert_equals(
+		tokens[1].where(), # the opening brace
+		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:1'
+	)
+	
+	assert_equals(
+		tokens[2].where(), # the contained raw string
+		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:1'
+	)
+	
+	assert_equals(
+		tokens[3].where(), # the closing brace
+		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:9'
+	)
+	
+	assert_equals(
+		tokens[5].where(), # the next tag
+		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:10'
+	)
+	

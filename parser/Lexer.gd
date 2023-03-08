@@ -107,6 +107,16 @@ static func is_escape(string: String, index: int):
 	return second == '\\' or second == '{' or second == '}'
 
 
+# returns whether a raw string starts with {{ at the given index
+static func is_raw_string(string: String, index: int):
+	if string[index] != '{':
+		return false
+	if index >= len(string):
+		return false
+	var second = string[index+1]
+	return second == '{'
+
+
 # tokenizes the file at the given path, see tokenize_string()
 func tokenize_file(path: String):
 	return tokenize_string(_read_file(path), path)
@@ -123,8 +133,23 @@ func tokenize_string(text: String, path: String):
 	
 	while text[index] != EOF:
 		if text[index] == "{":
-			tokens.append(Token.brace_open(path, line))
-			index += 1
+			if is_raw_string(text, index):
+				var start: int = index
+				var line_start: int = line
+				var end: int = text.find('}}', index)
+				var substring: String = text.substr(start+2, (end-start)-2)
+				
+				index = end + 2
+				for char in substring:
+					if char == '\n':
+						line += 1
+				
+				tokens.append(Token.brace_open(path, line_start))
+				tokens.append(Token.string(substring, path, line_start))
+				tokens.append(Token.brace_close(path, line))
+			else:	
+				tokens.append(Token.brace_open(path, line))
+				index += 1
 			continue
 			
 		elif text[index] == "}":

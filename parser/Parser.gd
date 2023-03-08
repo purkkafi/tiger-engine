@@ -106,7 +106,11 @@ func _parse_tag():
 			return null
 		
 		while tokens[index].type != Lexer.TokenType.BRACE_CLOSE:
-			arg.append(_parse_value())
+			var value = _parse_value()
+			if value == null:
+				return null
+			
+			arg.append(value)
 			
 			if not index < len(tokens):
 				error_message = 'syntax error: expected } or value, got <eof> at %s' % [tokens[index-1].where()]
