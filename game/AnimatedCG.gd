@@ -55,8 +55,8 @@ class ACGTransform extends RefCounted:
 				continue
 			match arg.name:
 				'at':
-					frames.append([unit_copy(arg.args[0][0], 's', duration),
-							unit_copy(arg.args[1][0], unit_suffix, unit_scale)])
+					frames.append([AnimatedCG.unit_copy(arg.args[0][0], 's', duration),
+							AnimatedCG.unit_copy(arg.args[1][0], unit_suffix, unit_scale)])
 				'ease':
 					ease_curve = float(arg.args[0][0])
 				'_':
@@ -75,10 +75,10 @@ class ACGTransform extends RefCounted:
 			frames.push_front([0, earliest[1]])
 		
 	
-	# copied here from Util because it cannot be used due to autoload errors
-	# hope Godot fixes this at some point???
-	static func unit_copy(value: String, unit: String, scale: float) -> float:
-		if value.ends_with(unit):
-			return float(value.trim_suffix(unit))
-		else:
-			return float(value) * scale
+# copied here from Util because it cannot be used due to autoload errors
+# hope Godot fixes this at some point???
+static func unit_copy(value: String, unit: String, scale: float) -> float:
+	if value.ends_with(unit):
+		return float(value.trim_suffix(unit))
+	else:
+		return float(value) * scale

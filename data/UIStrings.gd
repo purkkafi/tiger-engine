@@ -3,13 +3,17 @@ class_name UIStrings extends Resource
 # _get is overriden, enabling them to be accessed via field reference
 
 
+var strings: Dictionary
+
+
 # functions that translate the given Control type
 var TRANSLATORS: Dictionary = {
 	'Button': Callable(self, '_translate_node_text'),
 	'Label': Callable(self, '_translate_node_text'),
 	'CheckBox': Callable(self, '_translate_node_text'),
 	'CheckButton': Callable(self, '_translate_node_text'),
-	'OptionButton': Callable(self, '_translate_option_button')
+	'OptionButton': Callable(self, '_translate_option_button'),
+	'TextureRect': Callable(self, '_translate_texture_rect')
 }
 
 
@@ -35,7 +39,9 @@ func _translate_option_button(btn: OptionButton):
 			btn.set_item_text(i, translate_text(btn.get_item_text(i)))
 
 
-var strings: Dictionary
+func _translate_texture_rect(tex: TextureRect):
+	if tex.get_meta('uistring_texture_path', meta_missing) != meta_missing:
+		tex.texture = load(translate_text(tex.get_meta('uistring_texture_path')))
 
 
 func _init(dict):
@@ -65,8 +71,9 @@ func translate(node: Control):
 	if cls in TRANSLATORS:
 		TRANSLATORS[cls].call(node)
 	
-	for child in node.get_children():
-		translate(child)
+	for child in node.get_children(true):
+		if child is Control:
+			translate(child)
 
 
 # returns translation of the given string if it is of the form %uistring%

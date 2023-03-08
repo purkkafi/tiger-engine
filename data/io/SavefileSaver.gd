@@ -14,7 +14,7 @@ func _save(resource: Resource, path: String, _flags: int):
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		push_error('cannot write save: %s' % [path])
-		return file.get_open_error()
+		return FileAccess.get_open_error()
 	
 	file.store_line(JSON.stringify(resource.banks, '  '))
 	

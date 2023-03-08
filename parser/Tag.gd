@@ -77,3 +77,12 @@ func get_tags():
 		push_error('expected tags, got %s' % self)
 		return null
 	return args[0].filter(func(n): return n is Tag)
+
+
+# returns a Dictionary where keys are the names of tags the
+# first argument contains and the values are the tags
+func get_dict() -> Dictionary:
+	var dict: Dictionary = {}
+	for tag in get_tags():
+		dict[tag.name] = tag
+	return dict

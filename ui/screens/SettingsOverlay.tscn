@@ -189,12 +189,12 @@ alignment = 2
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerButton"
-text = "Discard"
+text = "%settings_discard%"
 
 [node name="SaveExit" type="Button" parent="Margins/VBox/BottomRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Save & Exit"
+text = "%settings_save_exit%"
 
 [connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer/WindowOptions" to="." method="_window_mode_selected"]
 [connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Text/VBox/Language/LangOptions" to="." method="_language_selected"]

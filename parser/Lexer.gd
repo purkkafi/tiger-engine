@@ -98,12 +98,12 @@ func _is_tag_char(chr: String):
 
 # returns whether there is an escape sequence (\\ or \{ or \})
 # at given index in the given string
-func is_escape(str: String, index: int):
-	if str[index] != '\\':
+static func is_escape(string: String, index: int):
+	if string[index] != '\\':
 		return false
-	if index >= len(str):
+	if index >= len(string):
 		return false
-	var second = str[index+1]
+	var second = string[index+1]
 	return second == '\\' or second == '{' or second == '}'
 
 
@@ -142,7 +142,7 @@ func tokenize_string(text: String, path: String):
 			continue
 		
 		# handle as tag unless the \ represents an escape sequence
-		elif text[index] == '\\' and not is_escape(text, index):
+		elif text[index] == '\\' and not Lexer.is_escape(text, index):
 			index += 1
 			var start = index
 			while(_is_tag_char(text[index])):
@@ -166,7 +166,7 @@ func tokenize_string(text: String, path: String):
 				index = result.get_start()
 				
 				# skip over escape sequences, break on others
-				if is_escape(text, index):
+				if Lexer.is_escape(text, index):
 					index += 2
 					found_escapes = true
 					continue

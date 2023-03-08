@@ -46,16 +46,19 @@ static func change_fullscreen(to_fullscreen: bool):
 		DisplayServer.window_set_mode(mode)
 
 
-static func change_gui_scale(gui_scale: GUIScale):
-	MobileUI.change_gui_scale(Global.current_scene, gui_scale)
+static func change_gui_scale(scale: GUIScale):
+	MobileUI.change_gui_scale(Global.current_scene, scale)
 
 
-static func change_language(lang_id: String):
-	if Global.language == null or Global.language.id != lang_id:
+# changes language unless the given id is the current language;
+# returns whether it was changed
+static func change_language(id: String):
+	if Global.language == null or Global.language.id != id:
 		for lang in Global.all_languages:
-			if lang.id == lang_id:
+			if lang.id == id:
 				Global.load_language(lang)
-				return
+				return true
+	return false
 
 
 # writes settings to the disk (see SETTINGS_PATH)

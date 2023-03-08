@@ -95,13 +95,16 @@ func _save_exit():
 	
 	if not Global.is_mobile():
 		Global.settings.fullscreen = window_options.selected == WM_FULLSCREEN
-		Global.settings.gui_scale = gui_scale.selected
+		Global.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	
 	Global.settings.save_to_file()
 	_exit()
 
 
 func _discard():
+	# switch language back in case it was changed
+	if Global.settings.change_language(Global.settings.lang_id):
+		Global.ui_strings.translate(Global.current_scene)
 	# reset changes by implementing saved settings
 	Global.settings.change_settings()
 	_exit()
