@@ -3,18 +3,18 @@ extends Node
 # contains specific Cache instances for different resources
 
 
-var songs: Cache = Cache.new(3)
-var sounds: Cache = Cache.new(5)
-var bgs: Cache = Cache.new(5)
-var blockfiles: Cache = Cache.new(10)
-var scripts: Cache = Cache.new(10)
+var songs: Cache = Cache.new('songs', 3)
+var sounds: Cache = Cache.new('sounds', 5)
+var bgs: Cache = Cache.new('bgs', 5)
+var blockfiles: Cache = Cache.new('blockfiles', 20)
+var scripts: Cache = Cache.new('scripts', 20)
 
 
 # for misc resources that don't have to be cached
-var noncached: Cache = Cache.new(0)
+var noncached: Cache = Cache.new('noncached', 0)
 # for resources that are cached permanently
 # should only be used for small or frequently accessed resources
-var permanent: Cache = Cache.new(99999)
+var permanent: Cache = Cache.new('permanent', 99999)
 
 
 static func localize_path(path):
@@ -53,12 +53,14 @@ class Entry:
 
 
 class Cache:
+	var id: String
 	var size: int # size of this cache
 	# cache of entries; larger indices are newer
 	var cache: Array[Entry]
 	
 	
-	func _init(_size: int):
+	func _init(_id, _size: int):
+		self.id = _id
 		self.size = _size
 	
 	
@@ -100,7 +102,7 @@ class Cache:
 			if entry.path == path:
 				return
 		
-		print('[Assets] queued: %s' % path)
+		print('[Assets/%s] queued: %s' % [id, path])
 		var err = ResourceLoader.load_threaded_request(path)
 		_add_to_cache(Entry.new(path))
 		return err
@@ -113,12 +115,12 @@ class Cache:
 	func get_resource(path: String):
 		for entry in cache:
 			if entry.path == path and entry.resource != null:
-				print('[Assets] get cached: %s' % path)
+				print('[Assets/%s] get cached: %s' % [id, path])
 				return entry.resource
 		
 		# resource was not queued, load and add to cache
 		if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			print('[Assets] get not queued: %s ' % path)
+			print('[Assets/%s] get not queued: %s ' % [id, path])
 			var resource = ResourceLoader.load(path)
 			var entry = Entry.new(path)
 			entry.resource = resource
@@ -126,9 +128,9 @@ class Cache:
 			return resource
 		else: # queued or already loaded, get it now anyway
 			if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED:
-				print('[Assets] get loaded: %s' % path)
+				print('[Assets/%s] get loaded: %s' % [id, path])
 			else:
-				print('[Assets] get loading in progress: %s' % path)
+				print('[Assets/%s] get loading in progress: %s' % [id, path])
 			var resource = ResourceLoader.load_threaded_get(path)
 			var entry = Entry.new(path)
 			entry.resource = resource

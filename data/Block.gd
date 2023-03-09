@@ -3,6 +3,9 @@ class_name Block extends RefCounted
 
 
 var taglist: Array[Variant]
+# caches the hash to avoid recalculation
+# do not access directly, use resolve_hash()
+var _hashcode: String = ''
 
 
 func _init(_taglist: Array[Variant]):
@@ -37,7 +40,7 @@ func resolve_parts() -> Array[String]:
 			parts.push_back(parts.pop_back() + node)
 		elif node is Tag.ControlTag:
 			# TODO implement handling of ControlTags
-			push_error('cannot stringify control tag: %s' % node)
+			push_error('NYI: cannot stringify control tag: %s' % node)
 			parts.push_back(parts.pop_back() + str(node))
 		elif node is Tag:
 			# basic formatting
@@ -49,7 +52,7 @@ func resolve_parts() -> Array[String]:
 				parts.push_back(parts.pop_back() + '[url=' + node.args[1][0] + ']' + node.args[0][0] + '[/url]')
 			else:
 				# TODO implement handling of custom tags
-				push_error('cannot stringify tag: %s' % node)
+				push_error('NYI: cannot stringify tag: %s' % node)
 				parts.push_back(parts.pop_back() + str(node))
 	
 	return parts
@@ -57,11 +60,15 @@ func resolve_parts() -> Array[String]:
 
 # calculates the hash code of this block
 func resolve_hash() -> String:
-	var ctxt = HashingContext.new()
+	if _hashcode != '':
+		return _hashcode
+	
+	var ctxt: HashingContext = HashingContext.new()
 	ctxt.start(HashingContext.HASH_MD5)
 	Block._hash_taglist(taglist, ctxt)
 	
-	return ctxt.finish().hex_encode()
+	_hashcode = ctxt.finish().hex_encode()
+	return _hashcode
 
 
 # hashes a taglist recursively, updating the given Context
