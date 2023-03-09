@@ -30,3 +30,8 @@ func fail_test(msg: String):
 func assert_equals(a: Variant, b: Variant):
 	if a != b:
 		fail_test('Assertion failed: \n   ' + str(a) + '\n  ==\n   '  + str(b))
+
+
+func assert_not_equals(a: Variant, b: Variant):
+	if a == b:
+		fail_test('Assertion failed: \n   ' + str(a) + '\n  !=\n   '  + str(b))

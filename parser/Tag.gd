@@ -10,6 +10,10 @@ class_name Tag extends RefCounted
 # a Tag that has an idiomatic form
 
 
+var name: String
+var args: Array[Array]
+
+
 # special object used in taglists as a separator
 class Break extends RefCounted:
 	func _to_string() -> String:
@@ -24,11 +28,7 @@ class ControlTag extends RefCounted:
 		self.string = _string
 
 
-var name: String
-var args: Array[Variant]
-
-
-func _init(_name: String,_args):
+func _init(_name: String, _args: Array[Array]):
 	self.name = _name
 	self.args = _args
 

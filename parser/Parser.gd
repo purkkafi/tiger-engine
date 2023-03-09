@@ -97,7 +97,7 @@ func _is_tag_argument_start(token_type: Lexer.TokenType):
 
 func _parse_tag():
 	var name = tokens[index].value
-	var args = []
+	var args: Array[Array] = []
 	index += 1
 	
 	if index >= len(tokens):
