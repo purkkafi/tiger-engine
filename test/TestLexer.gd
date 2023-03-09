@@ -24,6 +24,10 @@ func newline() -> Lexer.Token:
 	return Lexer.Token.newline('<debug>', -1)
 
 
+func raw_string(str: String) -> Lexer.Token:
+	return Lexer.Token.raw_string(str, '<debug>', -1)
+
+
 func tokenize(str: String):
 	return lexer.tokenize_string(str, '<test>')
 
@@ -133,14 +137,14 @@ func test_line_numbers():
 func test_raw_string():
 	assert_token_contents_equal(
 		tokenize('\\raw{{string}}'),
-		[ tag('raw'), brace_open(), string('string'), brace_close() ]
+		[ tag('raw'), raw_string('string') ]
 	)
 
 
 func test_special_characters_in_raw_string():
 	assert_token_contents_equal(
 		tokenize('{{raw{string}cool\\kissa}}'),
-		[ brace_open(), string('raw{string}cool\\kissa'), brace_close() ]
+		[ raw_string('raw{string}cool\\kissa') ]
 	)
 
 
@@ -148,22 +152,27 @@ func test_raw_string_line_numbers():
 	var tokens: Array = lexer.tokenize_file('res://tiger-engine/test/lexer_raw_string_linenro_test.tef')
 	
 	assert_equals(
-		tokens[1].where(), # the opening brace
+		tokens[1].where(), # the raw string
 		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:1'
 	)
 	
 	assert_equals(
-		tokens[2].where(), # the contained raw string
-		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:1'
-	)
-	
-	assert_equals(
-		tokens[3].where(), # the closing brace
-		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:9'
-	)
-	
-	assert_equals(
-		tokens[5].where(), # the next tag
+		tokens[3].where(), # the next tag
 		'res://tiger-engine/test/lexer_raw_string_linenro_test.tef:10'
 	)
+
+
+func test_unterminated_raw_string():
+	assert_equals(tokenize('oh {{no'), null)
 	
+	assert_equals(
+		lexer.error_message,
+		'unterminated raw string in <test>:1'
+	)
+
+
+func test_empty_raw_string():
+	assert_token_contents_equal(
+		tokenize('{{}}'),
+		[ raw_string('') ]
+	)

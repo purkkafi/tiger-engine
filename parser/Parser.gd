@@ -6,13 +6,14 @@ var tokens: Array[Lexer.Token] = []
 var tree: Array[Variant]
 var BREAK: Tag.Break = Tag.Break.new()
 # will contain error message in case of parsing error
-var error_message: String
+var error_message: String = ''
 
 
 # parses the given tokens
 # returns a list of strings and Tags, if successfull, null otherwise
 # in case of failure, error_message contains the error message
 func parse(_tokens: Array[Lexer.Token]):
+	self.error_message = ''
 	self.tokens = _tokens
 	tree = []
 	index = 0
@@ -83,9 +84,15 @@ func _parse_value():
 		Lexer.TokenType.NEWLINE:
 			index += 1
 			return BREAK
+		Lexer.TokenType.RAW_STRING:
+			return _parse_raw_string()
 		_:
 			error_message = 'syntax error: expected value, got %s at %s' % [str(tokens[index]), tokens[index].where()]
 			return null
+
+
+func _is_tag_argument_start(token_type: Lexer.TokenType):
+	return token_type == Lexer.TokenType.BRACE_OPEN or token_type == Lexer.TokenType.RAW_STRING
 
 
 func _parse_tag():
@@ -96,27 +103,38 @@ func _parse_tag():
 	if index >= len(tokens):
 		return Tag.new(name, args)
 	
-	while index < len(tokens) and tokens[index].type == Lexer.TokenType.BRACE_OPEN:
-		index += 1
-		
-		var arg = []
-		
-		if not index < len(tokens):
-			error_message = 'syntax error: expected } or value, got <eof> at %s' % [tokens[index-1].where()]
-			return null
-		
-		while tokens[index].type != Lexer.TokenType.BRACE_CLOSE:
-			var value = _parse_value()
-			if value == null:
-				return null
-			
-			arg.append(value)
-			
-			if not index < len(tokens):
-				error_message = 'syntax error: expected } or value, got <eof> at %s' % [tokens[index-1].where()]
-				return null
-		
-		args.append(_fix_tree(arg))
-		index += 1
+	while index < len(tokens) and _is_tag_argument_start(tokens[index].type):
+		match tokens[index].type:
+			Lexer.TokenType.RAW_STRING:
+				args.append([ Tag.new('', [[ tokens[index].value ]]) ])
+				index += 1
+			Lexer.TokenType.BRACE_OPEN:
+				index += 1
+				
+				var arg = []
+				
+				if not index < len(tokens):
+					error_message = 'syntax error: expected } or value, got <eof> at %s' % [tokens[index-1].where()]
+					return null
+				
+				while tokens[index].type != Lexer.TokenType.BRACE_CLOSE:
+					var value = _parse_value()
+					if value == null:
+						return null
+					
+					arg.append(value)
+					
+					if not index < len(tokens):
+						error_message = 'syntax error: expected } or value, got <eof> at %s' % [tokens[index-1].where()]
+						return null
+				
+				args.append(_fix_tree(arg))
+				index += 1
 	
 	return Tag.new(name, args)
+
+
+func _parse_raw_string():
+	var tag: Tag = Tag.new('', [[ tokens[index].value ]])
+	index += 1
+	return tag

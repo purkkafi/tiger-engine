@@ -19,7 +19,8 @@ enum TokenType {
 	BRACE_OPEN,
 	BRACE_CLOSE,
 	NEWLINE,
-	STRING
+	STRING,
+	RAW_STRING
 }
 
 
@@ -62,6 +63,10 @@ class Token extends RefCounted:
 		return Token.new(TokenType.NEWLINE, '<newline>', _file, _line)
 	
 	
+	static func raw_string(val: String, _file: String, _line: int) -> Token:
+		return Token.new(TokenType.RAW_STRING, val, _file, _line)
+	
+	
 	func where() -> String:
 		return file + ':' + str(line)
 	
@@ -78,6 +83,8 @@ class Token extends RefCounted:
 				return 'BRACE_CLOSE'
 			TokenType.NEWLINE:
 				return 'NEWLINE'
+			TokenType.RAW_STRING:
+				return 'RAW_STR(%s)' % value
 			_:
 				return '?"%s"?' % value
 
@@ -133,20 +140,23 @@ func tokenize_string(text: String, path: String):
 	
 	while text[index] != EOF:
 		if text[index] == "{":
-			if is_raw_string(text, index):
+			if Lexer.is_raw_string(text, index):
 				var start: int = index
 				var line_start: int = line
 				var end: int = text.find('}}', index)
+				
+				if end == -1:
+					error_message = 'unterminated raw string in %s' % [ path + ':' + str(line) ]
+					return null
+				
 				var substring: String = text.substr(start+2, (end-start)-2)
 				
 				index = end + 2
-				for char in substring:
-					if char == '\n':
+				for chr in substring:
+					if chr == '\n':
 						line += 1
 				
-				tokens.append(Token.brace_open(path, line_start))
-				tokens.append(Token.string(substring, path, line_start))
-				tokens.append(Token.brace_close(path, line))
+				tokens.append(Token.raw_string(substring, path, line_start))
 			else:	
 				tokens.append(Token.brace_open(path, line))
 				index += 1

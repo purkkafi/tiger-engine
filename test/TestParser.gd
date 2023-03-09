@@ -134,8 +134,27 @@ func test_escaping_braces():
 	)
 
 
-func test_raw_string():
+func test_inline_raw_string():
+	assert_equals(
+		parse('{{kis{sa}}'),
+		[ { 'name' : '', 'args' : [[ 'kis{sa' ]]} ]
+	)
+
+
+func test_raw_string_as_tag_argument():
 	assert_equals(
 		parse('\\rawstr{{ a={} b="\\n" }}'),
-		[ { 'name' : 'rawstr', 'args' : [[ 'a={} b="\\n"' ]]} ]
+		[ { 'name' : 'rawstr', 'args' : [[
+			{ 'name': '', 'args': [[ ' a={} b="\\n" ' ]] }
+		]]} ]
+	)
+
+
+func test_multiple_raw_strings_as_tag_arguments():
+	assert_equals(
+		parse('\\a{{b}}{{c}}'),
+		[ { 'name' : 'a', 'args' : [
+			[ { 'name' : '', 'args' : [[ 'b' ]] } ],
+			[ { 'name' : '', 'args' : [[ 'c' ]] } ]
+		]} ]
 	)
