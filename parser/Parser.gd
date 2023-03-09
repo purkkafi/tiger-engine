@@ -85,7 +85,7 @@ func _parse_value():
 			index += 1
 			return BREAK
 		Lexer.TokenType.RAW_STRING:
-			return _parse_raw_string()
+			return _parse_control_tag()
 		_:
 			error_message = 'syntax error: expected value, got %s at %s' % [str(tokens[index]), tokens[index].where()]
 			return null
@@ -106,8 +106,7 @@ func _parse_tag():
 	while index < len(tokens) and _is_tag_argument_start(tokens[index].type):
 		match tokens[index].type:
 			Lexer.TokenType.RAW_STRING:
-				args.append([ Tag.new('', [[ tokens[index].value ]]) ])
-				index += 1
+				args.append([ _parse_control_tag() ])
 			Lexer.TokenType.BRACE_OPEN:
 				index += 1
 				
@@ -134,7 +133,7 @@ func _parse_tag():
 	return Tag.new(name, args)
 
 
-func _parse_raw_string():
-	var tag: Tag = Tag.new('', [[ tokens[index].value ]])
+func _parse_control_tag():
+	var tag: Tag.ControlTag = Tag.ControlTag.new(tokens[index].value)
 	index += 1
 	return tag

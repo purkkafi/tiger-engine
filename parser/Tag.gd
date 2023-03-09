@@ -3,6 +3,7 @@ class_name Tag extends RefCounted
 # every argument is a taglist – an array that may contain:
 # – strings (represented as Godot Strings)
 # – other tags
+# – control tags (represented by the type ControlTag
 # – breaks (represented by the type Tag.Break)
 #
 # there are several get_XXX methods for extracting the contents of
@@ -13,6 +14,14 @@ class_name Tag extends RefCounted
 class Break extends RefCounted:
 	func _to_string() -> String:
 		return '<break>'
+
+
+class ControlTag extends RefCounted:
+	var string: String
+	
+	
+	func _init(_string: String):
+		self.string = _string
 
 
 var name: String

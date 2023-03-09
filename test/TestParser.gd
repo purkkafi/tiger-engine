@@ -16,6 +16,8 @@ func normalize(taglist: Variant):
 		return '<break>'
 	if taglist is Tag:
 		return { 'name' : taglist.name, 'args' : taglist.args.map(func(a): return normalize(a)) }
+	if taglist is Tag.ControlTag:
+		return { 'control' : taglist.string }
 	if taglist is Array:
 		var arr: Array[Variant] = []
 		for t in taglist:
@@ -134,27 +136,38 @@ func test_escaping_braces():
 	)
 
 
-func test_inline_raw_string():
+func test_inline_control_tag():
 	assert_equals(
 		parse('{{kis{sa}}'),
-		[ { 'name' : '', 'args' : [[ 'kis{sa' ]]} ]
+		[ { 'control' : 'kis{sa' } ]
 	)
 
 
-func test_raw_string_as_tag_argument():
+func test_control_tag_as_tag_argument():
 	assert_equals(
-		parse('\\rawstr{{ a={} b="\\n" }}'),
-		[ { 'name' : 'rawstr', 'args' : [[
-			{ 'name': '', 'args': [[ ' a={} b="\\n" ' ]] }
+		parse('\\tag{{ a={} b="\\n" }}'),
+		[ { 'name' : 'tag', 'args' : [[
+			{ 'control': ' a={} b="\\n" ' }
 		]]} ]
 	)
 
 
-func test_multiple_raw_strings_as_tag_arguments():
+func test_multiple_control_tags_as_tag_arguments():
 	assert_equals(
 		parse('\\a{{b}}{{c}}'),
 		[ { 'name' : 'a', 'args' : [
-			[ { 'name' : '', 'args' : [[ 'b' ]] } ],
-			[ { 'name' : '', 'args' : [[ 'c' ]] } ]
-		]} ]
+			[ { 'control' : 'b' } ],
+			[ { 'control' : 'c' } ] ]
+		} ]
+	)
+
+
+func test_normal_and_control_tag_args():
+	assert_equals(
+		parse('\\tag{1}{{2}}{3}'),
+		[ { 'name' : 'tag', 'args': [
+			[ '1' ],
+			[ { 'control' : '2' } ],
+			[ '3' ]
+		] } ]
 	)
