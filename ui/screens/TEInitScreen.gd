@@ -13,7 +13,7 @@ func _ready():
 	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
 		get_tree().quit(TestRunner.run_tests())
 	
-	self.color = Global.options.init_color
+	self.color = Global.options.background_color
 	
 	# set initial window settings
 	get_window().min_size = Vector2i(962, 542)
@@ -30,6 +30,9 @@ func _ready():
 	# if settings file exists, read it and switch to the specified language
 	if Settings.has_settings_file():
 		Global.settings = Settings.load_from_file()
+		# save immediately in case settings were modified due to
+		# the file being from an older version of the game
+		Global.settings.save_to_file()
 		Global.settings.change_settings()
 		
 		for lang in Global.all_languages:
@@ -65,15 +68,15 @@ func _language_selected(selected: Lang):
 # returns all defined languages
 # if user's locale matches a language, it's returned first;
 # the rest are sorted alphabetically
-static func get_languages():
+static func get_languages() -> Array[Lang]:
 	var lang_path = 'res://assets/lang'
 	
 	var langs_folder := DirAccess.open(lang_path)
 	if langs_folder == null:
-		push_error('cannot open %s' % [lang_path])
-		return
+		push_error('cannot open langs folder')
+		return []
 	
-	var found = []
+	var found: Array[Lang] = []
 	for folder in langs_folder.get_directories():
 		var lang: Lang = load(lang_path + '/' + folder + '/lang.tef')
 		lang.id = folder

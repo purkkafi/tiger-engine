@@ -115,8 +115,12 @@ static func has_settings_file():
 	return FileAccess.file_exists(SETTINGS_PATH)
 
 
-# reads settings from file
-# returns the Settings or an error code
+# reads settings from file; returns the Settings or an error code
+# if settings file is from an older version, it may be migrated;
+# settings should be saved immediately after loading
+# (an example of this kind of migration: a new auto-unlocked unlockable has been added,
+# in case it gets added into the list of unlockables. also, new engine versions may add
+# new settings, which means that their default values will be added.)
 static func load_from_file():
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	
@@ -146,17 +150,9 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	settings.pretend_mobile = dict.get('pretend_mobile', defaults['pretend_mobile'])
 	settings.lang_id = dict['lang_id']
 	settings.gui_scale = dict.get('gui_scale', defaults['gui_scale'])
-	settings.unlocked = dict.get('unlocked', defaults['unlocked'])
-	
-	# auto-unlock unlockabes that should be available from the start
-	# this needs to be checked here because games can have save files from
-	# older versions where the definition didn't exist
-	# note: this may make the in-game Settings object out of sync with the file
-	# but the change will be applied whenever the file is updated for any reason
-	# is this fine? TODO think about it
-	for id in Global.definitions.unlocked_from_start:
-		if id not in settings.unlocked:
-			settings.unlocked[id] = true
+	# include auto-unlocks from default settings, overwriting them with whatever is in the given dict
+	settings.unlocked = dict.get('unlocked', {})
+	settings.unlocked.merge(defaults['unlocked'])
 	
 	return settings
 
@@ -178,6 +174,9 @@ static func default_settings():
 	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
 	defs.gui_scale = GUIScale.LARGE if Global.is_mobile() else GUIScale.NORMAL
-	defs.unlocked = {}
+	
+	defs.unlocked = {} # include auto-unlocks by default
+	for id in Global.definitions.unlocked_from_start:
+		defs.unlocked[id] = true
 	
 	return defs

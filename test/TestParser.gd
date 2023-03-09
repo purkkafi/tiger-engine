@@ -9,6 +9,8 @@ func parse(str: String):
 	return normalize(parser.parse(lexer.tokenize_string(str, '<test>')))
 
 
+# converts a taglist into nested Arrays and Dictionaries of Strings,
+# making testing for equality work
 func normalize(taglist: Variant):
 	if taglist is String:
 		return taglist
@@ -170,4 +172,17 @@ func test_normal_and_control_tag_args():
 			[ { 'control' : '2' } ],
 			[ '3' ]
 		] } ]
+	)
+
+
+func test_inline_control_tag_in_tag():
+	assert_equals(
+		parse('\\a{1\n{{2}}\n3}'),
+		[ { 'name' : 'a', 'args' : [[
+			'1',
+			'<break>',
+			{ 'control' : '2' },
+			'<break>',
+			'3'
+		]] } ]
 	)

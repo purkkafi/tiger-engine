@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cotsa8sx6jwjt"]
+
+[ext_resource type="Theme" uid="uid://d054wwop2tkcq" path="res://ui/main_theme.tres" id="1_lvlhv"]
+[ext_resource type="Script" path="res://tiger-engine/ui/screens/TEErrorScreen.gd" id="2_15woo"]
+
+[node name="Background" type="ColorRect"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+theme = ExtResource("1_lvlhv")
+color = Color(0.0235294, 0.0235294, 0.0235294, 1)
+script = ExtResource("2_15woo")
