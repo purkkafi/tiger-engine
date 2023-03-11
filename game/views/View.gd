@@ -27,15 +27,23 @@ const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 }
 
 
-enum Speedup { NORMAL, FAST, FASTER }
+# current speedup state; will move continuously to faster speedup as input is held down
+enum Speedup {
+	NORMAL, # no speedup
+	# scroll to end of current line and set state to WAITING_UNADVANCE (which will then set state
+	# to WAITING_ADVANCE i.e. user has to release spacebar and/or mouse and then press it again)
+	FAST,
+	# accelerate tweens, scroll to end of line & set state to WAITING_LINE_SWITCH_DELTA
+	FASTER 
+}
 
 
 # state of text scrolling
 enum State {
 	SCROLLING_TEXT, # not at end of line, text is being scrolled
-	WAITING_ADVANCE, # at end of line, waiting for user to advance
-	WAITING_UNADVANCE, # at end of line, waiting for user to not advance
-	WAITING_LINE_SWITCH_DELTA, # at an end of line, waiting for line switch cooldown
+	WAITING_ADVANCE, # at end of line, waiting for user to advance (press spacebar/mouse)
+	WAITING_UNADVANCE, # at end of line, waiting for user to not advance (release spacebar/mouse)
+	WAITING_LINE_SWITCH_COOLDOWN, # at an end of line, waiting for cooldown
 	READY_TO_PROCEED # can proceed to next line/block
 }
 
@@ -93,11 +101,13 @@ func show_block(block: Block) -> void:
 	lines = block.resolve_parts()
 	line_index = 0
 	_next_block()
-	next_line()
 
 
 # proceeds to the next line
 func next_line() -> void:
+	if pause_delta > 0:
+		push_error('illegal state ', is_next_line_requested())
+	
 	_next_line(lines[line_index] + LINE_END)
 	line_index += 1
 	
@@ -112,7 +122,7 @@ func next_line() -> void:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
 			line_switch_delta = LINE_SWITCH_COOLDOWN
-			state = State.WAITING_LINE_SWITCH_DELTA
+			state = State.WAITING_LINE_SWITCH_COOLDOWN
 
 
 func _is_end_of_line() -> bool:
@@ -128,10 +138,14 @@ func _to_end_of_line():
 # updates the state of the View according to the given delta
 func update_state(delta: float):
 	# if pausing, reduce counter
-	if pause_delta >= 0:
+	if pause_delta > 0:
 		if speedup == Speedup.FASTER:
 			pause_delta = 0
+			
 		pause_delta -= delta
+		
+		if pause_delta <= 0:
+			state = State.READY_TO_PROCEED
 		return
 	
 	if waiting_tween != null:
@@ -142,9 +156,9 @@ func update_state(delta: float):
 			return
 	
 	# if waiting for line switch cooldown, reduce counter
-	if state == State.WAITING_LINE_SWITCH_DELTA:
+	if state == State.WAITING_LINE_SWITCH_COOLDOWN:
 		line_switch_delta -= delta
-		if line_switch_delta <= 0:
+		if line_switch_delta < 0:
 			state = State.READY_TO_PROCEED
 			return
 	
@@ -169,7 +183,8 @@ func update_state(delta: float):
 			
 			label.visible_characters += 1
 		
-	elif state == State.SCROLLING_TEXT: # reached end of line
+	elif state == State.SCROLLING_TEXT:
+		# reached end of line normally
 		state = State.WAITING_ADVANCE
 
 
@@ -193,11 +208,12 @@ func game_advanced(delta: float):
 		speedup = Speedup.FASTER
 		_to_end_of_line()
 		line_switch_delta = LINE_SWITCH_COOLDOWN
-		state = State.WAITING_LINE_SWITCH_DELTA
+		state = State.WAITING_LINE_SWITCH_COOLDOWN
 	elif speedup == Speedup.NORMAL and advance_held >= SPEEDUP_THRESHOLD_FAST:
 		speedup = Speedup.FAST
 		_to_end_of_line()
-		state = State.WAITING_UNADVANCE
+		if not _is_waiting(): # could lead to state being WAITING_ADVANCE in pauses
+			state = State.WAITING_UNADVANCE
 
 
 # should be called on frames when user is not advancing the game
@@ -212,7 +228,7 @@ func game_not_advanced(delta: float):
 	
 	# if advancing is stopped while waiting for line switch cooldown,
 	# convert the remaining time to a regular pause and proceed
-	if state == State.WAITING_LINE_SWITCH_DELTA:
+	if state == State.WAITING_LINE_SWITCH_COOLDOWN:
 		pause_delta = line_switch_delta
 		state = State.READY_TO_PROCEED
 
