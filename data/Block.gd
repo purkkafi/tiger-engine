@@ -3,9 +3,6 @@ class_name Block extends RefCounted
 
 
 var taglist: Array[Variant]
-# caches the hash to avoid recalculation
-# do not access directly, use resolve_hash()
-var _hashcode: String = ''
 
 
 func _init(_taglist: Array[Variant]):
@@ -60,15 +57,11 @@ func resolve_parts() -> Array[String]:
 
 # calculates the hash code of this block
 func resolve_hash() -> String:
-	if _hashcode != '':
-		return _hashcode
-	
 	var ctxt: HashingContext = HashingContext.new()
 	ctxt.start(HashingContext.HASH_MD5)
 	Block._hash_taglist(taglist, ctxt)
 	
-	_hashcode = ctxt.finish().hex_encode()
-	return _hashcode
+	return ctxt.finish().hex_encode()
 
 
 # hashes a taglist recursively, updating the given Context

@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://cfb4wk2phunje"]
+
+[ext_resource type="PackedScene" uid="uid://dj5b2g3xmpfgs" path="res://tiger-engine/game/VNControls.tscn" id="1_0evqp"]
+[ext_resource type="Script" path="res://tiger-engine/game/TEGame.gd" id="1_8iwxg"]
+[ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="2_w8ob5"]
+
+[node name="TEGame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8iwxg")
+
+[node name="VNStage" parent="." instance=ExtResource("2_w8ob5")]
+layout_mode = 1
+
+[node name="View" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VNControls" parent="." instance=ExtResource("1_0evqp")]
+layout_mode = 0

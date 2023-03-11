@@ -1,6 +1,8 @@
 extends Node
 # utility class for spawning standard popups
 # its functions return the created popup object
+# TODO: add shadow ColorRect to the scene behind the popups
+# (use same mechanism for overlays?)
 
 
 
@@ -43,6 +45,9 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	
 	Global.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
+	
+	# make the less destructive option the default
+	Callable(popup.get_cancel_button(), 'grab_focus').call_deferred()
 	
 	return popup
 

@@ -8,8 +8,6 @@ var sounds: Cache = Cache.new('sounds', 5)
 var bgs: Cache = Cache.new('bgs', 5)
 var blockfiles: Cache = Cache.new('blockfiles', 20)
 var scripts: Cache = Cache.new('scripts', 20)
-
-
 # for misc resources that don't have to be cached
 var noncached: Cache = Cache.new('noncached', 0)
 # for resources that are cached permanently
@@ -17,13 +15,21 @@ var noncached: Cache = Cache.new('noncached', 0)
 var permanent: Cache = Cache.new('permanent', 99999)
 
 
-static func localize_path(path):
-	var try_path: String = Global.language.path + path
-	
-	if ResourceLoader.exists(try_path):
-		return try_path
-	
-	return FAILED
+func _ready():
+	blockfiles.hash_function = Callable(self, '_blockfile_hash')
+
+
+static func in_lang(path: String) -> String:
+	return 'res://assets/lang/' + Global.language.id + path
+
+
+# calculates the hash of every Block in the given BlockFile
+func _blockfile_hash(blockfile: BlockFile) -> Dictionary:
+	var hashes: Dictionary = {}
+	for block_id in blockfile.blocks.keys():
+		var hashcode: String = blockfile.blocks[block_id].resolve_hash()
+		hashes[block_id] = hashcode
+	return hashes
 
 
 func _debug_message() -> String:
@@ -53,10 +59,17 @@ class Entry:
 
 
 class Cache:
-	var id: String
+	var id: String # identifier of this cache
 	var size: int # size of this cache
 	# cache of entries; larger indices are newer
 	var cache: Array[Entry]
+	# function that is used to calculate the hashes of loaded
+	# Resources (current and previous) if set
+	var hash_function = null
+	# Dictionary of Resource paths to calculated hashes
+	# they may be Strings or more complex objects containing the sub-hashes
+	# of the constituent parts of the object
+	var hashes: Dictionary
 	
 	
 	func _init(_id, _size: int):
@@ -66,6 +79,14 @@ class Cache:
 	
 	func _to_string():
 		return str(cache)
+	
+	
+	# caches the hash of the given Resource if hash_function is set
+	func _set_hash(resource: Resource):
+		if hash_function == null:
+			return
+		print('[Assets/%s] calculated hash of: %s' % [id, resource.resource_path])
+		hashes[resource.resource_path] = hash_function.call(resource)
 	
 	
 	# adds entry to cache, moving it to the front if it already is there
@@ -125,6 +146,7 @@ class Cache:
 			var entry = Entry.new(path)
 			entry.resource = resource
 			_add_to_cache(entry)
+			_set_hash(entry.resource)
 			return resource
 		else: # queued or already loaded, get it now anyway
 			if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED:
@@ -135,10 +157,15 @@ class Cache:
 			var entry = Entry.new(path)
 			entry.resource = resource
 			_add_to_cache(entry)
+			_set_hash(entry.resource)
 			return resource
+	
 	
 	func _debug_message() -> String:
 		var msg: String = ''
 		for entry in cache:
-			msg += '  ' + entry.path + ': ' + entry.get_class() + '\n'
+			msg += '  ' + entry.path + ': ' + entry.get_class()
+			if entry.path in hashes:
+				msg += ' (hash calculated)'
+			msg += '\n'
 		return msg

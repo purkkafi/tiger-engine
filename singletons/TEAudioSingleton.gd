@@ -48,7 +48,7 @@ func _swap_song_trans_finished():
 	
 	old_music.stop()
 	remove_child(old_music)
-	old_music.free()
+	old_music.queue_free()
 	
 	new_music.name = 'SongPlayer'
 	new_music.bus = 'Music'

@@ -1,0 +1,96 @@
+[gd_scene load_steps=2 format=3 uid="uid://dj5b2g3xmpfgs"]
+
+[ext_resource type="Script" path="res://tiger-engine/game/VNControls.gd" id="1_yx6bu"]
+
+[node name="VNControls" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+script = ExtResource("1_yx6bu")
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -60.0
+offset_right = 500.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"VNControlsPanel"
+
+[node name="Scroll" type="ScrollContainer" parent="Panel"]
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="HBox" type="HBoxContainer" parent="Panel/Scroll"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+theme_type_variation = &"VNControlsRow"
+
+[node name="Back" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_back%"
+
+[node name="Save" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_save%"
+
+[node name="Load" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_load%"
+
+[node name="Log" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_log%"
+
+[node name="Skip" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_skip%"
+
+[node name="Settings" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_settings%"
+
+[node name="Quit" type="Button" parent="Panel/Scroll/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_type_variation = &"VNControlsButton"
+text = "%game_quit%"

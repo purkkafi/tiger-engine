@@ -93,7 +93,15 @@ func get_tags():
 	if len(args) != 1:
 		push_error('expected tags, got %s' % self)
 		return null
-	return args[0].filter(func(n): return n is Tag)
+	return args[0].filter(func(n): return n is Tag or n is ControlTag)
+
+
+# returns the Array of Tags contained at the given argument or null
+func get_tags_at(index: int):
+	if index >= len(args):
+		push_error('expected tags at index %d, got %s' % [index, self])
+		return null
+	return args[index].filter(func(n): return n is Tag or n is ControlTag)
 
 
 # returns a Dictionary where keys are the names of tags the
