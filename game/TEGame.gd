@@ -5,7 +5,9 @@ class_name TEGame extends Control
 
 var vm: TEScriptVM # virtual machine that runs the game script
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
+# default views
 var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
+var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
 
 func _ready():
@@ -29,24 +31,33 @@ func next_blocking():
 	for ins in instructions:
 		if ins is TEScript.IPlaySong:
 			TEAudio.play_song(ins.song_id, Global.definitions.transitions[ins.transition_id].duration)
+			
 		elif ins is TEScript.INvl:
 			_replace_view(nvl_view.instantiate())
+		
+		elif ins is TEScript.IAdv:
+			_replace_view(adv_view.instantiate())
+		
 		else:
 			push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
 	var blocking = vm.next_blocking()
 	if blocking is TEScript.IPause:
 		$View.pause(blocking.duration)
+		
 	elif blocking is TEScript.IBlock:
 		$View.show_block(Global.get_block(blocking.blockfile_id, blocking.block_id))
 		_unhide_ui()
+		
 	elif blocking is TEScript.IBG:
 		var tween = $VNStage.set_background(blocking.bg_id, Global.definitions.transitions[blocking.transition_id])
 		if tween != null:
 			$View.wait_tween(tween)
+			
 	elif blocking is TEScript.IHideUI:
 		var tween: Tween = _hide_ui(Global.definitions.transitions[blocking.transition_id].duration)
 		$View.wait_tween(tween)
+		
 	else:
 		push_error('cannot handle blocking instruction: %s' % [blocking])
 

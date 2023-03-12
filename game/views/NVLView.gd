@@ -6,7 +6,7 @@ class_name NVLView extends View
 var top_margin: float = get_theme_constant('top_margin', 'NVLView')
 var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
 var width: float = get_theme_constant('width', 'NVLView')
-var mobile_width_offset: float = get_theme_constant('mobile_width_offset', 'NVLView')
+var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
 
 
 # RichTextLabels containing the displayed lines
@@ -17,26 +17,23 @@ var mobile_width_offset: float = get_theme_constant('mobile_width_offset', 'NVLV
 const INDENT: String = '        '
 
 
-func _enter_tree():
+func _ready():
+	paragraphs.add_theme_constant_override('separation', 4)
 	# set sensible default value if running without theme
 	if width == 0:
 		width = 1000
 	
-	super._enter_tree()
-
-
-func _ready():
-	paragraphs.add_theme_constant_override('separation', 4)
+	super._ready()
 
 
 func adjust_size(controls: VNControls):
-	var controls_height = controls.height if controls != null else 0.0
+	var controls_height = controls.size.y if controls != null else 0.0
 	$Scroll.size.y = (1080 - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin
 	
 	var w = width
 	if Global.is_large_gui():
-		w += mobile_width_offset
+		w += mobile_offset_x
 	$Scroll.size.x = w
 	$Scroll.position.x = (1920 - w)/2
 
@@ -48,7 +45,8 @@ func _next_block():
 		par.queue_free()
 
 
-func _next_line(line: String):
+# Speakers are not handled right now
+func _next_line(line: String, _speaker: Definitions.Speaker = null):
 	var label: RichTextLabel = create_label()
 	
 	# if not first paragraph
@@ -62,8 +60,6 @@ func _next_line(line: String):
 		# remove the '[next] ▶[/next]' from previous paragraph
 		old_par.text = old_par.text.replace(View.LINE_END, '')
 	
-	label.fit_content = true
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	paragraphs.add_child(label)
 
 

@@ -1,9 +1,10 @@
 @tool
 extends RichTextEffect
 class_name RichTextNext
+# rich text component that provides the effect used at end of lines
 
 
-var bbcode = "next"
+var bbcode = 'next'
 var start_time = null
 
 

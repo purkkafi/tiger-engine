@@ -73,6 +73,7 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 # standard errors
 enum GameError {
 	BAD_SAVE, # save cannot be loaded
+	SCRIPT_ERROR, # developer made a fucky wucky while writing the game script
 	TEST_ERROR # error for debug purposes
 }
 
@@ -88,6 +89,8 @@ func error_dialog(game_error: GameError) -> AcceptDialog:
 	match game_error:
 		GameError.BAD_SAVE:
 			label.text = Global.ui_strings.error_bad_save
+		GameError.SCRIPT_ERROR:
+			label.text += Global.ui_strings.error_script
 		GameError.TEST_ERROR:
 			label.text = 'This is a test error. It should only be displayed for debug purposes.'
 		_:

@@ -17,6 +17,8 @@ var sounds: Dictionary = {}
 var unlockables: Array[String] = []
 # ids of unlockables that should be unlocked automatically
 var unlocked_from_start: Array[String] = []
+# a map of speaker ids to Speaker objects
+var speakers: Dictionary = {}
 
 const trans_types = {
 	'QUART': Tween.TRANS_QUART,
@@ -68,3 +70,9 @@ class Transition extends RefCounted:
 	
 	func _to_string() -> String:
 		return 'Transition(%s %s %s)' % [trans_type, ease_type, duration]
+
+
+class Speaker extends RefCounted:
+	var id: String
+	var name: String
+	var color: Color

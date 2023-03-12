@@ -25,6 +25,7 @@ const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	';' : 11,
 	',' : 8
 }
+var GET_SPEAKER_REGEX = RegEx.create_from_string('\\[speaker\\](.+)\\[\\/speaker\\]')
 
 
 # current speedup state; will move continuously to faster speedup as input is held down
@@ -52,7 +53,7 @@ enum State {
 # decided to set its size. will be called with a null parameter if the View
 # is run directly in the editor; in this case, the controls should be treated
 # as if they had the height 0
-func adjust_size(controls: VNControls) -> void:
+func adjust_size(_controls: VNControls) -> void:
 	pass
 
 
@@ -98,18 +99,27 @@ func is_next_line_requested():
 
 # displays the given block next
 func show_block(block: Block) -> void:
-	lines = block.resolve_parts()
+	lines = TEBlocks.resolve_parts(block)
 	line_index = 0
 	_next_block()
 
 
 # proceeds to the next line
 func next_line() -> void:
-	if pause_delta > 0:
-		push_error('illegal state ', is_next_line_requested())
+	# parse speaker specification
+	var speaker = null
+	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
+	if search != null:
+		var id: String = search.strings[1]
+		if id in Global.definitions.speakers:
+			speaker = Global.definitions.speakers[id]
+			lines[line_index] = lines[line_index].substr(search.get_end())
+		else:
+			Global.log_error('speaker not rezognized: %s' % id)
 	
-	_next_line(lines[line_index] + LINE_END)
+	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
+	next_effect.reset()
 	
 	var label: RichTextLabel = _current_label()
 	label.visible_characters = 0
@@ -132,7 +142,8 @@ func _is_end_of_line() -> bool:
 
 func _to_end_of_line():
 	var label: RichTextLabel = _current_label()
-	label.visible_characters = label.get_total_character_count()
+	if label != null:
+		label.visible_characters = label.get_total_character_count()
 
 
 # updates the state of the View according to the given delta
@@ -217,7 +228,7 @@ func game_advanced(delta: float):
 
 
 # should be called on frames when user is not advancing the game
-func game_not_advanced(delta: float):
+func game_not_advanced(_delta: float):
 	advance_held = 0.0
 	speedup = Speedup.NORMAL
 	
@@ -237,9 +248,11 @@ func game_not_advanced(delta: float):
 # subclasses should call this instead of creating new instances by themselves
 func create_label() -> RichTextLabel:
 	var label: RichTextLabel = RichTextLabel.new()
-	#label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.install_effect(next_effect)
 	label.bbcode_enabled = true
+	label.fit_content = true
+	label.mouse_filter = Control.MOUSE_FILTER_PASS
+	label.text = ''
 	return label
 
 
@@ -253,7 +266,8 @@ func copy_state_from(old: View):
 
 
 # internal implementation; Views should override to control how lines are shown
-func _next_line(line: String):
+# a Speaker may also additionally be specified
+func _next_line(_line: String, _speaker: Definitions.Speaker = null):
 	Global.log_error("view doesn't implement _next_line()")
 
 
@@ -267,8 +281,11 @@ func _current_label():
 	Global.log_error("view doesn't implement _current_label()")
 
 
-# subclasses should call this via super if they override _enter_tree()
-func _enter_tree():
+# subclasses should call this via super if they override _ready()
+func _ready():
 	# do this if View is run directly in the editor
 	if self in get_tree().root.get_children():
 		adjust_size(null)
+		# display debug text
+		_next_line('Kissat ovat söpöjä ja hauskoja. Kissat ovat söpöjä ja hauskoja. '.repeat(4))
+		_current_label().visible_characters = -1

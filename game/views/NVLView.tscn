@@ -15,10 +15,6 @@ script = ExtResource("1_dkpbi")
 [node name="Scroll" type="ScrollContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 460.0
-offset_top = 50.0
-offset_right = 1460.0
-offset_bottom = 980.0
 vertical_scroll_mode = 3
 
 [node name="Paragraphs" type="VBoxContainer" parent="Scroll"]

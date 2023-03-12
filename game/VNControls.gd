@@ -14,9 +14,12 @@ class_name VNControls extends Control
 @onready var btn_settings: Button = %Settings
 @onready var btn_quit: Button = %Quit
 
-# will be set to the calculated width and the height of the controls
-var width: float
-var height: float
+var width: float = get_theme_constant('width', 'VNControlsPanel')
+var height: float =  get_theme_constant('height', 'VNControlsPanel')
+var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'VNControlsPanel')
+var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'VNControlsPanel')
+var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
+var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
 
 
 func _ready():
@@ -25,21 +28,19 @@ func _ready():
 	# height is 'bottom_offset' + 'height' + 'top_offset'
 	# mobile size options are also factored in
 	
-	width = get_theme_constant('width', 'VNControlsPanel')
+	var w: float = width
+	var h: float = height
 	if Global.is_large_gui():
-		width += get_theme_constant('mobile_width_offset', 'VNControlsPanel')
+		w += mobile_offset_x
+		h += mobile_offset_y
 	
-	panel.size.x = width
-	panel.position.x = (1920-width)/2
+	panel.size.x = w
+	panel.size.y = h
 	
-	var btm_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
-	var self_height: float =  get_theme_constant('height', 'VNControlsPanel')
-	if Global.is_large_gui():
-		self_height += get_theme_constant('mobile_height_offset', 'VNControlsPanel')
-	
-	panel.size.y = self_height
-	panel.position.y = 1080-self_height-btm_offset
-	height = get_theme_constant('top_offset', 'VNControlsPanel') + self_height + btm_offset
+	self.size.x = w
+	self.size.y = bottom_offset + h + top_offset
+	self.position.x = (1920 - w)/2
+	self.position.y = 1080 - bottom_offset - h
 	
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
 
