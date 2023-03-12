@@ -12,7 +12,7 @@ var song_id: String
 # if another song is playing, it is faded out simultaneouslu
 func play_song(new_song_id: String, duration: float):
 	song_id = new_song_id
-	var path = Global.definitions.songs[song_id]
+	var path = TE.defs.songs[song_id]
 	var new_song = Assets.songs.get_resource('res://assets/music' + path)
 	
 	# if new song already fading in, end the transition
@@ -68,7 +68,7 @@ func set_paused(paused: bool):
 
 # plays a sound effect with the given id
 func play_sound(id: String):
-	var path = Global.definitions.sounds[id]
+	var path = TE.defs.sounds[id]
 	var sound = Assets.sounds.get_resource('res://assets/sound' + path)
 	sound.set_loop(false)
 	

@@ -26,8 +26,8 @@ enum GUIScale { NORMAL = 0, LARGE = 1 }
 # unlocks the given unlockable and saves settings to the disk
 # does nothing if it was already unlocked
 func unlock(unlockable_id: String):
-	if not unlockable_id in Global.definitions.unlockables:
-		Global.log_error('unknown unlockable: %s' % unlockable_id)
+	if not unlockable_id in TE.defs.unlockables:
+		TE.log_error('unknown unlockable: %s' % unlockable_id)
 		return false
 	if not unlockable_id in unlocked:
 		unlocked[unlockable_id] = true
@@ -36,8 +36,8 @@ func unlock(unlockable_id: String):
 
 # returns whether the given unlockable is unlocked
 func is_unlocked(unlockable_id: String) -> bool:
-	if not unlockable_id in Global.definitions.unlockables:
-		Global.log_error('unknown unlockable: %s' % unlockable_id)
+	if not unlockable_id in TE.defs.unlockables:
+		TE.log_error('unknown unlockable: %s' % unlockable_id)
 		return false
 	return unlockable_id in unlocked and unlocked[unlockable_id]
 
@@ -68,16 +68,16 @@ static func change_fullscreen(to_fullscreen: bool):
 
 
 static func change_gui_scale(scale: GUIScale):
-	MobileUI.change_gui_scale(Global.current_scene, scale)
+	MobileUI.change_gui_scale(TE.current_scene, scale)
 
 
 # changes language unless the given id is the current language;
 # returns whether it was changed
 static func change_language(id: String):
-	if Global.language == null or Global.language.id != id:
-		for lang in Global.all_languages:
+	if TE.language == null or TE.language.id != id:
+		for lang in TE.all_languages:
 			if lang.id == id:
-				Global.load_language(lang)
+				TE.load_language(lang)
 				return true
 	return false
 
@@ -88,7 +88,7 @@ func save_to_file():
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
 	
 	if file == null:
-		Global.log_error('cannot write settings: %d' % file.get_error())
+		TE.log_error('cannot write settings: %d' % file.get_error())
 		return file.get_error()
 	
 	file.store_line(JSON.stringify(_to_dict(), '  '))
@@ -173,10 +173,10 @@ static func default_settings():
 	defs.fullscreen = false
 	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
-	defs.gui_scale = GUIScale.LARGE if Global.is_mobile() else GUIScale.NORMAL
+	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	
 	defs.unlocked = {} # include auto-unlocks by default
-	for id in Global.definitions.unlocked_from_start:
+	for id in TE.defs.unlocked_from_start:
 		defs.unlocked[id] = true
 	
 	return defs

@@ -99,7 +99,7 @@ func is_next_line_requested():
 
 # displays the given block next
 func show_block(block: Block) -> void:
-	lines = TEBlocks.resolve_parts(block)
+	lines = Blocks.resolve_parts(block)
 	line_index = 0
 	_next_block()
 
@@ -111,11 +111,11 @@ func next_line() -> void:
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
 	if search != null:
 		var id: String = search.strings[1]
-		if id in Global.definitions.speakers:
-			speaker = Global.definitions.speakers[id]
+		if id in TE.defs.speakers:
+			speaker = TE.defs.speakers[id]
 			lines[line_index] = lines[line_index].substr(search.get_end())
 		else:
-			Global.log_error('speaker not rezognized: %s' % id)
+			TE.log_error('speaker not rezognized: %s' % id)
 	
 	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
@@ -174,12 +174,12 @@ func update_state(delta: float):
 			return
 	
 	var label: RichTextLabel = _current_label()
-	var text_speed: float = 20 + 50*Global.settings.text_speed
+	var text_speed: float = 20 + 50*TE.settings.text_speed
 	
 	# if not at end of line, scroll further
 	if !_is_end_of_line():
 		# instant text speed if setting is at max value
-		if Global.settings.text_speed >= 0.999:
+		if TE.settings.text_speed >= 0.999:
 			text_speed = INF
 		
 		next_letter_delta -= text_speed * delta
@@ -201,7 +201,7 @@ func update_state(delta: float):
 
 # returns the appropriate delta to wait for before displaying the given character
 func _char_wait_delta(chr: String):
-	if !Global.settings.dynamic_text_speed:
+	if !TE.settings.dynamic_text_speed:
 		return 1.0
 	if chr in CHAR_WAIT_DELTAS:
 		return CHAR_WAIT_DELTAS[chr]
@@ -268,7 +268,7 @@ func copy_state_from(old: View):
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
 func _next_line(_line: String, _speaker: Definitions.Speaker = null):
-	Global.log_error("view doesn't implement _next_line()")
+	TE.log_error("view doesn't implement _next_line()")
 
 
 # optionally, subclasses may respond to a new block starting
@@ -278,7 +278,7 @@ func _next_block():
 
 # should return the RichTextLabel containing the current line
 func _current_label():
-	Global.log_error("view doesn't implement _current_label()")
+	TE.log_error("view doesn't implement _current_label()")
 
 
 # subclasses should call this via super if they override _ready()

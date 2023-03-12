@@ -14,7 +14,7 @@ func _init(te_script: TEScript):
 func _current() -> Variant:
 	if index >= len(current_script.instructions)-1:
 		push_error('unexpected end of script: index %d of %d' % [index, len(current_script.instructions)])
-		TEPopups.error_dialog(TEPopups.GameError.SCRIPT_ERROR)
+		Popups.error_dialog(Popups.GameError.SCRIPT_ERROR)
 	return current_script.instructions[index]
 
 

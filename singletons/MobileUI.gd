@@ -21,7 +21,7 @@ static func _construct_large_theme():
 
 # sets the appropriate GUI scale based on current Settings & OS
 func initialize_gui(node: Control):
-	if Global.is_large_gui():
+	if TE.is_large_gui():
 		change_gui_scale(node, Settings.GUIScale.LARGE)
 
 

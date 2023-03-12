@@ -15,7 +15,7 @@ func set_background(new_id: String, transition: Definitions.Transition):
 
 # loads a suitable back/foreground Node based on the given id
 func _get_layer_node(id: String) -> Node:
-	var definition = Global.definitions.backgrounds[id]
+	var definition = TE.defs.backgrounds[id]
 	
 	if definition is Color:
 		var rect: ColorRect = ColorRect.new()
@@ -32,10 +32,10 @@ func _get_layer_node(id: String) -> Node:
 				rect.texture = Assets.bgs.get_resource(Assets.in_lang(definition.get_string()))
 				return rect
 			_:
-				Global.log_error('cannot handle background: %s' % [ definition ])
+				TE.log_error('cannot handle background: %s' % [ definition ])
 				return null
 	else:
-		Global.log_error('cannot handle background: %s' % [ definition ])
+		TE.log_error('cannot handle background: %s' % [ definition ])
 		return null
 
 

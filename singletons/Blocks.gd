@@ -1,6 +1,32 @@
-class_name Blocks extends Node
+extends Node
 # utility class for stringifying Blocks; methods have to exist here because
 # of class resolution problems
+
+
+# looks up a Block object by its blockfile id and block id
+# by default, it is searched in the 'text' folder of the game language
+# two special blockfile id prefixes are accepted:
+# – 'lang:' look up the block relative to the lang folder
+# – 'assets:' look up the block relative to the assets folder
+# null is returned if the Block cannot be found
+static func find(blockfile_id: String, block_id: String) -> Variant:
+	var blockfile: BlockFile = null
+	var path: String
+	
+	if blockfile_id.begins_with('lang:'):
+		path = TE.language.path + '/' + blockfile_id.trim_prefix('lang:') + '.tef'
+	elif blockfile_id.begins_with('assets:'):
+		path = 'res://assets/' + blockfile_id.trim_prefix('assets:') + '.tef'
+	else:
+		path = TE.language.path + '/text/' + blockfile_id + '.tef'
+	
+	blockfile = Assets.blockfiles.get_resource(path)
+	
+	if block_id in blockfile.blocks:
+		return blockfile.blocks[block_id]
+	else:
+		TE.log_error('block not found: %s:%s' % [ blockfile_id, block_id ])
+		return null
 
 
 # resolves this Block into a String, with paragraphs being separated with
@@ -43,7 +69,7 @@ func _resolve_parts(taglist: Array[Variant]) -> Array[String]:
 				parts.push_back(parts.pop_back() + '[b]' + node.args[0][0] + '[/b]')
 			elif node.name == 'link':
 				parts.push_back(parts.pop_back() + '[url=' + node.args[1][0] + ']' + node.args[0][0] + '[/url]')
-			elif node.name in Global.definitions.speakers: # is a speaker declaration?
+			elif node.name in TE.defs.speakers: # is a speaker declaration?
 				# TODO implement arguments, such as using another name
 				
 				# erase previous empty string, if any
@@ -55,7 +81,7 @@ func _resolve_parts(taglist: Array[Variant]) -> Array[String]:
 				for line in contents:
 					parts.push_back('[speaker]%s[/speaker]%s' % [node.name, line])
 			else: # unknown tag
-				Global.log_error('cannot stringify tag: %s' % [node])
+				TE.log_error('cannot stringify tag: %s' % [node])
 				parts.push_back(str(node))
 	
 	return parts

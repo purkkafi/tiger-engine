@@ -10,17 +10,18 @@ var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
 var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
 
+# sets the 'main' script in the given ScriptFile to be run
+# call this before switching to the scene
+func run_script(script_file: ScriptFile):
+	vm = TEScriptVM.new(script_file.scripts['main'])
+
+
 func _ready():
-	Global.ui_strings.translate(self)
+	TE.ui_strings.translate(self)
 	MobileUI.initialize_gui(self)
 	
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
 	
-	start_game()
-
-
-func start_game():
-	vm = TEScriptVM.new(load('res://assets/scripts/the_other_island.tef').scripts['main'])
 	next_blocking()
 
 
@@ -30,7 +31,10 @@ func next_blocking():
 	
 	for ins in instructions:
 		if ins is TEScript.IPlaySong:
-			TEAudio.play_song(ins.song_id, Global.definitions.transitions[ins.transition_id].duration)
+			Audio.play_song(ins.song_id, TE.defs.transitions[ins.transition_id].duration)
+		
+		elif ins is TEScript.IPlaySound:
+			Audio.play_sound(ins.sound_id)
 			
 		elif ins is TEScript.INvl:
 			_replace_view(nvl_view.instantiate())
@@ -46,22 +50,23 @@ func next_blocking():
 		$View.pause(blocking.duration)
 		
 	elif blocking is TEScript.IBlock:
-		$View.show_block(Global.get_block(blocking.blockfile_id, blocking.block_id))
+		$View.show_block(Blocks.find(blocking.blockfile_id, blocking.block_id))
 		_unhide_ui()
 		
 	elif blocking is TEScript.IBG:
-		var tween = $VNStage.set_background(blocking.bg_id, Global.definitions.transitions[blocking.transition_id])
+		var tween = $VNStage.set_background(blocking.bg_id, TE.defs.transitions[blocking.transition_id])
 		if tween != null:
 			$View.wait_tween(tween)
 			
 	elif blocking is TEScript.IHideUI:
-		var tween: Tween = _hide_ui(Global.definitions.transitions[blocking.transition_id].duration)
+		var tween: Tween = _hide_ui(TE.defs.transitions[blocking.transition_id].duration)
 		$View.wait_tween(tween)
 		
 	else:
 		push_error('cannot handle blocking instruction: %s' % [blocking])
 
 
+# replaces the current View with a new one, copying state over
 func _replace_view(new_view: Node):
 	var old_view: Node = $View
 	
@@ -78,17 +83,17 @@ func _replace_view(new_view: Node):
 	old_view.queue_free()
 
 
+# hides the currently active View, returning the Tween used in the transition
 func _hide_ui(duration: float) -> Tween:
 	var tween = create_tween()
 	
-	tween.tween_property($VNControls, 'modulate:a', 0.0, duration)
-	tween.parallel().tween_property($View, 'modulate:a', 0.0, duration)
+	tween.tween_property($View, 'modulate:a', 0.0, duration)
 	
 	return tween
 
 
+# unhides the currently active View
 func _unhide_ui():
-	$VNControls.modulate.a = 1.0
 	$View.modulate.a = 1.0
 
 
@@ -100,10 +105,13 @@ func _process(delta):
 	if mouse_advancing and !Input.is_action_pressed('game_advance_mouse'):
 		mouse_advancing = false
 	
+	# notify View of user input by calling either game_advanced or game_not_advanced
 	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
 		$View.game_advanced(delta)
 	else:
 		$View.game_not_advanced(delta)
+	
+	# move to next block, move to next line, or just update state is neither is requested
 	
 	if $View.is_next_block_requested():
 		next_blocking()
@@ -125,7 +133,7 @@ func _gui_input(event):
 
 
 func _quit():
-	var popup = TEPopups.warning_dialog(Global.ui_strings['game_quit_game'])
+	var popup = Popups.warning_dialog(TE.ui_strings['game_quit_game'])
 	popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
 
 

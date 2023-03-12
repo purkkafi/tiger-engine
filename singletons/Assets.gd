@@ -20,7 +20,7 @@ func _ready():
 
 
 static func in_lang(path: String) -> String:
-	return 'res://assets/lang/' + Global.language.id + path
+	return 'res://assets/lang/' + TE.language.id + path
 
 
 # calculates the hash of every Block in the given BlockFile
@@ -85,7 +85,7 @@ class Cache:
 	func _set_hash(resource: Resource):
 		if hash_function == null:
 			return
-		print('[Assets/%s] calculated hash of: %s' % [id, resource.resource_path])
+		TE.log_info('[Assets/%s] calculated hash of: %s' % [id, resource.resource_path])
 		hashes[resource.resource_path] = hash_function.call(resource)
 	
 	
@@ -123,7 +123,7 @@ class Cache:
 			if entry.path == path:
 				return
 		
-		print('[Assets/%s] queued: %s' % [id, path])
+		TE.log_info('[Assets/%s] queued: %s' % [id, path])
 		var err = ResourceLoader.load_threaded_request(path)
 		_add_to_cache(Entry.new(path))
 		return err
@@ -136,12 +136,12 @@ class Cache:
 	func get_resource(path: String):
 		for entry in cache:
 			if entry.path == path and entry.resource != null:
-				print('[Assets/%s] get cached: %s' % [id, path])
+				TE.log_info('[Assets/%s] get cached: %s' % [id, path])
 				return entry.resource
 		
 		# resource was not queued, load and add to cache
 		if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			print('[Assets/%s] get not queued: %s ' % [id, path])
+			TE.log_info('[Assets/%s] get not queued: %s ' % [id, path])
 			var resource = ResourceLoader.load(path)
 			var entry = Entry.new(path)
 			entry.resource = resource
@@ -150,9 +150,9 @@ class Cache:
 			return resource
 		else: # queued or already loaded, get it now anyway
 			if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED:
-				print('[Assets/%s] get loaded: %s' % [id, path])
+				TE.log_info('[Assets/%s] get loaded: %s' % [id, path])
 			else:
-				print('[Assets/%s] get loading in progress: %s' % [id, path])
+				TE.log_info('[Assets/%s] get loading in progress: %s' % [id, path])
 			var resource = ResourceLoader.load_threaded_get(path)
 			var entry = Entry.new(path)
 			entry.resource = resource

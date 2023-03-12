@@ -44,7 +44,7 @@ func adjust_size(controls: VNControls):
 	var w: float = width
 	var h: float = height
 	
-	if Global.is_large_gui():
+	if TE.is_large_gui():
 		w += mobile_offset_x
 		h += mobile_offset_y
 	

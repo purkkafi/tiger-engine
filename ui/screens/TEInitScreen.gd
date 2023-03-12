@@ -5,7 +5,7 @@ class_name TEInitScreen extends ColorRect
 # otherwise, the title screen will be displayed
 
 
-var title_screen: PackedScene = load(Global.options.title_screen)
+@onready var title_screen: PackedScene = load(TE.opts.title_screen)
 
 
 func _ready():
@@ -13,7 +13,7 @@ func _ready():
 	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
 		get_tree().quit(TestRunner.run_tests())
 	
-	self.color = Global.options.background_color
+	self.color = TE.opts.background_color
 	
 	# set initial window settings
 	get_window().min_size = Vector2i(962, 542)
@@ -22,34 +22,34 @@ func _ready():
 	# load translation package from the file 'translation.zip' if it exists
 	if FileAccess.file_exists('res://translation.zip'):
 		var result = ProjectSettings.load_resource_pack('res://translation.zip', true)
-		Global.log_info('translation package loaded, ok: ' + str(result))
+		TE.log_info('translation package loaded, ok: ' + str(result))
 	
 	# read language options
-	Global.all_languages = TEInitScreen.get_languages()
+	TE.all_languages = TEInitScreen.get_languages()
 	
 	# if settings file exists, read it and switch to the specified language
 	if Settings.has_settings_file():
-		Global.settings = Settings.load_from_file()
+		TE.settings = Settings.load_from_file()
 		# save immediately in case settings were modified due to
 		# the file being from an older version of the game
-		Global.settings.save_to_file()
-		Global.settings.change_settings()
+		TE.settings.save_to_file()
+		TE.settings.change_settings()
 		
-		for lang in Global.all_languages:
-			if lang.id == Global.settings.lang_id:
-				Global.load_language(lang)
-				Global.switch_scene(title_screen.instantiate())
+		for lang in TE.all_languages:
+			if lang.id == TE.settings.lang_id:
+				TE.load_language(lang)
+				TE.switch_scene(title_screen.instantiate())
 				return
 		
-		Global.log_error('language specified in settings not found: %s' % [Global.settings.lang_id])
+		TE.log_error('language specified in settings not found: %s' % [TE.settings.lang_id])
 	else:
 		# setup default settings and show the user the language choice
-		Global.settings = Settings.default_settings()
+		TE.settings = Settings.default_settings()
 		display_language_choice()
 
 
 func display_language_choice():
-	for lang in Global.all_languages:
+	for lang in TE.all_languages:
 		var btn = Button.new()
 		btn.text = lang.full_name()
 		btn.set_h_size_flags(Control.SIZE_SHRINK_CENTER) 
@@ -59,10 +59,10 @@ func display_language_choice():
 
 
 func _language_selected(selected: Lang):
-	Global.load_language(selected)
-	Global.settings.lang_id = selected.id
-	Global.settings.save_to_file()
-	Global.switch_scene(title_screen.instantiate())
+	TE.load_language(selected)
+	TE.settings.lang_id = selected.id
+	TE.settings.save_to_file()
+	TE.switch_scene(title_screen.instantiate())
 
 
 # returns all defined languages

@@ -22,46 +22,46 @@ var animating_out_callback: Callable = func(): pass
 
 
 func _ready():
-	Global.ui_strings.translate(self)
+	TE.ui_strings.translate(self)
 	
-	if Global.is_mobile(): # no fullscreen setting on mobile
+	if TE.is_mobile(): # no fullscreen setting on mobile
 		window_mode_container.get_parent().remove_child(window_mode_container)
 	else:
-		window_options.add_item(Global.ui_strings.settings_window_fullscreen, WM_FULLSCREEN)
-		window_options.add_item(Global.ui_strings.settings_window_windowed, WM_WINDOWED)
+		window_options.add_item(TE.ui_strings.settings_window_fullscreen, WM_FULLSCREEN)
+		window_options.add_item(TE.ui_strings.settings_window_windowed, WM_WINDOWED)
 		
-		if Global.settings.fullscreen:
+		if TE.settings.fullscreen:
 			window_options.selected = WM_FULLSCREEN
 		else:
 			window_options.selected = WM_WINDOWED
 	
-	music_volume.value = Global.settings.music_volume
+	music_volume.value = TE.settings.music_volume
 	music_volume.connect('value_changed', Callable(Settings, 'change_music_volume'))
 	
-	sfx_volume.value = Global.settings.sfx_volume
+	sfx_volume.value = TE.settings.sfx_volume
 	sfx_volume.connect('value_changed', Callable(Settings, 'change_sfx_volume'))
 	
-	text_speed.value = Global.settings.text_speed
-	dyn_text_speed.button_pressed = Global.settings.dynamic_text_speed
+	text_speed.value = TE.settings.text_speed
+	dyn_text_speed.button_pressed = TE.settings.dynamic_text_speed
 	
 	var selected_lang_index = null
-	for i in len(Global.all_languages):
-		var lang = Global.all_languages[i]
+	for i in len(TE.all_languages):
+		var lang = TE.all_languages[i]
 		lang_options.add_item(lang.full_name(), i)
-		if lang == Global.language:
+		if lang == TE.language:
 			selected_lang_index = i
 	lang_options.selected = selected_lang_index
 	
 	# no GUI scale setting on mobile
-	if Global.is_mobile():
+	if TE.is_mobile():
 		gui_scale_container.get_parent().remove_child(gui_scale_container)
 	else:
-		gui_scale.selected = Global.settings.gui_scale
+		gui_scale.selected = TE.settings.gui_scale
 	
 	save_exit.grab_focus()
 	
 	await get_tree().process_frame
-	Global.options.animate_overlay_in.call(self)
+	TE.opts.animate_overlay_in.call(self)
 
 
 func disable_language():
@@ -69,8 +69,8 @@ func disable_language():
 
 
 func _language_selected(index):
-	Settings.change_language(Global.all_languages[index].id)
-	Global.ui_strings.translate(Global.current_scene)
+	Settings.change_language(TE.all_languages[index].id)
+	TE.ui_strings.translate(TE.current_scene)
 
 
 func _window_mode_selected(selection):
@@ -87,26 +87,26 @@ func _gui_scale_selected(selection):
 
 
 func _save_exit():
-	Global.settings.music_volume = music_volume.value
-	Global.settings.sfx_volume = sfx_volume.value
-	Global.settings.text_speed = text_speed.value
-	Global.settings.dynamic_text_speed = dyn_text_speed.button_pressed
-	Global.settings.lang_id = Global.language.id
+	TE.settings.music_volume = music_volume.value
+	TE.settings.sfx_volume = sfx_volume.value
+	TE.settings.text_speed = text_speed.value
+	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
+	TE.settings.lang_id = TE.language.id
 	
-	if not Global.is_mobile():
-		Global.settings.fullscreen = window_options.selected == WM_FULLSCREEN
-		Global.settings.gui_scale = gui_scale.selected as Settings.GUIScale
+	if not TE.is_mobile():
+		TE.settings.fullscreen = window_options.selected == WM_FULLSCREEN
+		TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	
-	Global.settings.save_to_file()
+	TE.settings.save_to_file()
 	_exit()
 
 
 func _discard():
 	# switch language back in case it was changed
-	if Global.settings.change_language(Global.settings.lang_id):
-		Global.ui_strings.translate(Global.current_scene)
+	if TE.settings.change_language(TE.settings.lang_id):
+		TE.ui_strings.translate(TE.current_scene)
 	# reset changes by implementing saved settings
-	Global.settings.change_settings()
+	TE.settings.change_settings()
 	_exit()
 
 
@@ -115,7 +115,7 @@ func _exit():
 	discard.disabled = true
 	save_exit.disabled = true
 	
-	var tween = Global.options.animate_overlay_out.call(self)
+	var tween = TE.opts.animate_overlay_out.call(self)
 	if tween == null:
 		_animated_out()
 	else:

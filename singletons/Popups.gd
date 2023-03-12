@@ -13,7 +13,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
-	popup.get_ok_button().text = Global.ui_strings['general_ok']
+	popup.get_ok_button().text = TE.ui_strings['general_ok']
 	
 	var margins: MarginContainer = MarginContainer.new()
 	margins.custom_minimum_size = Vector2(600, 0)
@@ -21,7 +21,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.register_text_enter(edit)
 	popup.add_child(margins)
 	
-	Global.current_scene.add_child(popup)
+	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
 	edit.grab_focus()
 	
@@ -32,10 +32,10 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 func warning_dialog(msg: String) -> ConfirmationDialog:
 	var popup: ConfirmationDialog = ConfirmationDialog.new()
 	popup.unresizable = true
-	popup.title = Global.ui_strings['general_warning']
+	popup.title = TE.ui_strings['general_warning']
 	popup.exclusive = true
-	popup.get_ok_button().text = Global.ui_strings['general_ok']
-	popup.get_cancel_button().text = Global.ui_strings['general_cancel']
+	popup.get_ok_button().text = TE.ui_strings['general_ok']
+	popup.get_cancel_button().text = TE.ui_strings['general_cancel']
 	
 	var margins: MarginContainer = MarginContainer.new()
 	var label: Label = Label.new()
@@ -43,7 +43,7 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	margins.add_child(label)
 	popup.add_child(margins)
 	
-	Global.current_scene.add_child(popup)
+	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
 	
 	# make the less destructive option the default
@@ -58,13 +58,13 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
-	popup.get_ok_button().text = Global.ui_strings['general_ok']
+	popup.get_ok_button().text = TE.ui_strings['general_ok']
 	
 	var margins = MarginContainer.new()
 	margins.add_child(content)
 	popup.add_child(margins)
 	
-	Global.current_scene.add_child(popup)
+	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
 	
 	return popup
@@ -82,27 +82,27 @@ enum GameError {
 # switches away from the current scene and shows the popup
 # the user is given the option to return to the title screen by pressing OK
 func error_dialog(game_error: GameError) -> AcceptDialog:
-	Global.switch_scene(preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate())
+	TE.switch_scene(preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate())
 	await get_tree().process_frame
 	var label: Label = Label.new()
 	
 	match game_error:
 		GameError.BAD_SAVE:
-			label.text = Global.ui_strings.error_bad_save
+			label.text = TE.ui_strings.error_bad_save
 		GameError.SCRIPT_ERROR:
-			label.text += Global.ui_strings.error_script
+			label.text += TE.ui_strings.error_script
 		GameError.TEST_ERROR:
 			label.text = 'This is a test error. It should only be displayed for debug purposes.'
 		_:
-			Global.log_error('unknown game error shown: %s' % [game_error])
+			TE.log_error('unknown game error shown: %s' % [game_error])
 			label.text = str(game_error)
 	
-	var dialog: AcceptDialog = info_dialog(Global.ui_strings.general_error, label)
+	var dialog: AcceptDialog = info_dialog(TE.ui_strings.general_error, label)
 	dialog.connect('confirmed', Callable(self, '_to_titlescreen'))
 	
 	return dialog
 
 
 func _to_titlescreen():
-	var title_screen = load(Global.options.title_screen).instantiate()
-	Global.switch_scene(title_screen)
+	var title_screen = load(TE.opts.title_screen).instantiate()
+	TE.switch_scene(title_screen)

@@ -32,7 +32,7 @@ func adjust_size(controls: VNControls):
 	$Scroll.position.y = top_margin
 	
 	var w = width
-	if Global.is_large_gui():
+	if TE.is_large_gui():
 		w += mobile_offset_x
 	$Scroll.size.x = w
 	$Scroll.position.x = (1920 - w)/2

@@ -3,7 +3,7 @@ class_name Options extends Resource
 
 
 # path to the title screen scene
-var title_screen: String
+var title_screen: String = 'res://tiger-engine/ui/screens/TENoTitleScreen.tscn'
 # background color of various screens
 var background_color: Color = Color.BLACK
 # methods used to animate overlays in and out, default to nothing
