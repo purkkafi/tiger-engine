@@ -17,6 +17,8 @@ var sounds: Dictionary = {}
 var unlockables: Array[String] = []
 # ids of unlockables that should be unlocked automatically
 var unlocked_from_start: Array[String] = []
+# map of song ids to Array of unlockable ids that should be unlocked when the song is played
+var unlocked_by_song: Dictionary = {}
 # a map of speaker ids to Speaker objects
 var speakers: Dictionary = {}
 

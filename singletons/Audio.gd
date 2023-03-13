@@ -30,8 +30,13 @@ func play_song(new_song_id: String, duration: float):
 	
 	$NextSongPlayer.play()
 	
-	# wrong timing ?
+	# wrong timing ? investigate?
 	music_tween.parallel().tween_callback(Callable(self, '_swap_song_trans_finished')).set_delay(duration)
+	
+	# unlock possible unlockable
+	if song_id in TE.defs.unlocked_by_song:
+		for unlockable in TE.defs.unlocked_by_song[song_id]:
+			TE.settings.unlock(unlockable)
 
 
 func _set_song_volume(val: float):

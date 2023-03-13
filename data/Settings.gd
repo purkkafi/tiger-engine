@@ -31,6 +31,7 @@ func unlock(unlockable_id: String):
 		return false
 	if not unlockable_id in unlocked:
 		unlocked[unlockable_id] = true
+		TE.log_info('unlocked %s' % unlockable_id)
 		save_to_file()
 
 
