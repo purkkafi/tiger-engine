@@ -15,7 +15,9 @@ var state: State # current state
 var waiting_tween: Tween = null # tween being waited for
 
 
-const LINE_SWITCH_COOLDOWN: float = 0.1# 0.15 # initial threshold for line_switch_delta
+# TODO implement setting for skip speed?
+const LINE_SWITCH_COOLDOWN: float = 0.1 # cooldown for moving to next line on speedup
+const SKIP_TWEEN_SCALE: float = 10.0 # factor to multiply tweening speed with
 const SPEEDUP_THRESHOLD_FAST: float = 0.25 # treshold to start speeding up
 const SPEEDUP_THRESHOLD_FASTER: float = 1.15 # treshold to start speeding up faster
 const LINE_END = '[next] ▶[/next]' # text to insert at the end of every line
@@ -35,7 +37,9 @@ enum Speedup {
 	# to WAITING_ADVANCE i.e. user has to release spacebar and/or mouse and then press it again)
 	FAST,
 	# accelerate tweens, scroll to end of line & set state to WAITING_LINE_SWITCH_DELTA
-	FASTER 
+	FASTER,
+	# should be as fast as FASTER
+	SKIP
 }
 
 
@@ -45,7 +49,7 @@ enum State {
 	WAITING_ADVANCE, # at end of line, waiting for user to advance (press spacebar/mouse)
 	WAITING_UNADVANCE, # at end of line, waiting for user to not advance (release spacebar/mouse)
 	WAITING_LINE_SWITCH_COOLDOWN, # at an end of line, waiting for cooldown
-	READY_TO_PROCEED # can proceed to next line/block
+	READY_TO_PROCEED, # can proceed to next line/block
 }
 
 
@@ -74,6 +78,8 @@ func _is_waiting():
 	if waiting_tween != null and waiting_tween.is_running():
 		return true
 	if pause_delta > 0:
+		return true
+	if line_switch_delta > 0:
 		return true
 	return false
 
@@ -128,7 +134,7 @@ func next_line() -> void:
 		Speedup.NORMAL, Speedup.FAST:
 			# proceed normally
 			state = State.SCROLLING_TEXT
-		Speedup.FASTER:
+		Speedup.FASTER, Speedup.SKIP:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
 			line_switch_delta = LINE_SWITCH_COOLDOWN
@@ -150,7 +156,7 @@ func _to_end_of_line():
 func update_state(delta: float):
 	# if pausing, reduce counter
 	if pause_delta > 0:
-		if speedup == Speedup.FASTER:
+		if speedup == Speedup.FASTER or speedup == Speedup.SKIP:
 			pause_delta = 0
 			
 		pause_delta -= delta
@@ -160,18 +166,18 @@ func update_state(delta: float):
 		return
 	
 	if waiting_tween != null:
-		if speedup == Speedup.FASTER:
-			waiting_tween.set_speed_scale(5)
+		if speedup == Speedup.FASTER or speedup == Speedup.SKIP:
+			waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
 		
 		if waiting_tween.is_running():
 			return
 	
 	# if waiting for line switch cooldown, reduce counter
-	if state == State.WAITING_LINE_SWITCH_COOLDOWN:
+	if state == State.WAITING_LINE_SWITCH_COOLDOWN or speedup == Speedup.SKIP:
 		line_switch_delta -= delta
 		if line_switch_delta < 0:
 			state = State.READY_TO_PROCEED
-			return
+		return
 	
 	var label: RichTextLabel = _current_label()
 	var text_speed: float = 20 + 50*TE.settings.text_speed
@@ -230,7 +236,8 @@ func game_advanced(delta: float):
 # should be called on frames when user is not advancing the game
 func game_not_advanced(_delta: float):
 	advance_held = 0.0
-	speedup = Speedup.NORMAL
+	if speedup != Speedup.SKIP:
+		speedup = Speedup.NORMAL
 	
 	# on FAST speedup, wait for user to unadvance first and then to advance
 	# i.e. raise spacebar to end speedup and then press it again
@@ -263,6 +270,26 @@ func copy_state_from(old: View):
 	speedup = old.speedup
 	state = old.state
 	waiting_tween = old.waiting_tween
+
+
+# returns whether the skip button should act as a toggle button during this view
+# subclasses should override to return a constant value and then override
+# either skip_toggled() or skip_pressed()
+# the default implementation toggles Speedup to SKIP and back
+func is_skip_toggleable() -> bool:
+	return true
+
+
+func skip_toggled(on: bool):
+	if on:
+		speedup = Speedup.SKIP
+		_to_end_of_line()
+	else:
+		speedup = Speedup.NORMAL
+
+
+func skip_pressed():
+	TE.log_error("view doesn't implement skip_pressed()")
 
 
 # internal implementation; Views should override to control how lines are shown

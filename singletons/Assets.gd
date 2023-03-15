@@ -17,6 +17,7 @@ var permanent: Cache = Cache.new('permanent', 99999)
 
 func _ready():
 	blockfiles.hash_function = Callable(self, '_blockfile_hash')
+	scripts.hash_function = Callable(self, '_scriptfile_hash')
 
 
 static func in_lang(path: String) -> String:
@@ -29,6 +30,15 @@ func _blockfile_hash(blockfile: BlockFile) -> Dictionary:
 	for block_id in blockfile.blocks.keys():
 		var hashcode: String = blockfile.blocks[block_id].resolve_hash()
 		hashes[block_id] = hashcode
+	return hashes
+
+
+# calculates the hash of every Script in the given ScriptFile
+func _scriptfile_hash(scriptfile: ScriptFile) -> Dictionary:
+	var hashes: Dictionary = {}
+	for script_id in scriptfile.scripts:
+		var hashcode: String = scriptfile.scripts[script_id].hashcode()
+		hashes[hashcode] = hashcode
 	return hashes
 
 

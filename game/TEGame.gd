@@ -21,6 +21,7 @@ func _ready():
 	MobileUI.initialize_gui(self)
 	
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
+	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
 	
 	next_blocking()
 
@@ -77,6 +78,7 @@ func _replace_view(new_view: Node):
 	
 	new_view.name = old_view.name
 	new_view.adjust_size($VNControls)
+	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
 	
@@ -139,3 +141,10 @@ func _quit():
 
 func _do_quit():
 	get_tree().quit()
+
+
+func _skip():
+	if $View.is_skip_toggleable():
+		$View.skip_toggled($VNControls.btn_skip.button_pressed)
+	else:
+		$View.skip_pressed()
