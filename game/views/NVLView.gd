@@ -26,16 +26,16 @@ func _ready():
 	super._ready()
 
 
-func adjust_size(controls: VNControls):
+func adjust_size(controls: VNControls, scale: Settings.GUIScale):
 	var controls_height = controls.size.y if controls != null else 0.0
-	$Scroll.size.y = (1080 - controls_height - top_margin - bottom_margin)
+	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin
 	
 	var w = width
-	if TE.is_large_gui():
+	if scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 	$Scroll.size.x = w
-	$Scroll.position.x = (1920 - w)/2
+	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2
 
 
 func _next_block():
@@ -64,4 +64,6 @@ func _next_line(line: String, _speaker: Definitions.Speaker = null):
 
 
 func _current_label() -> RichTextLabel:
+	if paragraphs.get_child_count() == 0:
+		return null
 	return paragraphs.get_child(-1)

@@ -1,12 +1,13 @@
-class_name SettingsOverlay extends PanelContainer
+class_name SettingsOverlay extends Overlay
 
 
 const WM_FULLSCREEN: int = 0
 const WM_WINDOWED: int = 1
 
 
-# callback for when the overlay is closed
-var animating_out_callback: Callable = func(): pass
+# whether changing language should be disabled
+var language_disabled: bool = false
+
 @onready var scroll: ScrollContainer = %Scroll
 @onready var window_mode_container: HBoxContainer = %WindowModeContainer
 @onready var window_options: OptionButton = %WindowOptions
@@ -21,9 +22,7 @@ var animating_out_callback: Callable = func(): pass
 @onready var discard: Button = %Discard
 
 
-func _ready():
-	TE.ui_strings.translate(self)
-	
+func _initialize_overlay():
 	if TE.is_mobile(): # no fullscreen setting on mobile
 		window_mode_container.get_parent().remove_child(window_mode_container)
 	else:
@@ -52,6 +51,10 @@ func _ready():
 			selected_lang_index = i
 	lang_options.selected = selected_lang_index
 	
+	# language setting can be disabled when overlay is created in-game
+	if language_disabled:
+		lang_options.disabled = true
+	
 	# no GUI scale setting on mobile
 	if TE.is_mobile():
 		gui_scale_container.get_parent().remove_child(gui_scale_container)
@@ -59,9 +62,6 @@ func _ready():
 		gui_scale.selected = TE.settings.gui_scale
 	
 	save_exit.grab_focus()
-	
-	await get_tree().process_frame
-	TE.opts.animate_overlay_in.call(self)
 
 
 func disable_language():
@@ -111,17 +111,6 @@ func _discard():
 
 
 func _exit():
-	animating_out_callback.call()
 	discard.disabled = true
 	save_exit.disabled = true
-	
-	var tween = TE.opts.animate_overlay_out.call(self)
-	if tween == null:
-		_animated_out()
-	else:
-		tween.tween_callback(Callable(self, '_animated_out'))
-
-
-func _animated_out():
-	get_parent().remove_child(self)
-	queue_free()
+	_close_overlay()

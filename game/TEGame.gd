@@ -1,11 +1,13 @@
 class_name TEGame extends Control
 # main class for running the game
-# TODO keyboard input
+# handles user input and communication between different controls and objects
+# that contain game state & lgoic
 
 
 var vm: TEScriptVM # virtual machine that runs the game script
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 # default views
+var overlay_active: bool = false # whether there is an overlay and game should be paused
 var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
 var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
@@ -19,9 +21,11 @@ func run_script(script_file: ScriptFile):
 func _ready():
 	TE.ui_strings.translate(self)
 	MobileUI.initialize_gui(self)
+	MobileUI.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
 	
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
 	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
+	$VNControls.btn_settings.connect('pressed', Callable(self, '_settings'))
 	
 	next_blocking()
 
@@ -77,7 +81,7 @@ func _replace_view(new_view: Node):
 	move_child(new_view, old_pos)
 	
 	new_view.name = old_view.name
-	new_view.adjust_size($VNControls)
+	new_view.adjust_size($VNControls, TE.settings.gui_scale)
 	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
@@ -85,12 +89,16 @@ func _replace_view(new_view: Node):
 	old_view.queue_free()
 
 
+func _gui_scale_changed(scale: Settings.GUIScale):
+	# needs to happen in this order to ensure View sees the updated VNControls size
+	$VNControls._set_gui_size(scale)
+	$View.adjust_size($VNControls, scale)
+
+
 # hides the currently active View, returning the Tween used in the transition
 func _hide_ui(duration: float) -> Tween:
 	var tween = create_tween()
-	
 	tween.tween_property($View, 'modulate:a', 0.0, duration)
-	
 	return tween
 
 
@@ -106,6 +114,9 @@ func _process(delta):
 	# TODO: was from old Godot 3 version, might be fixed now?
 	if mouse_advancing and !Input.is_action_pressed('game_advance_mouse'):
 		mouse_advancing = false
+	
+	if overlay_active:
+		return
 	
 	# notify View of user input by calling either game_advanced or game_not_advanced
 	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
@@ -134,6 +145,16 @@ func _gui_input(event):
 		mouse_advancing = false
 
 
+func before_overlay():
+	overlay_active = true
+	$VNControls.set_buttons_disabled(true)
+
+
+func after_overlay():
+	overlay_active = false
+	$VNControls.set_buttons_disabled(false)
+
+
 func _quit():
 	var popup = Popups.warning_dialog(TE.ui_strings['game_quit_game'])
 	popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
@@ -148,3 +169,13 @@ func _skip():
 		$View.skip_toggled($VNControls.btn_skip.button_pressed)
 	else:
 		$View.skip_pressed()
+
+
+func _settings():
+	var settings: SettingsOverlay = preload('res://tiger-engine/ui/screens/SettingsOverlay.tscn').instantiate()
+	settings.language_disabled = true
+	# TODO: considering enabling switching language in-game
+	# probably requires restarting the current block, which could be too unsatisfying
+	settings.animating_out_callback = func(): after_overlay()
+	before_overlay()
+	add_child(settings)

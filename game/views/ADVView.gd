@@ -39,19 +39,19 @@ func _ready():
 	super._ready()
 
 
-func adjust_size(controls: VNControls):
+func adjust_size(controls: VNControls, scale: Settings.GUIScale):
 	var controls_height: float = controls.size.y if controls != null else 0.0
 	var w: float = width
 	var h: float = height
 	
-	if TE.is_large_gui():
+	if scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 		h += mobile_offset_y
 	
 	box.size.x = w
 	box.size.y = h
-	box.position.x = (1920 - w)/2 
-	box.position.y = 1080 - h - controls_height
+	box.position.x = (TE.SCREEN_WIDTH - w)/2 
+	box.position.y = TE.SCREEN_HEIGHT - h - controls_height
 	
 	speaker_panel.position.x = box.position.x + speaker_offset_x
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y

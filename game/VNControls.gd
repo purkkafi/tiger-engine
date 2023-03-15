@@ -23,6 +23,11 @@ var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
 
 
 func _ready():
+	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
+	_set_gui_size(TE.settings.gui_scale)
+
+
+func _set_gui_size(scale: Settings.GUIScale):
 	# centers controls to bottom center of the screen and sets sizes:
 	# width is 'width' as defined in 'VNControlsPanel'
 	# height is 'bottom_offset' + 'height' + 'top_offset'
@@ -30,7 +35,7 @@ func _ready():
 	
 	var w: float = width
 	var h: float = height
-	if TE.is_large_gui():
+	if scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 		h += mobile_offset_y
 	
@@ -39,10 +44,8 @@ func _ready():
 	
 	self.size.x = w
 	self.size.y = bottom_offset + h + top_offset
-	self.position.x = (1920 - w)/2
-	self.position.y = 1080 - bottom_offset - h
-	
-	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
+	self.position.x = (TE.SCREEN_WIDTH - w)/2
+	self.position.y = TE.SCREEN_HEIGHT - bottom_offset - h
 
 
 func set_buttons_disabled(disabled: bool):

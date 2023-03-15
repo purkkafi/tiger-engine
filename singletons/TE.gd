@@ -17,6 +17,11 @@ var current_scene: Node = null
 var all_languages: Array[Lang] = []
 
 
+# screen size constants
+const SCREEN_WIDTH = 1920
+const SCREEN_HEIGHT = 1080
+
+
 func _ready():
 	# load options, fall back to defaults if not successfull
 	opts = load('res://assets/options.tef')

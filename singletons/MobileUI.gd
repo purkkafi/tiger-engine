@@ -5,6 +5,13 @@ var large_theme: Theme
 const FONT_SIZE_INCREASE: int = 10
 
 
+# signal emitted when change_gui_scale() is called
+# clients can connect to this if they need to do their own calculations
+# about the sizes of their UI
+# it will be called with the relevant Settings.GUIScale value
+signal gui_scale_changed
+
+
 # constructs a theme with larger UI elements
 static func _construct_large_theme():
 	var default: Theme = load(ProjectSettings.get_setting('gui/theme/custom'))
@@ -27,6 +34,7 @@ func initialize_gui(node: Control):
 
 # force changes GUI scale
 func change_gui_scale(node: Control, scale: Settings.GUIScale):
+	emit_signal('gui_scale_changed', scale)
 	if scale == Settings.GUIScale.LARGE:
 		if large_theme == null:
 			large_theme = MobileUI._construct_large_theme()

@@ -57,7 +57,8 @@ enum State {
 # decided to set its size. will be called with a null parameter if the View
 # is run directly in the editor; in this case, the controls should be treated
 # as if they had the height 0
-func adjust_size(_controls: VNControls) -> void:
+# automatically connected to MobileUI's relevant signal by TEGame
+func adjust_size(_controls: VNControls, scale: Settings.GUIScale) -> void:
 	pass
 
 
@@ -178,6 +179,8 @@ func update_state(delta: float):
 		if line_switch_delta < 0:
 			state = State.READY_TO_PROCEED
 		return
+	else:
+		line_switch_delta = 0
 	
 	var label: RichTextLabel = _current_label()
 	var text_speed: float = 20 + 50*TE.settings.text_speed
@@ -312,7 +315,7 @@ func _current_label():
 func _ready():
 	# do this if View is run directly in the editor
 	if self in get_tree().root.get_children():
-		adjust_size(null)
+		adjust_size(null, Settings.GUIScale.NORMAL)
 		# display debug text
 		_next_line('Kissat ovat söpöjä ja hauskoja. Kissat ovat söpöjä ja hauskoja. '.repeat(4))
 		_current_label().visible_characters = -1
