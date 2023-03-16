@@ -35,6 +35,8 @@ func compile_script(script_tag: Tag):
 				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))
 			'fg':
 				ins.append(TEScript.IFG.new(tag.get_string_at(0), tag.get_string_at(1)))
+			'meta':
+				ins.append(TEScript.IMeta.new(tag.get_dict()))
 			_:
 				push_error('unknown instruction: %s' % [tag])
 	

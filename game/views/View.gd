@@ -58,7 +58,7 @@ enum State {
 # is run directly in the editor; in this case, the controls should be treated
 # as if they had the height 0
 # automatically connected to MobileUI's relevant signal by TEGame
-func adjust_size(_controls: VNControls, scale: Settings.GUIScale) -> void:
+func adjust_size(_controls: VNControls, _gui_scale: Settings.GUIScale) -> void:
 	pass
 
 
@@ -309,6 +309,13 @@ func _next_block():
 # should return the RichTextLabel containing the current line
 func _current_label():
 	TE.log_error("view doesn't implement _current_label()")
+
+
+# returns the current state of this View as a dict
+func get_state() -> Dictionary:
+	return {
+		'line_index' : line_index
+	}
 
 
 # subclasses should call this via super if they override _ready()

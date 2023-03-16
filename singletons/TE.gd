@@ -65,6 +65,10 @@ func load_language(new_lang: Lang):
 	
 	if !FileAccess.file_exists(save.path()):
 		save.write_saves()
+		savefile = save
+	else:
+		savefile = load(save.path())
+		savefile.lang_id = language.id
 
 
 func load_from_save(save: Dictionary):

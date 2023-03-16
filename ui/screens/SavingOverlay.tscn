@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3 uid="uid://c85avq4erlxlg"]
+
+[ext_resource type="Script" path="res://tiger-engine/ui/screens/SavingOverlay.gd" id="2_o3abm"]
+
+[node name="Container" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 200.0
+offset_top = 100.0
+offset_right = -200.0
+offset_bottom = -100.0
+script = ExtResource("2_o3abm")
+
+[node name="Margins" type="MarginContainer" parent="."]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margins"]
+layout_mode = 2
+
+[node name="TopRow" type="HBoxContainer" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="Margins/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"Header"
+
+[node name="HSeparator2" type="HSeparator" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="Saves" type="VBoxContainer" parent="Margins/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Tabs" type="TabContainer" parent="Margins/VBox/Saves"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"SaveTab"
+tab_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Margins/VBox"]
+layout_mode = 2
+
+[node name="BottomRow" type="HBoxContainer" parent="Margins/VBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="QuitGame" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%saving_quit_game%"
+
+[node name="ToTitle" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%saving_to_title%"
+
+[node name="Back" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%saving_back%"

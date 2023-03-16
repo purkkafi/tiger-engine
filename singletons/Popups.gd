@@ -13,13 +13,15 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
-	popup.get_ok_button().text = TE.ui_strings['general_ok']
+	popup.get_ok_button().text = TE.ui_strings.general_ok
 	
 	var margins: MarginContainer = MarginContainer.new()
 	margins.custom_minimum_size = Vector2(600, 0)
 	margins.add_child(edit)
 	popup.register_text_enter(edit)
 	popup.add_child(margins)
+	
+	add_shadow(popup)
 	
 	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
@@ -43,6 +45,8 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	margins.add_child(label)
 	popup.add_child(margins)
 	
+	add_shadow(popup)
+	
 	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
 	
@@ -63,6 +67,8 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 	var margins = MarginContainer.new()
 	margins.add_child(content)
 	popup.add_child(margins)
+	
+	add_shadow(popup)
 	
 	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
@@ -106,3 +112,20 @@ func error_dialog(game_error: GameError) -> AcceptDialog:
 func _to_titlescreen():
 	var title_screen = load(TE.opts.title_screen).instantiate()
 	TE.switch_scene(title_screen)
+
+
+func add_shadow(to_node: Node):
+	var shadow: ColorRect = ColorRect.new()
+	shadow.position = Vector2(0, 0)
+	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shadow.color = TE.opts.shadow_color
+	
+	TE.current_scene.add_child(shadow)
+	to_node.connect('canceled', Callable(self, '_remove_shadow').bind(shadow))
+	to_node.connect('confirmed', Callable(self, '_remove_shadow').bind(shadow))
+
+
+func _remove_shadow(shadow: ColorRect):
+	shadow.get_parent().remove_child(shadow)
+	shadow.queue_free()

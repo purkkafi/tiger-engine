@@ -38,7 +38,7 @@ func _scriptfile_hash(scriptfile: ScriptFile) -> Dictionary:
 	var hashes: Dictionary = {}
 	for script_id in scriptfile.scripts:
 		var hashcode: String = scriptfile.scripts[script_id].hashcode()
-		hashes[hashcode] = hashcode
+		hashes[script_id] = hashcode
 	return hashes
 
 

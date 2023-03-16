@@ -8,6 +8,9 @@ var vm: TEScriptVM # virtual machine that runs the game script
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 # default views
 var overlay_active: bool = false # whether there is an overlay and game should be paused
+var save_name: Variant = null # name of the save the game was loaded from (may be null)
+var last_save: Variant = null # last save state (may be null if game has not been saved)
+var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
 var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
 var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
@@ -15,7 +18,7 @@ var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 # sets the 'main' script in the given ScriptFile to be run
 # call this before switching to the scene
 func run_script(script_file: ScriptFile):
-	vm = TEScriptVM.new(script_file.scripts['main'])
+	vm = TEScriptVM.new(script_file, 'main')
 
 
 func _ready():
@@ -26,6 +29,8 @@ func _ready():
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
 	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
 	$VNControls.btn_settings.connect('pressed', Callable(self, '_settings'))
+	$VNControls.btn_save.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.SAVE))
+	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
 	
 	next_blocking()
 
@@ -46,6 +51,9 @@ func next_blocking():
 		
 		elif ins is TEScript.IAdv:
 			_replace_view(adv_view.instantiate())
+		
+		elif ins is TEScript.IMeta:
+			game_name = TE.ui_strings[ins.game_name_uistring]
 		
 		else:
 			push_error('cannot handle non-blocking instruction: %s' % [ins])
@@ -89,10 +97,10 @@ func _replace_view(new_view: Node):
 	old_view.queue_free()
 
 
-func _gui_scale_changed(scale: Settings.GUIScale):
+func _gui_scale_changed(gui_scale: Settings.GUIScale):
 	# needs to happen in this order to ensure View sees the updated VNControls size
-	$VNControls._set_gui_size(scale)
-	$View.adjust_size($VNControls, scale)
+	$VNControls._set_gui_size(gui_scale)
+	$View.adjust_size($VNControls, gui_scale)
 
 
 # hides the currently active View, returning the Tween used in the transition
@@ -179,3 +187,45 @@ func _settings():
 	settings.animating_out_callback = func(): after_overlay()
 	before_overlay()
 	add_child(settings)
+
+
+func _save_load(mode):
+	var overlay: SavingOverlay = preload('res://tiger-engine/ui/screens/SavingOverlay.tscn').instantiate()
+	overlay.additional_navigation = true
+	overlay.mode = mode
+	if mode == SavingOverlay.SavingMode.SAVE:
+		overlay.save = create_save()
+		overlay.screenshot = await take_screenshot()
+		overlay.saved_callback = Callable(self, '_record_last_save')
+	overlay.warn_about_progress = Savefile.is_progress_made(last_save, create_save())
+	overlay.animating_out_callback = func(): after_overlay()
+	before_overlay()
+	add_child(overlay)
+
+
+func _record_last_save(save: Dictionary):
+	last_save = save
+	save_name = last_save['save_name']
+
+
+# produces a dict containing the current state
+func create_save() -> Dictionary:
+	var save = {
+		'vm' : vm.get_state(),
+		'view' : $View.get_state(),
+		'game_name' : game_name,
+		'game_version' : TE.opts.version_callback.call(),
+		'song_id' : Audio.song_id,
+		'save_name' : save_name,
+		'save_datetime' : null, # these 2 should be handled by saving screen
+		'save_utime' : null
+	}
+	return save
+
+
+func take_screenshot() -> Image:
+	await RenderingServer.frame_post_draw
+	var screenshot = get_viewport().get_texture().get_image()
+	screenshot.convert(SavingOverlay.THUMB_FORMAT)
+	screenshot.resize(SavingOverlay.THUMB_WIDTH, SavingOverlay.THUMB_HEIGHT, Image.INTERPOLATE_BILINEAR)
+	return screenshot

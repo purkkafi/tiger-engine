@@ -24,7 +24,7 @@ var language_disabled: bool = false
 
 func _initialize_overlay():
 	if TE.is_mobile(): # no fullscreen setting on mobile
-		window_mode_container.get_parent().remove_child(window_mode_container)
+		window_mode_container.visible = false
 	else:
 		window_options.add_item(TE.ui_strings.settings_window_fullscreen, WM_FULLSCREEN)
 		window_options.add_item(TE.ui_strings.settings_window_windowed, WM_WINDOWED)
@@ -57,7 +57,7 @@ func _initialize_overlay():
 	
 	# no GUI scale setting on mobile
 	if TE.is_mobile():
-		gui_scale_container.get_parent().remove_child(gui_scale_container)
+		gui_scale_container.visible = false
 	else:
 		gui_scale.selected = TE.settings.gui_scale
 	

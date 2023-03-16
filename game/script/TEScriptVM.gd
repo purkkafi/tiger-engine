@@ -2,12 +2,14 @@ class_name TEScriptVM
 # executes TEScript code
 
 
+var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
 
 
-func _init(te_script: TEScript):
-	self.current_script = te_script
+func _init(_scriptfile: ScriptFile, script: String):
+	self.scriptfile = _scriptfile
+	self.current_script = scriptfile.scripts[script]
 
 
 # returns the current instruction
@@ -52,3 +54,13 @@ func next_blocking() -> Variant:
 	var blocking = _current()
 	index += 1
 	return blocking
+
+
+# returns the current state as a dict
+func get_state() -> Dictionary:
+	var _hash = Assets.scripts.hashes[scriptfile.resource_path][current_script.name]
+	return {
+		'current_script' : current_script.name,
+		'index' : index,
+		'hash' : _hash
+	}

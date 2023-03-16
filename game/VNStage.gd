@@ -62,6 +62,7 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 	
 	return tween
 
+
 func _replace_with(layer: Node, new_layer: Node):
 	if layer.is_ancestor_of(new_layer):
 		layer.remove_child(new_layer)

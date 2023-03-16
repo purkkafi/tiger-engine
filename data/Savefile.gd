@@ -34,13 +34,14 @@ func set_save(save: Dictionary, thumb: Image, bank: int, index: int):
 	write_saves()
 
 
-func get_save(bank: int, index: int) -> Dictionary:
+# returns the save at the given index in the given bank, may be null for empty save
+func get_save(bank: int, index: int) -> Variant:
 	return banks[bank]['saves'][index]
 
 
 # returns the file path of the image containing thumbnails for the given bank
 func thumbs_path(bank: int) -> String:
-	return 'user://' + lang_id + '/thumbs_' + (bank as String) + '.png'
+	return 'user://' + lang_id + '/thumbs_' + (str(bank)) + '.png'
 
 
 # saves the contents of this savefile to disk
@@ -56,7 +57,7 @@ func path():
 # returns whether progress was made between saves
 # (generally meaning: are their gameplay-related values different)
 # if either argument is null (i.e. game was not saved), returns true
-func is_progress_made(save1, save2):
+static func is_progress_made(save1, save2):
 	if save1 == null or save2 == null:
 		return true
 	

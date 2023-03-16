@@ -27,7 +27,7 @@ func _ready():
 	_set_gui_size(TE.settings.gui_scale)
 
 
-func _set_gui_size(scale: Settings.GUIScale):
+func _set_gui_size(gui_scale: Settings.GUIScale):
 	# centers controls to bottom center of the screen and sets sizes:
 	# width is 'width' as defined in 'VNControlsPanel'
 	# height is 'bottom_offset' + 'height' + 'top_offset'
@@ -35,7 +35,7 @@ func _set_gui_size(scale: Settings.GUIScale):
 	
 	var w: float = width
 	var h: float = height
-	if scale == Settings.GUIScale.LARGE:
+	if gui_scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 		h += mobile_offset_y
 	

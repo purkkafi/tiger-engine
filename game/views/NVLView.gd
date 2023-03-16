@@ -26,13 +26,13 @@ func _ready():
 	super._ready()
 
 
-func adjust_size(controls: VNControls, scale: Settings.GUIScale):
+func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
 	var controls_height = controls.size.y if controls != null else 0.0
 	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin
 	
 	var w = width
-	if scale == Settings.GUIScale.LARGE:
+	if gui_scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 	$Scroll.size.x = w
 	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2

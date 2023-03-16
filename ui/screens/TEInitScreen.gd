@@ -34,14 +34,7 @@ func _ready():
 		# the file being from an older version of the game
 		TE.settings.save_to_file()
 		TE.settings.change_settings()
-		
-		for lang in TE.all_languages:
-			if lang.id == TE.settings.lang_id:
-				TE.load_language(lang)
-				TE.switch_scene(title_screen.instantiate())
-				return
-		
-		TE.log_error('language specified in settings not found: %s' % [TE.settings.lang_id])
+		TE.switch_scene(title_screen.instantiate())
 	else:
 		# setup default settings and show the user the language choice
 		TE.settings = Settings.default_settings()

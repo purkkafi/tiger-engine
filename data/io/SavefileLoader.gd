@@ -28,6 +28,7 @@ func _load(path: String, _original_path, _use_sub_threads, _cache_mode):
 		return null
 	
 	var savefile: Savefile = Savefile.new()
-	savefile.banks = json.data
+	savefile.banks = []
+	savefile.banks.append_array(json.data as Array[Dictionary])
 	
 	return savefile

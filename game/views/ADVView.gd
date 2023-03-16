@@ -39,12 +39,12 @@ func _ready():
 	super._ready()
 
 
-func adjust_size(controls: VNControls, scale: Settings.GUIScale):
+func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
 	var controls_height: float = controls.size.y if controls != null else 0.0
 	var w: float = width
 	var h: float = height
 	
-	if scale == Settings.GUIScale.LARGE:
+	if gui_scale == Settings.GUIScale.LARGE:
 		w += mobile_offset_x
 		h += mobile_offset_y
 	

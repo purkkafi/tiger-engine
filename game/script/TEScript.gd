@@ -127,3 +127,20 @@ class IFG extends RefCounted:
 	
 	func _to_string() -> String:
 		return 'fg %s, %s' % [fg_id, transition_id]
+
+
+class IMeta extends RefCounted:
+	var game_name_uistring: String
+	
+	
+	func _init(meta: Dictionary):
+		for key in meta.keys():
+			match key:
+				'game_name':
+					game_name_uistring = meta[key].get_string()
+				_:
+					push_error('unknown meta field: %s' % key)
+	
+	
+	func _to_string() -> String:
+		return 'meta %s' % [game_name_uistring]
