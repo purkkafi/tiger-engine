@@ -145,7 +145,8 @@ class Cache:
 	func get_resource(path: String):
 		for entry in cache:
 			if entry.path == path and entry.resource != null:
-				TE.log_info('[Assets/%s] get cached: %s' % [id, path])
+				# might be useless and spammy info to log?
+				#TE.log_info('[Assets/%s] get cached: %s' % [id, path])
 				return entry.resource
 		
 		# resource was not queued, load and add to cache

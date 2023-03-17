@@ -5,7 +5,7 @@ class_name SaveButton extends VBoxContainer
 # a warning icon if save is unsafe to load
 
 
-var bank: int
+var bank: SavingOverlay.SaveBank
 var index: int
 var icon: TextureRect = TextureRect.new()
 var name_label: Label = Label.new()
@@ -14,7 +14,7 @@ var clicked_callback: Callable # callback for when the icon is clicked
 var icon_warn: TextureRect
 
 
-func _init(_bank: int, _index: int, _icon: Texture2D, _reload_callback: Callable, _clicked_callback: Callable):
+func _init(_bank: SavingOverlay.SaveBank, _index: int, _icon: Texture2D, _reload_callback: Callable, _clicked_callback: Callable):
 	self.bank = _bank
 	self.index = _index
 	self.icon.texture = _icon
@@ -23,8 +23,9 @@ func _init(_bank: int, _index: int, _icon: Texture2D, _reload_callback: Callable
 	add_theme_constant_override('separation', 5)
 
 
-func _enter_tree():
-	var save = TE.savefile.get_save(bank, index)
+func _ready():
+	var save = TE.savefile.get_save(bank.index, index)
+	name_label.theme_type_variation = 'SaveLabel'
 	
 	if save == null: # if represents an empty save
 		name_label.text = TE.ui_strings.saving_empty
@@ -41,7 +42,6 @@ func _enter_tree():
 		name_label.connect('gui_input', Callable(self, '_label_clicked'))
 		name_label.mouse_filter = Control.MOUSE_FILTER_STOP
 		name_label.tooltip_text = TE.ui_strings.saving_rename_tooltip
-		name_label.theme_type_variation = 'SaveLabel'
 		
 		var icon_tooltip = ''
 		if save['save_name'] != null:
@@ -104,7 +104,7 @@ func _label_clicked(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var edit = LineEdit.new()
 		
-		var previous_name = TE.savefile.get_save(bank, index)['save_name']
+		var previous_name = TE.savefile.get_save(bank.index, index)['save_name']
 		if previous_name != null:
 			edit.text = previous_name
 		
@@ -114,9 +114,9 @@ func _label_clicked(event):
 
 func _renamed(edit: LineEdit):
 	if edit.text == '':
-		TE.savefile.get_save(bank, index)['save_name'] = null
+		TE.savefile.get_save(bank.index, index)['save_name'] = null
 	else:
-		TE.savefile.get_save(bank, index)['save_name'] = edit.text
+		TE.savefile.get_save(bank.index, index)['save_name'] = edit.text
 	TE.savefile.write_saves()
 	reload_callback.call(bank, index)
 

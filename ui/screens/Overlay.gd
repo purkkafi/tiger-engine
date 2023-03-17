@@ -8,6 +8,8 @@ class_name Overlay extends Control
 
 # shadow added behind this overlay
 var shadow: ColorRect = ColorRect.new()
+# callback to call when the overlay opening animation is finished
+var animated_in_callback: Callable = func(): pass
 # callback to call when the overlay is closed
 var animating_out_callback: Callable = func(): pass
 
@@ -21,7 +23,12 @@ func _ready():
 	
 	# setup animations
 	await get_tree().process_frame
-	TE.opts.animate_overlay_in.call(self)
+	var tween: Tween = TE.opts.animate_overlay_in.call(self)
+	if tween != null:
+		tween.tween_callback(animated_in_callback)
+	else:
+		animated_in_callback.call()
+	
 	_add_shadow()
 
 

@@ -13,7 +13,6 @@ var additional_navigation = false # additional "Return to title" and "Quit game"
 var mode = null # enum SavingMode
 var screenshot: Image = null # the screenshot to use when saving
 var save: Dictionary # the savefile to save
-var thumbnails: Image = null # image containing the thumbnails for current page of saves
 var last_clicked_tab: int = -1 # used to detect when tab should be renamed
 @onready var header: Label = %Header
 @onready var back: Button = %Back
@@ -25,12 +24,20 @@ var last_clicked_tab: int = -1 # used to detect when tab should be renamed
 enum SavingMode { SAVE, LOAD }
 
 
-func _initialize_overlay():
-	tabs.connect('tab_changed', Callable(self, '_load_tab'))
-	tabs.connect('tab_selected', Callable(self, '_rename_tab'))
+# represents the contents of a tab: a grid of SaveButtons
+# will initially have no children; they will be added as the bank is loaded
+class SaveBank extends MarginContainer:
+	var index: int # the index of this SaveBank in the TabContainer
+	var thumbnails: Image = null # the Image containing the thumbnails for this SaveBank
 	
+	
+	func _init(_index: int):
+		self.index = _index
+
+
+func _initialize_overlay():
 	for i in len(TE.savefile.banks):
-		tabs.add_child(get_empty_bank())
+		tabs.add_child(SaveBank.new(i))
 		tabs.set_tab_title(i, trim_tab_name(TE.savefile.banks[i]['name']))
 	
 	# find out which bank to display based on utimes
@@ -46,7 +53,9 @@ func _initialize_overlay():
 					selected_bank = i
 	
 	# select the correct tab, also loading its content
-	self._select_initial_tab.call_deferred(selected_bank)
+	# it will be prepared after animation is finished to prevent lag
+	tabs.current_tab = selected_bank
+	animated_in_callback = Callable(self, '_prepare_initial_tab').bind(selected_bank)
 	
 	if mode == SavingMode.SAVE:
 		header.text = TE.ui_strings.saving_save
@@ -67,20 +76,18 @@ func _initialize_overlay():
 		to_title.visible = false
 
 
-func _select_initial_tab(initial_bank: int):
-	tabs.current_tab = initial_bank
-
-# tabs are filled with empty MarginContainers by default; as it is an expensive
-# operation, the relevant GridContainer is filled in when needed
-func get_empty_bank() -> MarginContainer:
-	return MarginContainer.new()
+# loads the initially selected tab
+func _prepare_initial_tab(initial_bank: int):
+	tabs.connect('tab_changed', Callable(self, '_load_tab'))
+	tabs.connect('tab_selected', Callable(self, '_rename_tab'))
+	_load_tab(initial_bank)
 
 
-# loads the given tab, adding the GridContainer to its MarginContainer if it's empty
+# loads the given tab, adding the GridContainer to its SaveBank if it's empty
 func _load_tab(index: int):
-	var bank = tabs.get_child(index)
+	var bank: SaveBank = tabs.get_child(index)
 	if bank.get_child_count() == 0:
-		var grid = get_bank_grid(index)
+		var grid = get_bank_grid(bank)
 		bank.add_child(grid)
 
 
@@ -109,13 +116,13 @@ static func trim_tab_name(tab: String) -> String:
 
 
 # returns a GridContainer that contains the save icons
-func get_bank_grid(bank: int) -> GridContainer:
-	if FileAccess.file_exists(TE.savefile.thumbs_path(bank)):
-		thumbnails = Image.new()
-		thumbnails.load(TE.savefile.thumbs_path(bank))
+func get_bank_grid(bank: SaveBank) -> GridContainer:
+	if FileAccess.file_exists(TE.savefile.thumbs_path(bank.index)):
+		bank.thumbnails = Image.new()
+		bank.thumbnails.load(TE.savefile.thumbs_path(bank.index))
 	else:
-		thumbnails = Image.create(THUMB_WIDTH, 12 * THUMB_HEIGHT, false, THUMB_FORMAT)
-		thumbnails.fill(Color.BLACK)
+		bank.thumbnails = Image.create(THUMB_WIDTH, 12 * THUMB_HEIGHT, false, THUMB_FORMAT)
+		bank.thumbnails.fill(Color.BLACK)
 	
 	var grid = GridContainer.new()
 	grid.columns = 4
@@ -128,9 +135,9 @@ func get_bank_grid(bank: int) -> GridContainer:
 	return grid
 
 
-func _new_save_button(bank: int, index: int):
+func _new_save_button(bank: SaveBank, index: int):
 	var icon: Image = Image.create(THUMB_WIDTH, THUMB_HEIGHT, false, THUMB_FORMAT)
-	icon.blit_rect(thumbnails, Rect2(0, THUMB_HEIGHT * index, THUMB_WIDTH, THUMB_HEIGHT), Vector2(0, 0))
+	icon.blit_rect(bank.thumbnails, Rect2(0, THUMB_HEIGHT * index, THUMB_WIDTH, THUMB_HEIGHT), Vector2(0, 0))
 	
 	var texture: ImageTexture = ImageTexture.create_from_image(icon)
 	
@@ -138,7 +145,7 @@ func _new_save_button(bank: int, index: int):
 				Callable(self, '_reload_save_button'),
 				Callable(self, '_save_icon_clicked'))
 	
-	if mode == SavingMode.LOAD and TE.savefile.get_save(bank, index) == null:
+	if mode == SavingMode.LOAD and TE.savefile.get_save(bank.index, index) == null:
 		button.focus_mode = FOCUS_NONE
 	else:
 		button.focus_mode = FOCUS_ALL
@@ -146,8 +153,8 @@ func _new_save_button(bank: int, index: int):
 	return button
 
 
-func _reload_save_button(bank: int, index: int):
-	var grid: GridContainer = tabs.get_child(bank).get_child(0)
+func _reload_save_button(bank: SaveBank, index: int):
+	var grid: GridContainer = tabs.get_child(bank.index).get_child(0)
 	var old = grid.get_child(index)
 	grid.remove_child(old)
 	old.queue_free()
@@ -158,9 +165,9 @@ func _reload_save_button(bank: int, index: int):
 	new.grab_focus()
 
 
-func _save_icon_clicked(bank: int, index: int):
+func _save_icon_clicked(bank: SaveBank, index: int):
 	if mode == SavingMode.LOAD:
-		if TE.savefile.get_save(bank, index) != null:
+		if TE.savefile.get_save(bank.index, index) != null:
 			if warn_about_progress:
 				var popup = Popups.warning_dialog(TE.ui_strings.saving_progress_lost)
 				popup.get_ok_button().connect('pressed', Callable(self, '_do_load').bind(bank, index))
@@ -168,29 +175,29 @@ func _save_icon_clicked(bank: int, index: int):
 				_do_load(bank, index)
 		
 	elif mode == SavingMode.SAVE:
-		if TE.savefile.get_save(bank, index) != null:
+		if TE.savefile.get_save(bank.index, index) != null:
 			var popup = Popups.warning_dialog(TE.ui_strings.saving_overwrite)
 			popup.get_ok_button().connect('pressed', Callable(self, '_do_save').bind(bank, index))
 		else:
 			_do_save(bank, index)
 
 
-func _do_load(bank: int, index: int):
-	TE.load_from_save(TE.savefile.get_save(bank, index))
+func _do_load(bank: SaveBank, index: int):
+	TE.load_from_save(TE.savefile.get_save(bank.index, index))
 
 
-func _do_save(bank, index):
+func _do_save(bank: SaveBank, index: int):
 	# write timestamp
 	save['save_datetime'] = Time.get_datetime_string_from_datetime_dict(Time.get_datetime_dict_from_system(), true)
 	save['save_utime'] = str(Time.get_unix_time_from_system())
 	
 	# write thumbnails
-	thumbnails.blit_rect(screenshot, Rect2(0, 0, THUMB_WIDTH, THUMB_HEIGHT), Vector2(0, THUMB_HEIGHT * index))
-	var error = thumbnails.save_png(TE.savefile.thumbs_path(bank))
+	bank.thumbnails.blit_rect(screenshot, Rect2(0, 0, THUMB_WIDTH, THUMB_HEIGHT), Vector2(0, THUMB_HEIGHT * index))
+	var error = bank.thumbnails.save_png(TE.savefile.thumbs_path(bank.index))
 	if error != OK:
-		TE.log_error("can't write thumbnails: " + TE.savefile.thumbs_path(bank))
+		TE.log_error("can't write thumbnails: " + TE.savefile.thumbs_path(bank.index))
 	
-	TE.savefile.set_save(save.duplicate(true), screenshot, bank, index)
+	TE.savefile.set_save(save.duplicate(true), screenshot, bank.index, index)
 	warn_about_progress = false
 	_reload_save_button(bank, index)
 	
