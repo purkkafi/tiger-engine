@@ -8,7 +8,6 @@ var vm: TEScriptVM # virtual machine that runs the game script
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 # default views
 var overlay_active: bool = false # whether there is an overlay and game should be paused
-var save_name: Variant = null # name of the save the game was loaded from (may be null)
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
 var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
@@ -32,7 +31,10 @@ func _ready():
 	$VNControls.btn_save.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.SAVE))
 	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
 	
-	next_blocking()
+	# vm is null if game is being loaded from the save
+	# and in that case, the call is not needed
+	if vm != null:
+		next_blocking()
 
 
 # advances to the next instruction that blocks the game, handling everything inbetween
@@ -85,6 +87,7 @@ func _replace_view(new_view: Node):
 	
 	var old_pos: int = get_children().find(old_view)
 	remove_child(old_view)
+	old_view.queue_free()
 	add_child(new_view)
 	move_child(new_view, old_pos)
 	
@@ -93,8 +96,6 @@ func _replace_view(new_view: Node):
 	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
-	
-	old_view.queue_free()
 
 
 func _gui_scale_changed(gui_scale: Settings.GUIScale):
@@ -205,7 +206,6 @@ func _save_load(mode):
 
 func _record_last_save(save: Dictionary):
 	last_save = save
-	save_name = last_save['save_name']
 
 
 # produces a dict containing the current state
@@ -213,14 +213,39 @@ func create_save() -> Dictionary:
 	var save = {
 		'vm' : vm.get_state(),
 		'view' : $View.get_state(),
+		'stage' : $VNStage.get_state(),
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
 		'song_id' : Audio.song_id,
-		'save_name' : save_name,
+		'save_name' : null,
 		'save_datetime' : null, # these 2 should be handled by saving screen
 		'save_utime' : null
 	}
 	return save
+
+
+# loads the game from the given save
+# call this after switching the scene to TEGame
+func load_save(save: Dictionary):
+	last_save = save
+	game_name = save['game_name']
+	
+	$VNStage.set_state(save['stage'])   
+	
+	vm = TEScriptVM.from_state(save['vm'])
+	
+	# replace View with the correct scene first
+	var view_scene = load(save['view']['scene'])
+	if view_scene == null:
+		TE.log_error('cannot load View: %s' % save['view']['scene'])
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	_replace_view(view_scene.instantiate())
+	$View.from_state(save['view'])
+	
+	# keep song playing if it is currently playing
+	if Audio.song_id != save['song_id']:
+		Audio.play_song(save['song_id'], 0)
 
 
 func take_screenshot() -> Image:

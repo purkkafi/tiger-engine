@@ -67,3 +67,7 @@ func _current_label() -> RichTextLabel:
 	if paragraphs.get_child_count() == 0:
 		return null
 	return paragraphs.get_child(-1)
+
+
+func _get_scene_path():
+	return 'res://tiger-engine/game/views/NVLView.tscn'

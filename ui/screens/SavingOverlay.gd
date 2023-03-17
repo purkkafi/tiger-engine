@@ -12,7 +12,7 @@ var warn_about_progress = false # whether to warn that progress will be lost
 var additional_navigation = false # additional "Return to title" and "Quit game" buttons
 var mode = null # enum SavingMode
 var screenshot: Image = null # the screenshot to use when saving
-var save = null # the savefile to save
+var save: Dictionary # the savefile to save
 var thumbnails: Image = null # image containing the thumbnails for current page of saves
 var last_clicked_tab: int = -1 # used to detect when tab should be renamed
 @onready var header: Label = %Header
@@ -30,8 +30,8 @@ func _initialize_overlay():
 	tabs.connect('tab_selected', Callable(self, '_rename_tab'))
 	
 	for i in len(TE.savefile.banks):
-		tabs.add_child(get_empty_bank(i))
-		tabs.set_tab_title(i, TE.savefile.banks[i]['name'])
+		tabs.add_child(get_empty_bank())
+		tabs.set_tab_title(i, trim_tab_name(TE.savefile.banks[i]['name']))
 	
 	# find out which bank to display based on utimes
 	var max_utime: int = -1
@@ -72,7 +72,7 @@ func _select_initial_tab(initial_bank: int):
 
 # tabs are filled with empty MarginContainers by default; as it is an expensive
 # operation, the relevant GridContainer is filled in when needed
-func get_empty_bank(index: int) -> MarginContainer:
+func get_empty_bank() -> MarginContainer:
 	return MarginContainer.new()
 
 
@@ -97,11 +97,16 @@ func _do_tab_rename(index: int, edit: LineEdit):
 	if edit.text == '':
 		return
 	var text: String = edit.text
-	if len(text) > 20:
-		text = text.substr(0, 20) + '...'
-	tabs.set_tab_title(index, text)
+	tabs.set_tab_title(index, SavingOverlay.trim_tab_name(text))
 	TE.savefile.banks[index]['name'] = text
 	TE.savefile.write_saves()
+
+
+static func trim_tab_name(tab: String) -> String:
+	if len(tab) > 20:
+		return tab.substr(0, 20) + '...'
+	return tab
+
 
 # returns a GridContainer that contains the save icons
 func get_bank_grid(bank: int) -> GridContainer:
@@ -151,9 +156,6 @@ func _reload_save_button(bank: int, index: int):
 	grid.add_child(new)
 	grid.move_child(new, index)
 	new.grab_focus()
-	
-	if saved_callback != null:
-		saved_callback.call(save)
 
 
 func _save_icon_clicked(bank: int, index: int):
@@ -188,7 +190,7 @@ func _do_save(bank, index):
 	if error != OK:
 		TE.log_error("can't write thumbnails: " + TE.savefile.thumbs_path(bank))
 	
-	TE.savefile.set_save(save, screenshot, bank, index)
+	TE.savefile.set_save(save.duplicate(true), screenshot, bank, index)
 	warn_about_progress = false
 	_reload_save_button(bank, index)
 	

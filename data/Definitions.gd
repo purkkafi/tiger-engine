@@ -66,7 +66,7 @@ class Transition extends RefCounted:
 		self.ease_type = ease_types[parts[1]]
 		
 		if not parts[2].ends_with('s'):
-			push_error('duraton should end in s: %s' % parts[2])
+			push_error('duration should end in s: %s' % parts[2])
 		self.duration = float(parts[2].trim_suffix('s'))
 	
 	

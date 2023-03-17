@@ -65,8 +65,10 @@ func _add_shadow():
 func _remove_shadow():
 	var tween: Tween = TE.opts.animate_shadow_out.call(shadow)
 	if tween == null:
-		self.get_parent().remove_child(shadow)
-		shadow.queue_free()
+		_do_remove_shadow()
 	else:
-		tween.tween_callback(func(): self.get_parent().remove_child(shadow))
-		tween.tween_callback(func(): shadow.queue_free())
+		tween.tween_callback(Callable(self, '_do_remove_shadow'))
+
+func _do_remove_shadow():
+	self.get_parent().remove_child(shadow)
+	shadow.queue_free()

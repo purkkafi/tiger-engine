@@ -60,7 +60,13 @@ func _load(path, _original_path, _use_sub_threads, _cache_mode):
 		var id: String = path.substr(path.rfind('/')+1)
 		id = id.substr(0, len(id)-4)
 		
-		return BlockFile.new(id, blocks)
+		var blockfile = BlockFile.new(id, blocks)
+		
+		for block in blocks.keys():
+			blocks[block].blockfile_path = path
+			blocks[block].id = block
+		
+		return blockfile
 		
 	# special handling for scriptfiles
 	elif type == 'script':

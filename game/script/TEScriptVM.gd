@@ -1,4 +1,4 @@
-class_name TEScriptVM
+class_name TEScriptVM extends RefCounted
 # executes TEScript code
 
 
@@ -58,9 +58,36 @@ func next_blocking() -> Variant:
 
 # returns the current state as a dict
 func get_state() -> Dictionary:
-	var _hash = Assets.scripts.hashes[scriptfile.resource_path][current_script.name]
+	var _hash = Assets.scripts.hashes[scriptfile.resource_path + ':' + current_script.name]
 	return {
 		'current_script' : current_script.name,
+		'scriptfile' : scriptfile.resource_path,
 		'index' : index,
 		'hash' : _hash
 	}
+
+
+# returns a VM instance that has the given state (as obtained from get_state())
+static func from_state(state: Dictionary) -> TEScriptVM:
+	if !FileAccess.file_exists(state['scriptfile']):
+		TE.log_error('scriptfile not found: %s' % state['scriptfile'])
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	var _scriptfile: ScriptFile = Assets.scripts.get_resource(state['scriptfile'])
+	var script: String = state['current_script']
+	
+	if script not in _scriptfile.scripts:
+		TE.log_error('script %s not found in scriptfile %s' % [script, _scriptfile.id])
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	var vm: TEScriptVM = TEScriptVM.new(_scriptfile, script)
+	vm.index = state['index']
+	
+	if vm.index >= len(vm.current_script.instructions):
+		TE.log_error('instruction index out of range')
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	return vm

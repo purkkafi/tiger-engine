@@ -40,7 +40,7 @@ func switch_scene(new_scene: Node):
 
 
 func _switch_scene_deferred(new_scene: Node):
-	current_scene.free()
+	current_scene.queue_free()
 	current_scene = new_scene
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
@@ -72,7 +72,9 @@ func load_language(new_lang: Lang):
 
 
 func load_from_save(save: Dictionary):
-	push_error('NYI')
+	var game_scene: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
+	switch_scene(game_scene)
+	game_scene.load_save.call_deferred(save)
 
 
 func _log_time() -> String:

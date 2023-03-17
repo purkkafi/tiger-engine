@@ -120,6 +120,7 @@ func add_shadow(to_node: Node):
 	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
 	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shadow.color = TE.opts.shadow_color
+	shadow.z_index += 99
 	
 	TE.current_scene.add_child(shadow)
 	to_node.connect('canceled', Callable(self, '_remove_shadow').bind(shadow))

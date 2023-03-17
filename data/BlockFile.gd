@@ -9,7 +9,7 @@ var blocks: Dictionary
 
 
 func _init(_id: String, _blocks: Dictionary):
-	id = id
+	id = _id
 	blocks = _blocks
 
 

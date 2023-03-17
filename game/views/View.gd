@@ -4,6 +4,7 @@ class_name View extends Control
 
 
 var lines: Array[String] # lines in the current Block
+var block: Block # the current Block
 var line_index: int = -1 # index of lines
 var next_effect = RichTextNext.new() # effect that implements the ▶ effect
 var pause_delta: float = 0.0 # delta to wait until pause is over
@@ -105,7 +106,8 @@ func is_next_line_requested():
 
 
 # displays the given block next
-func show_block(block: Block) -> void:
+func show_block(_block: Block) -> void:
+	block = _block
 	lines = Blocks.resolve_parts(block)
 	line_index = 0
 	_next_block()
@@ -311,11 +313,52 @@ func _current_label():
 	TE.log_error("view doesn't implement _current_label()")
 
 
+# should return the path of the scene this View is attached to
+func _get_scene_path():
+	TE.log_error("view doesn't implement _get_scene_path()")
+
+
 # returns the current state of this View as a dict
 func get_state() -> Dictionary:
 	return {
-		'line_index' : line_index
+		'line_index' : line_index,
+		'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
+		'blockfile' : block.blockfile_path,
+		'block' : block.id,
+		'scene' : _get_scene_path()
 	}
+
+
+# sets the current state based on the given Dictionary
+# note: when loading game from a save state created with the help of get_state(),
+# the correct View scene is saved in the field 'scene'
+# you can load and instantiate it and then call this object
+func from_state(state: Dictionary):
+	if not FileAccess.file_exists(state['blockfile']):
+		TE.log_error('blockfile %s not found' % state['blockfile'])
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	var blockfile: BlockFile = Assets.blockfiles.get_resource(state['blockfile'])
+	
+	if not state['block'] in blockfile.blocks:
+		TE.log_error('block %s not found in blockfile %s' % [state['block'], state['blockfile']])
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	var _block: Block = blockfile.blocks[state['block']]
+	
+	show_block(_block)
+	
+	if state['line_index']-1 > len(lines):
+		TE.log_error('line index out of range')
+		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		return
+	
+	# skip to the correct line
+	while line_index <= state['line_index']-1:
+		next_line()
+		_to_end_of_line()
 
 
 # subclasses should call this via super if they override _ready()

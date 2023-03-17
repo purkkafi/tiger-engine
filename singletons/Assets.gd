@@ -25,21 +25,19 @@ static func in_lang(path: String) -> String:
 
 
 # calculates the hash of every Block in the given BlockFile
-func _blockfile_hash(blockfile: BlockFile) -> Dictionary:
-	var hashes: Dictionary = {}
+# stores the hashes in keys of form 'blockfile_path:block_id'
+func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
 	for block_id in blockfile.blocks.keys():
 		var hashcode: String = blockfile.blocks[block_id].resolve_hash()
-		hashes[block_id] = hashcode
-	return hashes
+		hashes[blockfile.resource_path + ':' + block_id] = hashcode
 
 
 # calculates the hash of every Script in the given ScriptFile
-func _scriptfile_hash(scriptfile: ScriptFile) -> Dictionary:
-	var hashes: Dictionary = {}
-	for script_id in scriptfile.scripts:
+# stores the hashes in keys of form 'scriptfile_path:script_id'
+func _scriptfile_hash(scriptfile: ScriptFile, hashes: Dictionary):
+	for script_id in scriptfile.scripts.keys():
 		var hashcode: String = scriptfile.scripts[script_id].hashcode()
-		hashes[script_id] = hashcode
-	return hashes
+		hashes[scriptfile.resource_path + ':' + script_id] = hashcode
 
 
 func _debug_message() -> String:
@@ -75,6 +73,7 @@ class Cache:
 	var cache: Array[Entry]
 	# function that is used to calculate the hashes of loaded
 	# Resources (current and previous) if set
+	# called with arguments: 1) the resource 2) the dictionary of hashes
 	var hash_function = null
 	# Dictionary of Resource paths to calculated hashes
 	# they may be Strings or more complex objects containing the sub-hashes
@@ -96,7 +95,7 @@ class Cache:
 		if hash_function == null:
 			return
 		TE.log_info('[Assets/%s] calculated hash of: %s' % [id, resource.resource_path])
-		hashes[resource.resource_path] = hash_function.call(resource)
+		hash_function.call(resource, hashes)
 	
 	
 	# adds entry to cache, moving it to the front if it already is there

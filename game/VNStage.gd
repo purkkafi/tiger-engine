@@ -5,6 +5,7 @@ class_name VNStage extends Node
 
 var bg_id: String = ''
 var TRANSPARENT: Color = Color(0, 0, 0, 0)
+var INSTANT: Definitions.Transition = Definitions.Transition.new('QUAD EASE_IN 0s')
 
 
 # transitions to a new background with the given Transition
@@ -73,3 +74,15 @@ func _replace_with(layer: Node, new_layer: Node):
 	move_child(new_layer, old_pos)
 	
 	layer.queue_free()
+
+
+# returns current state as a Dict
+func get_state() -> Dictionary:
+	return {
+		'bg' : bg_id
+	}
+
+
+# sets state from a Dict
+func set_state(state: Dictionary):
+	set_background(state['bg'], INSTANT)
