@@ -71,9 +71,14 @@ func load_language(new_lang: Lang):
 		savefile.lang_id = language.id
 
 
-func load_from_save(save: Dictionary):
+func load_from_save(save: Dictionary, rollback: Rollback = null):
 	var game_scene: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
 	switch_scene(game_scene)
+	
+	if rollback != null:
+		await get_tree().process_frame
+		game_scene.rollback.set_rollback(rollback.entries)
+	
 	game_scene.load_save.call_deferred(save)
 
 

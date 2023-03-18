@@ -5,11 +5,13 @@ class_name TEGame extends Control
 
 
 var vm: TEScriptVM # virtual machine that runs the game script
+var rollback: Rollback # stores save states for Back button
+var next_rollback: Variant = null # next save state to add to rollback
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
-# default views
 var overlay_active: bool = false # whether there is an overlay and game should be paused
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
+# default views
 var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
 var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
@@ -25,11 +27,14 @@ func _ready():
 	MobileUI.initialize_gui(self)
 	MobileUI.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
 	
+	rollback = Rollback.new($VNControls.btn_back)
+	
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
 	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
 	$VNControls.btn_settings.connect('pressed', Callable(self, '_settings'))
 	$VNControls.btn_save.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.SAVE))
 	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
+	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
@@ -141,6 +146,10 @@ func _process(delta):
 		
 	if $View.is_next_line_requested():
 		$View.next_line()
+		# current save state will be saved to rollback next time
+		if next_rollback != null:
+			rollback.push(next_rollback)
+		next_rollback = create_save()
 		return
 	
 	$View.update_state(delta)
@@ -246,6 +255,9 @@ func load_save(save: Dictionary):
 	# keep song playing if it is currently playing
 	if Audio.song_id != save['song_id']:
 		Audio.play_song(save['song_id'], 0)
+	
+	# remember this save state in rollback
+	next_rollback = save
 
 
 func take_screenshot() -> Image:
@@ -254,3 +266,7 @@ func take_screenshot() -> Image:
 	screenshot.convert(SavingOverlay.THUMB_FORMAT)
 	screenshot.resize(SavingOverlay.THUMB_WIDTH, SavingOverlay.THUMB_HEIGHT, Image.INTERPOLATE_BILINEAR)
 	return screenshot
+
+
+func _back():
+	TE.load_from_save(rollback.pop(), rollback)
