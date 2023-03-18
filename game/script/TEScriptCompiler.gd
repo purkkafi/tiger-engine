@@ -19,8 +19,10 @@ func compile_script(script_tag: Tag):
 			'block':
 				ins.append(TEScript.IBlock.new(tag.get_string_at(0), tag.get_string_at(1)))
 			'nvl':
-				# TODO implement options
-				ins.append(TEScript.INvl.new())
+				if len(tag.args) == 0:
+					ins.append(TEScript.INvl.new(null))
+				else:
+					ins.append(TEScript.INvl.new(tag.get_tags()))
 			'adv':
 				ins.append(TEScript.IAdv.new())
 			'pause':
@@ -37,6 +39,8 @@ func compile_script(script_tag: Tag):
 				ins.append(TEScript.IFG.new(tag.get_string_at(0), tag.get_string_at(1)))
 			'meta':
 				ins.append(TEScript.IMeta.new(tag.get_dict()))
+			'break':
+				ins.append(TEScript.IBreak.new())
 			_:
 				push_error('unknown instruction: %s' % [tag])
 	

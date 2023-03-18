@@ -5,6 +5,7 @@ class_name TEScriptVM extends RefCounted
 var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
+var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'Adv', 'Nvl' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):
@@ -21,17 +22,7 @@ func _current() -> Variant:
 
 
 func _is_blocking(instruction) -> bool:
-	if instruction is TEScript.IBlock:
-		return true
-	if instruction is TEScript.IPause:
-		return true
-	if instruction is TEScript.IHideUI:
-		return true
-	if instruction is TEScript.IBG:
-		return true
-	if instruction is TEScript.IFG:
-		return true
-	return false
+	return instruction.name in BLOCKING_INSTRUCTIONS
 
 
 # proceeds to the next blocking instruction, returning an Array

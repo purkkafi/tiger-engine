@@ -4,18 +4,32 @@ class_name VNStage extends Node
 
 
 var bg_id: String = ''
+var fg_id: String = ''
 var TRANSPARENT: Color = Color(0, 0, 0, 0)
 var INSTANT: Definitions.Transition = Definitions.Transition.new('QUAD EASE_IN 0s')
 
 
 # transitions to a new background with the given Transition
-func set_background(new_id: String, transition: Definitions.Transition):
+# a Tween can be given to do so in parallel; otherwise, a new one is created
+func set_background(new_id: String, transition: Definitions.Transition, tween: Tween) -> Tween:
 	bg_id = new_id
-	return _set_layer($BG,  _get_layer_node(new_id), transition)
+	return _set_layer($BG, _get_layer_node(new_id), transition, tween, false)
+
+
+# transitions to a new foreground with the given Transition
+# a Tween can be given to do so in parallel; otherwise, a new one is created
+func set_foreground(new_id: String, transition: Definitions.Transition, tween: Tween) -> Tween:
+	fg_id = new_id
+	return _set_layer($FG, _get_layer_node(new_id), transition, tween, true)
 
 
 # loads a suitable back/foreground Node based on the given id
 func _get_layer_node(id: String) -> Node:
+	if id == '':
+		var empty: ColorRect = ColorRect.new()
+		empty.color = Color.TRANSPARENT
+		return empty
+	
 	var definition = TE.defs.backgrounds[id]
 	
 	if definition is Color:
@@ -23,9 +37,13 @@ func _get_layer_node(id: String) -> Node:
 		rect.color = definition
 		return rect
 	elif definition is String:
-		var rect: TextureRect = TextureRect.new()
-		rect.texture = Assets.bgs.get_resource('res://assets/bgs' + definition)
-		return rect
+		if definition.ends_with('.tscn'): # is animation scene
+			var scene: PackedScene = Assets.bgs.get_resource('res://assets/bgs' + definition)
+			return scene.instantiate()
+		else: # assumed to be some kind of image
+			var rect: TextureRect = TextureRect.new()
+			rect.texture = Assets.bgs.get_resource('res://assets/bgs' + definition)
+			return rect
 	elif definition is Tag:
 		match definition.name:
 			'localize':
@@ -41,22 +59,32 @@ func _get_layer_node(id: String) -> Node:
 
 
 # transitions the given node to the new one with the given Transition
-func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition):
-	new_layer.size = layer.size
+# fade_old determines whether the old layer will be faded out in a reverse of the transition
+func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, fade_old: bool):
+	if new_layer is Control and layer is Control: # not needed for animations, which are Node2D's
+		new_layer.size = layer.size
 	new_layer.position = layer.position
-	new_layer.name = layer.name
+	new_layer.name = 'New' + layer.name
+	layer.add_sibling(new_layer)
 	
 	# skip tween in this case
 	if transition.duration == 0:
 		_replace_with(layer, new_layer)
-		return null
+		return tween
 	
-	layer.add_child(new_layer)
+	if tween == null:
+		tween = create_tween()
+	
 	new_layer.modulate = Color(1, 1, 1, 0)
-	var tween = create_tween()
-	var tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
+	var tweener: PropertyTweener = tween.parallel().tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
 	tweener.set_ease(transition.ease_type)
 	tweener.set_trans(transition.trans_type)
+	
+	if fade_old:
+		layer.modulate.a = 1.0
+		var old_tweener: PropertyTweener = tween.parallel().tween_property(layer, 'modulate:a', 0.0, transition.duration)
+		old_tweener.set_ease(transition.ease_type)
+		old_tweener.set_trans(transition.trans_type)
 	
 	# schedule replacing the old layer with the new one
 	tween.parallel().tween_callback(Callable(self, '_replace_with').bind(layer, new_layer)).set_delay(transition.duration)
@@ -65,13 +93,10 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 
 
 func _replace_with(layer: Node, new_layer: Node):
-	if layer.is_ancestor_of(new_layer):
-		layer.remove_child(new_layer)
-	
 	var old_pos: int = get_children().find(layer)
 	remove_child(layer)
-	add_child(new_layer)
 	move_child(new_layer, old_pos)
+	new_layer.name = layer.name
 	
 	layer.queue_free()
 
@@ -79,10 +104,12 @@ func _replace_with(layer: Node, new_layer: Node):
 # returns current state as a Dict
 func get_state() -> Dictionary:
 	return {
-		'bg' : bg_id
+		'bg' : bg_id,
+		'fg' : fg_id
 	}
 
 
 # sets state from a Dict
 func set_state(state: Dictionary):
-	set_background(state['bg'], INSTANT)
+	set_background(state['bg'], INSTANT, null)
+	set_foreground(state['fg'], INSTANT, null)

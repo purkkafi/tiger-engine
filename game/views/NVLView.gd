@@ -7,10 +7,10 @@ var top_margin: float = get_theme_constant('top_margin', 'NVLView')
 var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
 var width: float = get_theme_constant('width', 'NVLView')
 var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
-
-
 # RichTextLabels containing the displayed lines
 @onready var paragraphs: VBoxContainer = %Paragraphs
+# various options that determine the look of this view
+var options: Dictionary = {}
 
 
 # indent that appears at the start of lines after the first

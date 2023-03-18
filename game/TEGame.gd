@@ -39,6 +39,9 @@ func _ready():
 	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
 	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
 	
+	# initial View
+	_replace_view(adv_view.instantiate())
+	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
 	if vm != null:
@@ -48,45 +51,66 @@ func _ready():
 # advances to the next instruction that blocks the game, handling everything inbetween
 func next_blocking():
 	var instructions: Array = vm.to_next_blocking()
+	var tween: Tween = null
+	var ins_types: Dictionary = {}
 	
 	for ins in instructions:
-		if ins is TEScript.IPlaySong:
-			Audio.play_song(ins.song_id, TE.defs.transitions[ins.transition_id].duration)
+		# check that same instruction isn't already active
+		# (there can be problems with repeating instructions)
+		if ins.name in ins_types:
+			push_error('illegal instruction %s: already handling of same type' % ins)
+		ins_types[ins.name] = true
 		
-		elif ins is TEScript.IPlaySound:
-			Audio.play_sound(ins.sound_id)
+		match ins.name:
+			'PlaySong':
+				Audio.play_song(ins.song_id, TE.defs.transitions[ins.transition_id].duration)
 			
-		elif ins is TEScript.INvl:
-			_replace_view(nvl_view.instantiate())
-		
-		elif ins is TEScript.IAdv:
-			_replace_view(adv_view.instantiate())
-		
-		elif ins is TEScript.IMeta:
-			game_name = TE.ui_strings[ins.game_name_uistring]
-		
-		else:
-			push_error('cannot handle non-blocking instruction: %s' % [ins])
+			'PlaySound':
+				Audio.play_sound(ins.sound_id)
+			
+			'Meta':
+				game_name = TE.ui_strings[ins.game_name_uistring]
+			
+			'BG':
+				tween = $VNStage.set_background(ins.bg_id, TE.defs.transitions[ins.transition_id], tween)
+			
+			'FG':
+				tween = $VNStage.set_foreground(ins.fg_id, TE.defs.transitions[ins.transition_id], tween)
+			
+			'HideUI':
+				tween = _hide_ui(TE.defs.transitions[ins.transition_id].duration, tween)
+			
+			_:
+				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
-	var blocking = vm.next_blocking()
-	if blocking is TEScript.IPause:
-		$View.pause(blocking.duration)
-		
-	elif blocking is TEScript.IBlock:
-		$View.show_block(Blocks.find(blocking.blockfile_id, blocking.block_id))
-		_unhide_ui()
-		
-	elif blocking is TEScript.IBG:
-		var tween = $VNStage.set_background(blocking.bg_id, TE.defs.transitions[blocking.transition_id])
-		if tween != null:
-			$View.wait_tween(tween)
-			
-	elif blocking is TEScript.IHideUI:
-		var tween: Tween = _hide_ui(TE.defs.transitions[blocking.transition_id].duration)
+	# if any instruction activated the tween, handle it
+	if tween != null:
 		$View.wait_tween(tween)
+		return
+	
+	# else: handle the next blocking instruction
+	var blocking = vm.next_blocking()
+	match blocking.name:
+		'Pause':
+			$View.pause(blocking.duration)
 		
-	else:
-		push_error('cannot handle blocking instruction: %s' % [blocking])
+		'Block':
+			$View.show_block(Blocks.find(blocking.blockfile_id, blocking.block_id))
+			_unhide_ui()
+		
+		'Break':
+			pass
+		
+		'Nvl':
+			var nvl = nvl_view.instantiate()
+			nvl.options = blocking.options
+			_replace_view(nvl)
+		
+		'Adv':
+			_replace_view(adv_view.instantiate())
+			
+		_:
+			push_error('cannot handle blocking instruction: %s' % [blocking])
 
 
 # replaces the current View with a new one, copying state over
@@ -114,8 +138,10 @@ func _gui_scale_changed(gui_scale: Settings.GUIScale):
 
 
 # hides the currently active View, returning the Tween used in the transition
-func _hide_ui(duration: float) -> Tween:
-	var tween = create_tween()
+# the tween can be given to chain it; it will be created if null is given
+func _hide_ui(duration: float, tween: Tween) -> Tween:
+	if tween == null:
+		tween = create_tween()
 	tween.tween_property($View, 'modulate:a', 0.0, duration)
 	return tween
 

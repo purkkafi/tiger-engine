@@ -89,10 +89,12 @@ func _is_waiting():
 
 # returns whether parent should ask for next block by calling show_block()
 func is_next_block_requested() -> bool:
+	if _is_waiting():
+		return false
 	if line_index == -1: # true if no block has been shown yet
 		return true
 	# otherwise, true if there are no lines left, game isn't waiting for anything, and state is READY_TO_PROCEED 
-	if line_index >= len(lines) and !_is_waiting():
+	if line_index >= len(lines):
 		return state == State.READY_TO_PROCEED
 	return false
 

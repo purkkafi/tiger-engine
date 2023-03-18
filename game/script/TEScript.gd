@@ -28,6 +28,7 @@ func hashcode() -> String:
 
 
 class IBlock extends RefCounted:
+	const name: String = 'Block'
 	var blockfile_id: String
 	var block_id: String
 	
@@ -42,16 +43,35 @@ class IBlock extends RefCounted:
 
 
 class INvl extends RefCounted:
+	const name: String = 'Nvl'
+	var options: Dictionary = {}
+	
+	
+	func _init(opts: Variant):
+		if opts == null:
+			return
+		for opt in opts:
+			match opt.name:
+				'hcenter':
+					options['hcenter'] = true
+				'vcenter':
+					options['vcenter'] = true
+				'outline':
+					options['outline'] = [ opt.get_string_at(0), opt.get_string_at(1) ]
+	
+	
 	func _to_string() -> String:
-		return 'nvl'
+		return 'nvl %s' % options
 
 
 class IAdv extends RefCounted:
+	const name: String = 'Adv'
 	func _to_string() -> String:
 		return 'adv'
 
 
 class IPause extends RefCounted:
+	const name: String = 'Pause'
 	var duration: float
 	
 	
@@ -64,6 +84,7 @@ class IPause extends RefCounted:
 
 
 class IHideUI extends RefCounted:
+	const name: String = 'HideUI'
 	var transition_id: String
 	
 	
@@ -76,6 +97,7 @@ class IHideUI extends RefCounted:
 
 
 class IPlaySound extends RefCounted:
+	const name: String = 'PlaySound'
 	var sound_id: String
 	
 	
@@ -88,6 +110,7 @@ class IPlaySound extends RefCounted:
 
 
 class IPlaySong extends RefCounted:
+	const name: String = 'PlaySong'
 	var song_id: String
 	var transition_id: String
 	
@@ -102,6 +125,7 @@ class IPlaySong extends RefCounted:
 
 
 class IBG extends RefCounted:
+	const name: String = 'BG'
 	var bg_id: String
 	var transition_id: String
 	
@@ -116,12 +140,16 @@ class IBG extends RefCounted:
 
 
 class IFG extends RefCounted:
+	const name: String = 'FG'
 	var fg_id: String
 	var transition_id: String
 	
 	
 	func _init(_fg_id: String, _transition_id: String):
-		self.fg_id = _fg_id
+		if _fg_id == 'clear':
+			self.fg_id = ''
+		else:
+			self.fg_id = _fg_id
 		self.transition_id = _transition_id
 	
 	
@@ -130,6 +158,7 @@ class IFG extends RefCounted:
 
 
 class IMeta extends RefCounted:
+	const name: String = 'Meta'
 	var game_name_uistring: String
 	
 	
@@ -144,3 +173,9 @@ class IMeta extends RefCounted:
 	
 	func _to_string() -> String:
 		return 'meta %s' % [game_name_uistring]
+
+
+class IBreak extends RefCounted:
+	const name: String = 'Break'
+	func _to_string() -> String:
+		return 'break'
