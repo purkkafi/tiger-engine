@@ -14,6 +14,7 @@ var line_switch_delta = 0.0 # delta until advancing to the next line if on FASTE
 var speedup: Speedup = Speedup.NORMAL # status of speedup
 var state: State # current state
 var waiting_tween: Tween = null # tween being waited for
+var gamelog: Log = null # the log where lines will be recorded
 
 
 # TODO implement setting for skip speed?
@@ -126,6 +127,7 @@ func next_line() -> void:
 		else:
 			TE.log_error('speaker not rezognized: %s' % id)
 	
+	gamelog.add_line(lines[line_index]) # TODO speaker is not handled yet
 	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
 	next_effect.reset()

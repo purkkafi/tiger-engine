@@ -71,13 +71,18 @@ func load_language(new_lang: Lang):
 		savefile.lang_id = language.id
 
 
-func load_from_save(save: Dictionary, rollback: Rollback = null):
+# loads the game from a save state, switching the scene to TEGame
+# rollback and gamelog can be provided to keep and update their values
+# appropriately, which is used for implementing rollback
+func load_from_save(save: Dictionary, rollback: Rollback = null, gamelog: Log = null):
 	var game_scene: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
 	switch_scene(game_scene)
 	
-	if rollback != null:
+	if rollback != null and gamelog != null:
 		await get_tree().process_frame
 		game_scene.rollback.set_rollback(rollback.entries)
+		gamelog.remove_last()
+		game_scene.gamelog = gamelog
 	
 	game_scene.load_save.call_deferred(save)
 

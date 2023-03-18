@@ -13,7 +13,7 @@ var entries: Array[Dictionary] = []
 var back_button: Button
 
 
-func _init( _back_button: Button):
+func _init(_back_button: Button):
 	self.back_button = _back_button
 	back_button.disabled = true
 
@@ -44,6 +44,7 @@ func pop() -> Dictionary:
 	return entries.pop_back()
 
 
+# sets the rollback entries; used to preserve them when loading from a save state
 func set_rollback(new_entries: Array[Dictionary]):
 	entries = new_entries
 	back_button.disabled = len(entries) == 0

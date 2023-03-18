@@ -6,6 +6,7 @@ class_name TEGame extends Control
 
 var vm: TEScriptVM # virtual machine that runs the game script
 var rollback: Rollback # stores save states for Back button
+var gamelog: Log # the game log
 var next_rollback: Variant = null # next save state to add to rollback
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 var overlay_active: bool = false # whether there is an overlay and game should be paused
@@ -28,6 +29,7 @@ func _ready():
 	MobileUI.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
 	
 	rollback = Rollback.new($VNControls.btn_back)
+	gamelog = Log.new()
 	
 	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
 	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
@@ -35,6 +37,7 @@ func _ready():
 	$VNControls.btn_save.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.SAVE))
 	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
 	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
+	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
@@ -97,6 +100,7 @@ func _replace_view(new_view: Node):
 	move_child(new_view, old_pos)
 	
 	new_view.name = old_view.name
+	new_view.gamelog = gamelog
 	new_view.adjust_size($VNControls, TE.settings.gui_scale)
 	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
 	if old_view is View:
@@ -269,4 +273,12 @@ func take_screenshot() -> Image:
 
 
 func _back():
-	TE.load_from_save(rollback.pop(), rollback)
+	TE.load_from_save(rollback.pop(), rollback, gamelog)
+
+
+func _log():
+	var log_overlay: LogOverlay = preload('res://tiger-engine/ui/screens/LogOverlay.tscn').instantiate()
+	log_overlay.gamelog = gamelog
+	log_overlay.animating_out_callback = func(): after_overlay()
+	before_overlay()
+	add_child(log_overlay)
