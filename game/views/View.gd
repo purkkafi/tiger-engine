@@ -191,6 +191,9 @@ func update_state(delta: float):
 	var label: RichTextLabel = _current_label()
 	var text_speed: float = 20 + 50*TE.settings.text_speed
 	
+	if label == null:
+		return   
+	
 	# if not at end of line, scroll further
 	if !_is_end_of_line():
 		# instant text speed if setting is at max value

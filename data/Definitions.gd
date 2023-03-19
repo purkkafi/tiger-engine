@@ -2,13 +2,11 @@ class_name Definitions extends Resource
 # maps ids of game assets to resources
 
 
-# a map of ids to backgrounds, which can be:
-# – a Color, representing a solid background of the given color
-# - a String starting with '/', representing a file in the 'bgs' folder
-# - an AnimatedCG
-var backgrounds: Dictionary = {}
+# a map of ids to images, which are paths relative to the 'assets/bg' folder
+var imgs: Dictionary = {}
 # a map of transition ids to Transition objects
-var transitions: Dictionary = {}
+# users should not access directly, use Definitions.transition()
+var _transitions: Dictionary = {}
 # a map of song ids to paths relative to the 'assets/music' folder
 var songs: Dictionary = {}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
@@ -21,6 +19,9 @@ var unlocked_from_start: Array[String] = []
 var unlocked_by_song: Dictionary = {}
 # a map of speaker ids to Speaker objects
 var speakers: Dictionary = {}
+# a map of color ids to Color objects
+# should not be accessed directly; use Definitions.color() to allow inline colors
+var _colors: Dictionary = {}
 
 const trans_types = {
 	'QUART': Tween.TRANS_QUART,
@@ -45,6 +46,27 @@ const ease_types = {
 }
 
 
+# returns the corresponding color or null if the given value does not represent one
+# a valid color can be:
+# – the id of a color definition
+# – a String that matches Color.html_is_valid()
+func color(color_id: String) -> Variant:
+	if color_id in _colors:
+		return _colors[color_id]
+	if Color.html_is_valid(color_id):
+		return Color.html(color_id)
+	return null
+
+
+# returns the corresponding Transition object, which can be:
+# – the transition matching the definition, if an id is given
+# – the result of parsing the given string as a Transition
+func transition(trans_id: String) -> Transition:
+	if trans_id in _transitions:
+		return _transitions[trans_id]
+	return Transition.new(trans_id)
+
+
 class Transition extends RefCounted:
 	var trans_type # TransitionType from Tween
 	var ease_type # EaseType from Tween
@@ -54,8 +76,17 @@ class Transition extends RefCounted:
 	# parses transition from string where the 3 parts are separated by a space
 	func _init(string: String):
 		var parts: PackedStringArray = string.split(' ')
+		# special case: definition with only duration
+		if len(parts) == 1:
+			if not parts[0].ends_with('s'):
+				push_error('transition duration should end in s: %s' % parts[2])
+			self.duration = float(parts[0].trim_suffix('s'))
+			self.trans_type = Tween.TRANS_LINEAR
+			self.ease_type = Tween.EASE_IN
+			return
+			
 		if len(parts) != 3:
-			push_error('transition should be of form TRANS_TYPE EASE_TYPE DURATION, got %s' % string)
+			push_error('illegal transition: %s (should be of form DURATION | TRANS_TYPE EASE_TYPE DURATION)' % string)
 		
 		if parts[0] not in trans_types:
 			push_error('not a TRANS_TYPE: %s' % parts[0])
@@ -66,7 +97,7 @@ class Transition extends RefCounted:
 		self.ease_type = ease_types[parts[1]]
 		
 		if not parts[2].ends_with('s'):
-			push_error('duration should end in s: %s' % parts[2])
+			push_error('transition duration should end in s: %s' % parts[2])
 		self.duration = float(parts[2].trim_suffix('s'))
 	
 	

@@ -25,45 +25,33 @@ func set_foreground(new_id: String, transition: Definitions.Transition, tween: T
 
 # loads a suitable back/foreground Node based on the given id
 func _get_layer_node(id: String) -> Node:
-	if id == '':
+	if id == '': # id represents an empty layer
 		var empty: ColorRect = ColorRect.new()
 		empty.color = Color.TRANSPARENT
 		return empty
 	
-	var definition = TE.defs.backgrounds[id]
-	
-	if definition is Color:
+	elif TE.defs.color(id) != null: # id represents a color
 		var rect: ColorRect = ColorRect.new()
-		rect.color = definition
+		rect.color = TE.defs.color(id)
 		return rect
-	elif definition is String:
-		if definition.ends_with('.tscn'): # is animation scene
-			var scene: PackedScene = Assets.bgs.get_resource('res://assets/bgs' + definition)
+		
+	else: # id represents a path
+		var path: String = TE.defs.imgs[id]
+		if path.ends_with('.tscn'): # is animation scene
+			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/bgs')
 			return scene.instantiate()
 		else: # assumed to be some kind of image
 			var rect: TextureRect = TextureRect.new()
-			rect.texture = Assets.bgs.get_resource('res://assets/bgs' + definition)
+			rect.texture = Assets.imgs.get_resource(path, 'res://assets/bgs')
 			return rect
-	elif definition is Tag:
-		match definition.name:
-			'localize':
-				var rect: TextureRect = TextureRect.new()
-				rect.texture = Assets.bgs.get_resource(Assets.in_lang(definition.get_string()))
-				return rect
-			_:
-				TE.log_error('cannot handle background: %s' % [ definition ])
-				return null
-	else:
-		TE.log_error('cannot handle background: %s' % [ definition ])
-		return null
 
 
 # transitions the given node to the new one with the given Transition
 # fade_old determines whether the old layer will be faded out in a reverse of the transition
 func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, fade_old: bool):
-	if new_layer is Control and layer is Control: # not needed for animations, which are Node2D's
-		new_layer.size = layer.size
-	new_layer.position = layer.position
+	if new_layer is Control: # not needed for animations, which are Node2D's
+		new_layer.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
+		new_layer.position = Vector2(0, 0)
 	new_layer.name = 'New' + layer.name
 	layer.add_sibling(new_layer)
 	

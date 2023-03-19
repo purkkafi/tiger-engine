@@ -145,31 +145,21 @@ func _resolve_definitions(tree: Tag):
 		var type: String = node.name
 		
 		match type:
-			'bg':
+			'color':
+				var id: String = node.get_string_at(0)
+				var value: Color = Color.html(node.get_string_at(1))
+				defs._colors[id] = value
+				
+			'img':
 				var id: String = node.get_string_at(0)
 				var value = node.get_value_at(1)
-				
-				if value is String:
-					if value.begins_with('#'):
-						defs.backgrounds[id] = Color(value)
-					elif value.begins_with('/'):
-						defs.backgrounds[id] = value
-					else:
-						push_error('illegal background definition: %s' % [value])
-				else:
-					match value.name:
-						'localize':
-							defs.backgrounds[id] = value
-						'acg':
-							defs.backgrounds[id] = AnimatedCG.new(value.args)
-						_:
-							push_error('illegal background definition: %s ' % [value])
+				defs.imgs[id] = value
 				
 			'trans':
 				var id: String = node.get_string_at(0)
 				var trans = Definitions.Transition.new(node.get_value_at(1))
 				
-				defs.transitions[id] = trans
+				defs._transitions[id] = trans
 				
 			'song':
 				var id: String = node.get_string_at(0)

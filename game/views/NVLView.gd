@@ -9,19 +9,37 @@ var width: float = get_theme_constant('width', 'NVLView')
 var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
 # RichTextLabels containing the displayed lines
 @onready var paragraphs: VBoxContainer = %Paragraphs
+@onready var scroll: ScrollContainer = %Scroll
 # various options that determine the look of this view
 var options: Dictionary = {}
+# these will be set from options
+var hcenter: bool = false
+var vcenter: bool = false
+var outline_size: float = 0
+var outline_color: String = '#00000000'
 
 
 # indent that appears at the start of lines after the first
-const INDENT: String = '        '
+var INDENT: String = '        '
 
 
 func _ready():
-	paragraphs.add_theme_constant_override('separation', 4)
 	# set sensible default value if running without theme
 	if width == 0:
 		width = 1000
+	
+	if 'hcenter' in options:
+		hcenter = options['hcenter']
+	if 'vcenter' in options:
+		vcenter = options['vcenter']
+	if 'outline' in options:
+		outline_color = '#' + TE.defs.color(str(options['outline'][0])).to_html()
+		outline_size = float(options['outline'][1])
+	
+	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
+	
+	if vcenter:
+		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER   
 	
 	super._ready()
 
@@ -49,6 +67,17 @@ func _next_block():
 func _next_line(line: String, _speaker: Definitions.Speaker = null):
 	var label: RichTextLabel = create_label()
 	
+	if outline_size != 0:
+		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color, line]
+	
+	if hcenter: # if centered: no indent and lines are farther apart
+		line = '[center]%s[/center]' % line
+		label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+		INDENT = ''
+	else:
+		# if not centered, there will be an indent & lines will be closer
+		paragraphs.add_theme_constant_override('separation', 4)
+	
 	# if not first paragraph
 	if paragraphs.get_child_count() == 0:
 		# first paragraph is normal
@@ -71,3 +100,24 @@ func _current_label() -> RichTextLabel:
 
 func _get_scene_path():
 	return 'res://tiger-engine/game/views/NVLView.tscn'
+
+
+func _scroll_to_bottom():
+	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
+
+
+func get_state() -> Dictionary:
+	var state: Dictionary = super.get_state()
+	state['hcenter'] = hcenter
+	state['vcenter'] = vcenter
+	state['outline_color'] = outline_color
+	state['outline_size'] = outline_size
+	return state
+
+
+func from_state(state: Dictionary):
+	hcenter = state['hcenter']
+	vcenter = state['vcenter']
+	outline_color = state['outline_color']
+	outline_size = state['outline_size']
+	super.from_state(state)

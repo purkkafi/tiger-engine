@@ -4,23 +4,9 @@ extends Node
 
 
 # looks up a Block object by its blockfile id and block id
-# by default, it is searched in the 'text' folder of the game language
-# two special blockfile id prefixes are accepted:
-# – 'lang:' look up the block relative to the lang folder
-# – 'assets:' look up the block relative to the assets folder
 # null is returned if the Block cannot be found
 static func find(blockfile_id: String, block_id: String) -> Variant:
-	var blockfile: BlockFile = null
-	var path: String
-	
-	if blockfile_id.begins_with('lang:'):
-		path = TE.language.path + '/' + blockfile_id.trim_prefix('lang:') + '.tef'
-	elif blockfile_id.begins_with('assets:'):
-		path = 'res://assets/' + blockfile_id.trim_prefix('assets:') + '.tef'
-	else:
-		path = TE.language.path + '/text/' + blockfile_id + '.tef'
-	
-	blockfile = Assets.blockfiles.get_resource(path)
+	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:/text/' + blockfile_id + '.tef')
 	
 	if block_id in blockfile.blocks:
 		return blockfile.blocks[block_id]

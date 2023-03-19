@@ -63,7 +63,7 @@ func next_blocking():
 		
 		match ins.name:
 			'PlaySong':
-				Audio.play_song(ins.song_id, TE.defs.transitions[ins.transition_id].duration)
+				Audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration)
 			
 			'PlaySound':
 				Audio.play_sound(ins.sound_id)
@@ -72,13 +72,13 @@ func next_blocking():
 				game_name = TE.ui_strings[ins.game_name_uistring]
 			
 			'BG':
-				tween = $VNStage.set_background(ins.bg_id, TE.defs.transitions[ins.transition_id], tween)
+				tween = $VNStage.set_background(ins.bg_id, TE.defs.transition(ins.transition_id), tween)
 			
 			'FG':
-				tween = $VNStage.set_foreground(ins.fg_id, TE.defs.transitions[ins.transition_id], tween)
+				tween = $VNStage.set_foreground(ins.fg_id, TE.defs.transition(ins.transition_id), tween)
 			
 			'HideUI':
-				tween = _hide_ui(TE.defs.transitions[ins.transition_id].duration, tween)
+				tween = _hide_ui(TE.defs.transition(ins.transition_id).duration, tween)
 			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
@@ -142,7 +142,7 @@ func _gui_scale_changed(gui_scale: Settings.GUIScale):
 func _hide_ui(duration: float, tween: Tween) -> Tween:
 	if tween == null:
 		tween = create_tween()
-	tween.tween_property($View, 'modulate:a', 0.0, duration)
+	tween.parallel().tween_property($View, 'modulate:a', 0.0, duration)
 	return tween
 
 
@@ -160,6 +160,13 @@ func _process(delta):
 		mouse_advancing = false
 	
 	if overlay_active:
+		return
+	
+	if vm.is_end_of_script():
+		if $View._is_waiting():
+			$View.update_state(delta)
+		else:
+			TE.switch_scene(load(TE.opts.title_screen).instantiate())
 		return
 	
 	# notify View of user input by calling either game_advanced or game_not_advanced

@@ -5,7 +5,7 @@ extends Node
 
 var songs: Cache = Cache.new('songs', 3)
 var sounds: Cache = Cache.new('sounds', 5)
-var bgs: Cache = Cache.new('bgs', 5)
+var imgs: Cache = Cache.new('imgs', 5)
 var blockfiles: Cache = Cache.new('blockfiles', 20)
 var scripts: Cache = Cache.new('scripts', 20)
 # for misc resources that don't have to be cached
@@ -20,8 +20,22 @@ func _ready():
 	scripts.hash_function = Callable(self, '_scriptfile_hash')
 
 
-static func in_lang(path: String) -> String:
-	return 'res://assets/lang/' + TE.language.id + path
+# resolves the given path relative to another
+# supports two special prefixes that ignore relative_to:
+# – 'assets:' causes the path to be resolved relative to the assets folder
+# – 'lang:' causes the path to be resolved relative to the chosen language's folder
+static func _resolve(path: String, relative_to: Variant = null) -> String:
+	if path.begins_with('assets:'):
+		return 'res://assets/' + path.lstrip('assets:')
+	elif path.begins_with('lang:'):
+		return TE.language.path + '/' + path.lstrip('lang:')
+	elif relative_to != null:
+		return relative_to + '/' + path
+	elif FileAccess.file_exists(path):
+		return path
+	else:
+		TE.log_error('cannot resolve nonexistent path: %s (no prefix or relative path given)' % [path])
+		return path
 
 
 # calculates the hash of every Block in the given BlockFile
@@ -44,7 +58,7 @@ func _debug_message() -> String:
 	var msg: String = ''
 	msg += 'Songs:\n' + songs._debug_message() + '\n'
 	msg += 'Sounds:\n' + sounds._debug_message() + '\n'
-	msg += 'Bgs:\n' + bgs._debug_message() + '\n'
+	msg += 'Imgs:\n' + imgs._debug_message() + '\n'
 	msg += 'Blockfiles:\n' + blockfiles._debug_message() + '\n'
 	msg += 'Scripts:\n' + scripts._debug_message() + '\n'
 	msg += 'Permanent:\n' + permanent._debug_message() + '\n'
@@ -126,7 +140,9 @@ class Cache:
 	
 	# queues a resource for loading in the background and adds it to
 	# the front of the cache
-	func queue(path: String):
+	func queue(path: String, relative_to: Variant = null):
+		Assets._resolve(path, relative_to)
+		
 		# don't queue if already in cache/queued
 		for entry in cache:
 			if entry.path == path:
@@ -138,11 +154,13 @@ class Cache:
 		return err
 	
 	
-	# gets the given resource. it may be:
+	# gets the given resource, optionally relative to a path. it may be:
 	# – returned from the cache, if in there
 	# – loaded now and added to the cache
 	# if a resource hasn't been queued with queue() or if loading is in progress, the method blocks
-	func get_resource(path: String):
+	func get_resource(path: String, relative_to: Variant = null):
+		path = Assets._resolve(path, relative_to)
+		
 		for entry in cache:
 			if entry.path == path and entry.resource != null:
 				# might be useless and spammy info to log?

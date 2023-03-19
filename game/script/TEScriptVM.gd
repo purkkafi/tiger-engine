@@ -13,11 +13,16 @@ func _init(_scriptfile: ScriptFile, script: String):
 	self.current_script = scriptfile.scripts[script]
 
 
+func is_end_of_script() -> bool:
+	return _current() == null
+
+
 # returns the current instruction
 func _current() -> Variant:
-	if index >= len(current_script.instructions)-1:
-		push_error('unexpected end of script: index %d of %d' % [index, len(current_script.instructions)])
-		Popups.error_dialog(Popups.GameError.SCRIPT_ERROR)
+	if index >= len(current_script.instructions):
+		return null
+		#push_error('unexpected end of script: index %d of %d' % [index, len(current_script.instructions)])
+		#Popups.error_dialog(Popups.GameError.SCRIPT_ERROR)
 	return current_script.instructions[index]
 
 
@@ -31,7 +36,7 @@ func _is_blocking(instruction) -> bool:
 func to_next_blocking() -> Array[Variant]:
 	var handle_ins: Array[Variant] = []
 	
-	while not _is_blocking(_current()):
+	while _current() != null and not _is_blocking(_current()):
 		handle_ins.append(_current())
 		index += 1
 	
