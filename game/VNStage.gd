@@ -38,11 +38,11 @@ func _get_layer_node(id: String) -> Node:
 	else: # id represents a path
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene
-			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/bgs')
+			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/img')
 			return scene.instantiate()
 		else: # assumed to be some kind of image
 			var rect: TextureRect = TextureRect.new()
-			rect.texture = Assets.imgs.get_resource(path, 'res://assets/bgs')
+			rect.texture = Assets.imgs.get_resource(path, 'res://assets/img')
 			return rect
 
 
