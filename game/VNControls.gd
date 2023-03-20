@@ -24,6 +24,13 @@ var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
 
 func _ready():
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
+	
+	# provide default values if running without a theme
+	if width == 0:
+		width = 1000
+	if height == 0:
+		height = 80
+	
 	_set_gui_size(TE.settings.gui_scale)
 
 

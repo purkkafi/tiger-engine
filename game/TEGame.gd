@@ -95,7 +95,11 @@ func next_blocking():
 			$View.pause(blocking.duration)
 		
 		'Block':
-			$View.show_block(Blocks.find(blocking.blockfile_id, blocking.block_id))
+			var block: Block = Blocks.find(blocking.blockfile_id, blocking.block_id)
+			if block == null:
+				TE.log_error('block not found: %s:%s' % [blocking.blockfile_id, blocking.block_id])
+				return
+			$View.show_block(block)
 			_unhide_ui()
 		
 		'Break':
@@ -162,13 +166,6 @@ func _process(delta):
 	if overlay_active:
 		return
 	
-	if vm.is_end_of_script():
-		if $View._is_waiting():
-			$View.update_state(delta)
-		else:
-			TE.switch_scene(load(TE.opts.title_screen).instantiate())
-		return
-	
 	# notify View of user input by calling either game_advanced or game_not_advanced
 	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
 		$View.game_advanced(delta)
@@ -177,7 +174,7 @@ func _process(delta):
 	
 	# move to next block, move to next line, or just update state is neither is requested
 	
-	if $View.is_next_block_requested():
+	if $View.is_next_block_requested() and not vm.is_end_of_script():
 		next_blocking()
 		return
 		
@@ -188,6 +185,11 @@ func _process(delta):
 			rollback.push(next_rollback)
 		next_rollback = create_save()
 		return
+	
+	if vm.is_end_of_script():
+		if $View.is_next_block_requested():
+			TE.switch_scene(load(TE.opts.title_screen).instantiate())
+			return
 	
 	$View.update_state(delta)
 
