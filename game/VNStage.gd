@@ -36,6 +36,11 @@ func _get_layer_node(id: String) -> Node:
 		return rect
 		
 	else: # id represents a path
+		# unlock possible unlockable
+		if id in TE.defs.unlocked_by_img:
+			for unlockable in TE.defs.unlocked_by_img[id]:
+				TE.settings.unlock(unlockable)
+				
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene
 			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/img')

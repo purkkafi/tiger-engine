@@ -152,8 +152,19 @@ func _resolve_definitions(tree: Tag):
 				
 			'img':
 				var id: String = node.get_string_at(0)
-				var value = node.get_value_at(1)
+				var value: String = node.get_string_at(1)
 				defs.imgs[id] = value
+			
+			'img_unlockable':
+				var id: String = node.get_string_at(0)
+				var value: String = node.get_string_at(1)
+				defs.imgs[id] = value
+				
+				var unlockable_id = 'img:%s' % id
+				defs.unlockables.append(unlockable_id)
+				if id not in defs.unlocked_by_img:
+					defs.unlocked_by_img[id] = []
+				defs.unlocked_by_img[id].append(unlockable_id)
 				
 			'trans':
 				var id: String = node.get_string_at(0)
@@ -199,6 +210,11 @@ func _resolve_definitions(tree: Tag):
 						if song_id not in defs.unlocked_by_song:
 							defs.unlocked_by_song[song_id] = []
 						defs.unlocked_by_song[song_id].append(id)
+					'by_img':
+						var img_id: String = trigger.get_string()
+						if img_id not in defs.unlocked_by_img:
+							defs.unlocked_by_img[img_id] = []
+						defs.unlocked_by_img[img_id].append(id)
 					_:
 						push_error('unknown trigger for unlockable %s: %s' % [id, trigger.name])
 			
