@@ -12,7 +12,7 @@ var next_letter_delta: float = 0.0 # delta until next letter is displayed
 var advance_held: float = 0.0 # sum of delta for which game has been advanced
 var line_switch_delta = 0.0 # delta until advancing to the next line if on FASTER speedup
 var speedup: Speedup = Speedup.NORMAL # status of speedup
-var state: State # current state
+var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
 var gamelog: Log = null # the log where lines will be recorded
 

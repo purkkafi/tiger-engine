@@ -106,7 +106,7 @@ func _resolve_top_level(node: Tag):
 
 func _resolve_lang(tree: Tag):
 		var name: String
-		var translation_by: String
+		var translation_by: String = ''
 		
 		for tag in tree.get_tags():
 			match tag.name:

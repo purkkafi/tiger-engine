@@ -54,6 +54,7 @@ func next_blocking() -> Variant:
 
 # returns the current state as a dict
 func get_state() -> Dictionary:
+	Assets.scripts.get_resource(scriptfile.resource_path) # ensure hash is calculated
 	var _hash = Assets.scripts.hashes[scriptfile.resource_path + ':' + current_script.name]
 	return {
 		'current_script' : current_script.name,

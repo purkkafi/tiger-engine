@@ -15,9 +15,9 @@ func _init(_name: String,_by: String):
 
 
 # returns the full name of this language, containing its
-# name and the translator (unless it is official)
+# name and the translator (unless it is empty)
 func full_name() -> String:
-	if translation_by == 'purkka':
+	if translation_by == '':
 		return name
 	else:
 		return name + ' (' + translation_by + ')'
