@@ -38,10 +38,14 @@ func _ready():
 	
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 	
-	if vcenter:
-		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER   
+	_apply_vcenter()
 	
 	super._ready()
+
+
+func _apply_vcenter():
+	if vcenter:
+		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER   
 
 
 func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
@@ -120,4 +124,6 @@ func from_state(state: Dictionary):
 	vcenter = state['vcenter']
 	outline_color = state['outline_color']
 	outline_size = state['outline_size']
+	# makes sure vcenter is applied since the option is not set in _ready()
+	_apply_vcenter()
 	super.from_state(state)

@@ -82,7 +82,7 @@ static func from_state(state: Dictionary) -> TEScriptVM:
 	var vm: TEScriptVM = TEScriptVM.new(_scriptfile, script)
 	vm.index = state['index']
 	
-	if vm.index >= len(vm.current_script.instructions):
+	if vm.index > len(vm.current_script.instructions):
 		TE.log_error('instruction index out of range')
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return

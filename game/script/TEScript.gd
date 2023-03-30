@@ -27,7 +27,17 @@ func hashcode() -> String:
 	return ctxt.finish().hex_encode()
 
 
-class IBlock extends RefCounted:
+class BaseInstruction extends RefCounted:
+	
+	
+	# returns a string id that is used to determine if the same instruction
+	# is already being handled
+	# can be overridden to allow instructions to be repeated based on their args
+	func repeat_id() -> String:
+		return self.name
+
+
+class IBlock extends BaseInstruction:
 	const name: String = 'Block'
 	var blockfile_id: String
 	var block_id: String
@@ -42,7 +52,7 @@ class IBlock extends RefCounted:
 		return 'block %s, %s' % [blockfile_id, block_id]
 
 
-class INvl extends RefCounted:
+class INvl extends BaseInstruction:
 	const name: String = 'Nvl'
 	var options: Dictionary = {}
 	
@@ -64,13 +74,13 @@ class INvl extends RefCounted:
 		return 'nvl %s' % options
 
 
-class IAdv extends RefCounted:
+class IAdv extends BaseInstruction:
 	const name: String = 'Adv'
 	func _to_string() -> String:
 		return 'adv'
 
 
-class IPause extends RefCounted:
+class IPause extends BaseInstruction:
 	const name: String = 'Pause'
 	var duration: float
 	
@@ -83,7 +93,7 @@ class IPause extends RefCounted:
 		return 'pause %f' % [duration]
 
 
-class IHideUI extends RefCounted:
+class IHideUI extends BaseInstruction:
 	const name: String = 'HideUI'
 	var transition_id: String
 	
@@ -96,7 +106,7 @@ class IHideUI extends RefCounted:
 		return 'hideui %s' % [transition_id]
 
 
-class IPlaySound extends RefCounted:
+class IPlaySound extends BaseInstruction:
 	const name: String = 'PlaySound'
 	var sound_id: String
 	
@@ -109,7 +119,7 @@ class IPlaySound extends RefCounted:
 		return 'playsound %s' % [sound_id]
 
 
-class IPlaySong extends RefCounted:
+class IPlaySong extends BaseInstruction:
 	const name: String = 'PlaySong'
 	var song_id: String
 	var transition_id: String
@@ -124,7 +134,7 @@ class IPlaySong extends RefCounted:
 		return 'playsong %s, %s' % [song_id, transition_id]
 
 
-class IBG extends RefCounted:
+class IBG extends BaseInstruction:
 	const name: String = 'BG'
 	var bg_id: String
 	var transition_id: String
@@ -139,7 +149,7 @@ class IBG extends RefCounted:
 		return 'bg %s, %s' % [bg_id, transition_id]
 
 
-class IFG extends RefCounted:
+class IFG extends BaseInstruction:
 	const name: String = 'FG'
 	var fg_id: String
 	var transition_id: String
@@ -157,7 +167,7 @@ class IFG extends RefCounted:
 		return 'fg %s, %s' % [fg_id, transition_id]
 
 
-class IMeta extends RefCounted:
+class IMeta extends BaseInstruction:
 	const name: String = 'Meta'
 	var game_name_uistring: String
 	
@@ -175,7 +185,91 @@ class IMeta extends RefCounted:
 		return 'meta %s' % [game_name_uistring]
 
 
-class IBreak extends RefCounted:
+class IBreak extends BaseInstruction:
 	const name: String = 'Break'
 	func _to_string() -> String:
 		return 'break'
+
+
+class IEnter extends BaseInstruction:
+	const name: String = 'Enter'
+	var sprite: String
+	var at: Variant # null or a sprite position descriptor String
+	var with: Variant # null or a transition id String
+	var by: Variant # null or String
+	
+	
+	func _init(_sprite: String, _at: Variant, _with: Variant, _by: Variant):
+		self.sprite = _sprite
+		self.at = _at
+		self.with = _with
+		self.by = _by
+	
+	
+	func repeat_id() -> String:
+		return 'Enter_%s_%s' % [sprite, by]
+	
+	
+	func _to_string() -> String:
+		return 'enter %s at %s with %s by %s' % [sprite, at, with, by]
+
+
+class IMove extends BaseInstruction:
+	const name: String = 'Move'
+	var sprite: String
+	var to: Variant # null or a sprite position descriptor String
+	var with: Variant # null or a transition id String
+	
+	
+	func _init(_sprite: String, _to: Variant, _with: Variant):
+		self.sprite = _sprite
+		self.to = _to
+		self.with = _with
+	
+	
+	func repeat_id() -> String:
+		return 'Move_%s' % sprite
+	
+	
+	func _to_string() -> String:
+		return 'move %s to %s with %s' % [sprite, to, with]
+
+
+class IShow extends BaseInstruction:
+	const name: String = 'Show'
+	var sprite: String
+	var _as: String
+	var with: Variant # null or a transition id String
+	
+	
+	func _init(_sprite: String, __as: String, _with: Variant):
+		self.sprite = _sprite
+		self._as = __as
+		self.with = _with
+	
+	
+	func repeat_id() -> String:
+		return 'Show_%s' % sprite
+	
+	
+	func _to_string() -> String:
+		return 'show %s as %s with %s' % [sprite, _as, with]
+
+
+class IExit extends BaseInstruction:
+	const name: String = 'Exit'
+	var sprite: String
+	var with: Variant # null or transition id String
+	
+	
+	func _init(_sprite: String, _with: Variant):
+		self.sprite = _sprite
+		self.with = _with
+	
+	
+	func repeat_id() -> String:
+		return 'Exit_%s' % sprite
+	
+	
+	func _to_string() -> String:
+		return 'exit %s with %s' % [sprite, with]

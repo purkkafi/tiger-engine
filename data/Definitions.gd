@@ -19,11 +19,14 @@ var unlocked_from_start: Array[String] = []
 var unlocked_by_song: Dictionary = {}
 # map of img ids to Array of unlockable ids unlocked when the image is shown
 var unlocked_by_img: Dictionary = {}
-# a map of speaker ids to Speaker objects
+# map of speaker ids to Speaker objects
 var speakers: Dictionary = {}
-# a map of color ids to Color objects
+# map of color ids to Color objects
 # should not be accessed directly; use Definitions.color() to allow inline colors
 var _colors: Dictionary = {}
+# map of sprite ids to sprite paths
+var sprites: Dictionary = {}
+
 
 const trans_types = {
 	'QUART': Tween.TRANS_QUART,
@@ -69,6 +72,11 @@ func transition(trans_id: String) -> Transition:
 	return Transition.new(trans_id)
 
 
+# returns an instant transition
+static func instant() -> Transition:
+	return Transition.new('QUAD EASE_IN 0s')
+
+
 class Transition extends RefCounted:
 	var trans_type # TransitionType from Tween
 	var ease_type # EaseType from Tween
@@ -81,7 +89,7 @@ class Transition extends RefCounted:
 		# special case: definition with only duration
 		if len(parts) == 1:
 			if not parts[0].ends_with('s'):
-				push_error('transition duration should end in s: %s' % parts[2])
+				push_error('transition duration should end in s: %s' % string)
 			self.duration = float(parts[0].trim_suffix('s'))
 			self.trans_type = Tween.TRANS_LINEAR
 			self.ease_type = Tween.EASE_IN

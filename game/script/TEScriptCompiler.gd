@@ -41,6 +41,92 @@ func compile_script(script_tag: Tag):
 				ins.append(TEScript.IMeta.new(tag.get_dict()))
 			'break':
 				ins.append(TEScript.IBreak.new())
+			'enter':
+				for command in tag.args:
+					var sprite: String = ''
+					var at: Variant = null
+					var with: Variant = null
+					var by: Variant = null
+					
+					for arg in command:
+						if arg is String and sprite == '':
+							sprite = arg.strip_edges()
+						elif arg is Tag:
+							match arg.name:
+								'at':
+									at = arg.get_string()
+								'with':
+									with = arg.get_string()
+								'by':
+									by = arg.get_string()
+								_:
+									push_error('unknown argument for \\enter: %s' % arg)
+					
+					ins.append(TEScript.IEnter.new(sprite, at, with, by))
+			
+			'move':
+				for command in tag.args:
+					var sprite: String = ''
+					var to: String = ''
+					var with: Variant = null
+					
+					for arg in command:
+						if arg is String and sprite == '':
+							sprite = arg.strip_edges()
+						elif arg is Tag:
+							match arg.name:
+								'to':
+									to = arg.get_string()
+								'with':
+									with = arg.get_string()
+								_:
+									push_error('unknown argument for \\move: %s' % arg)
+					
+					if to == '':
+						push_error('argument \\to must be provided for \\move: %s' % tag)
+					
+					ins.append(TEScript.IMove.new(sprite, to, with))
+			
+			'show':
+				for command in tag.args:
+					var sprite: String = ''
+					var _as: String = ''
+					var with: Variant = null
+					
+					for arg in command:
+						if arg is String and sprite == '':
+							sprite = arg.strip_edges()
+						elif arg is Tag:
+							match arg.name:
+								'as':
+									_as = arg.get_string()
+								'with':
+									with = arg.get_string()
+								_:
+									push_error('unknown argument for \\show: %s' % arg)
+					
+					if _as == '':
+						push_error('argument \\as must be provided for \\show: %s' % tag)
+					
+					ins.append(TEScript.IShow.new(sprite, _as, with))
+			
+			'exit':
+				for command in tag.args:
+					var sprite: String = ''
+					var with: Variant = null
+					
+					for arg in command:
+						if arg is String and sprite == '':
+							sprite = arg.strip_edges()
+						elif arg is Tag:
+							match arg.name:
+								'with':
+									with = arg.get_string()
+								_:
+									push_error('unknown argument for \\exit: %s' % arg)
+					
+					ins.append(TEScript.IExit.new(sprite, with))
+			
 			_:
 				push_error('unknown instruction: %s' % [tag])
 	

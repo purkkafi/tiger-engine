@@ -234,6 +234,14 @@ func _resolve_definitions(tree: Tag):
 				if speaker.id == null:
 					push_error('must specify speaker id')
 				defs.speakers[speaker.id] = speaker
+				
+			'sprite':
+				# just put the sprite path in there, it will be resolved later
+				var folder_path: String = node.get_string_at(1)
+				if not folder_path.ends_with('/'):
+					push_error('sprite paths must end in /: %s' % folder_path)
+				defs.sprites[node.get_string_at(0)] = folder_path
+				
 			_:
 				push_error('unknown definition: %s' % [node])
 

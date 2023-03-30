@@ -16,7 +16,12 @@ script = ExtResource("1_6p0cu")
 layout_mode = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(1, 0, 1, 1)
+color = Color(1, 0, 1, 0)
+
+[node name="Sprites" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
 
 [node name="FG" type="ColorRect" parent="."]
 layout_mode = 0

@@ -52,14 +52,14 @@ func _ready():
 func next_blocking():
 	var instructions: Array = vm.to_next_blocking()
 	var tween: Tween = null
-	var ins_types: Dictionary = {}
+	var repeat_ids: Dictionary = {}
 	
 	for ins in instructions:
 		# check that same instruction isn't already active
-		# (there can be problems with repeating instructions)
-		if ins.name in ins_types:
-			push_error('illegal instruction %s: already handling of same type' % ins)
-		ins_types[ins.name] = true
+		# (the user probably doesn't want to do this)
+		if ins.repeat_id() in repeat_ids:
+			push_error('illegal repeat of instruction %s: already handling' % ins)
+		repeat_ids[ins.repeat_id()] = true
 		
 		match ins.name:
 			'PlaySong':
@@ -79,6 +79,18 @@ func next_blocking():
 			
 			'HideUI':
 				tween = _hide_ui(TE.defs.transition(ins.transition_id).duration, tween)
+			
+			'Enter':
+				tween = $VNStage.enter_sprite(ins.sprite, ins.at, ins.with, ins.by, tween)
+			
+			'Move':
+				tween = $VNStage.move_sprite(ins.sprite, ins.to, ins.with, tween)
+			
+			'Show':
+				tween = $VNStage.show_sprite(ins.sprite, ins._as, ins.with, tween)
+			
+			'Exit':
+				tween = $VNStage.exit_sprite(ins.sprite, ins.with, tween)
 			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])

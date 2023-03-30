@@ -8,6 +8,8 @@ var sounds: Cache = Cache.new('sounds', 5)
 var imgs: Cache = Cache.new('imgs', 5)
 var blockfiles: Cache = Cache.new('blockfiles', 20)
 var scripts: Cache = Cache.new('scripts', 20)
+var sprites: Cache = Cache.new('sprites', 10) # note: stores TagResources, not actual sprites
+var sprite_files: Cache = Cache.new('sprite_files', 30)
 # for misc resources that don't have to be cached
 var noncached: Cache = Cache.new('noncached', 0)
 # for resources that are cached permanently
