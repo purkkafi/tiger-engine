@@ -10,4 +10,4 @@
 
 As of now, missing features include (composite) sprites, control flow, and a Godot plugin for writing game script files.
 
-There will be a tutorial and further documentation at some point
+[Documentation](https://github.com/purkkafi/tiger-engine/wiki) is in progress.
