@@ -55,6 +55,16 @@ func _set_gui_size(gui_scale: Settings.GUIScale):
 	self.position.y = TE.SCREEN_HEIGHT - bottom_offset - h
 
 
+# disables or enables all buttons
+# when disabling and then enabling, their previous state will be restored
+# this avoids errors with the back button (its state is managed by Rollback)
 func set_buttons_disabled(disabled: bool):
 	for btn in hbox.get_children():
-		btn.disabled = disabled
+		if disabled: # record current state into metadata when disabling
+			btn.set_meta('disabled_state', btn.disabled)
+			btn.disabled = true
+		else: # when enabling, read previous state from metadata
+			if btn.has_meta('disabled_state'):
+				btn.disabled = btn.get_meta('disabled_state')
+			else:
+				btn.disabled = false

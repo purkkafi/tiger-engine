@@ -15,8 +15,5 @@ func add_line(line: String):
 
 
 # removes the last line; used on rollback
-# actually removes the last two lines because the latter one will be
-# added again when the save state is loaded
 func remove_last():
-	lines.pop_back()
 	lines.pop_back()

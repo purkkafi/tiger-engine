@@ -23,11 +23,13 @@ const SKIP_TWEEN_SCALE: float = 10.0 # factor to multiply tweening speed with
 const SPEEDUP_THRESHOLD_FAST: float = 0.25 # treshold to start speeding up
 const SPEEDUP_THRESHOLD_FASTER: float = 1.15 # treshold to start speeding up faster
 const LINE_END = '[next] ▶[/next]' # text to insert at the end of every line
+const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	' ' : 0, '\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
 	'.' : 14, '!' : 14, '?' : 14, '–' : 14, ':' : 14,
 	';' : 11,
-	',' : 8
+	',' : 8,
+	DEL : 10
 }
 var GET_SPEAKER_REGEX = RegEx.create_from_string('\\[speaker\\](.+)\\[\\/speaker\\]')
 
@@ -117,7 +119,7 @@ func show_block(_block: Block) -> void:
 
 
 # proceeds to the next line
-func next_line() -> void:
+func next_line(ignore_log: bool = false) -> void:
 	# parse speaker specification
 	var speaker = null
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
@@ -129,7 +131,8 @@ func next_line() -> void:
 		else:
 			TE.log_error('speaker not rezognized: %s' % id)
 	
-	gamelog.add_line(lines[line_index]) # TODO speaker is not handled yet
+	if not ignore_log:
+		gamelog.add_line(process_line(lines[line_index])) # TODO speaker is not handled yet
 	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
 	next_effect.reset()
@@ -157,6 +160,17 @@ func _to_end_of_line():
 	var label: RichTextLabel = _current_label()
 	if label != null:
 		label.visible_characters = label.get_total_character_count()
+		# handles DEL characters
+		label.text = process_line(label.text)
+
+
+# converts the given line to a form that is suitable to display,
+# handling DEL characters properly
+func process_line(line: String):
+	while line.find(View.DEL) != -1:
+		var index = line.find(View.DEL)
+		line = line.substr(0, index-1) + line.substr(index+1)
+	return line
 
 
 # updates the state of the View according to the given delta
@@ -203,14 +217,21 @@ func update_state(delta: float):
 		next_letter_delta -= text_speed * delta
 		
 		while next_letter_delta < 0 and !_is_end_of_line():
-			var next_char = label.text[label.visible_characters]
+			var next_char = label.get_parsed_text()[label.visible_characters]
 			
 			# no pause after final character is displayed
 			# magic number -3 because the text should always end with ' ▶'
 			if label.visible_characters != label.get_total_character_count()-3:
 				next_letter_delta += _char_wait_delta(next_char)
 			
-			label.visible_characters += 1
+			# handle delete character by erasing it & the previous character
+			if next_char == DEL:
+				var index = label.text.find(DEL)
+				var text = label.text
+				label.text = text.substr(0, index-1) + text.substr(index+1)
+				label.visible_characters -= 1 # need to go back since the current char is deleted
+			else: # else, proceed normally
+				label.visible_characters += 1
 		
 	elif state == State.SCROLLING_TEXT:
 		# reached end of line normally
@@ -364,7 +385,7 @@ func from_state(state: Dictionary):
 	
 	# skip to the correct line
 	while line_index <= state['line_index']-1:
-		next_line()
+		next_line(true)
 		_to_end_of_line()
 
 

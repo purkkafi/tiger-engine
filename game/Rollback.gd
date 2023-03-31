@@ -21,16 +21,14 @@ func _init(_back_button: Button):
 # adds a rollback entry, clearing older ones if necessary
 func push(save: Dictionary):
 	entries.push_back(save)
+	back_button.disabled = false
 	
 	while len(entries) > ROLLBACK_SIZE:
 		entries.pop_front()
-	
-	if back_button.disabled:
-		back_button.disabled = false
 
 
 # returns whether rollback is empty
-func is_empty():
+func is_empty() -> bool:
 	return entries.is_empty()
 
 
@@ -38,13 +36,13 @@ func is_empty():
 func pop() -> Dictionary:
 	if entries.is_empty():
 		TE.log_error('rollback is empty')
-	elif len(entries) == 1:
-		back_button.disabled = true
 	
-	return entries.pop_back()
+	var entry = entries.pop_back()
+	back_button.disabled = is_empty()
+	return entry
 
 
 # sets the rollback entries; used to preserve them when loading from a save state
 func set_rollback(new_entries: Array[Dictionary]):
 	entries = new_entries
-	back_button.disabled = len(entries) == 0
+	back_button.disabled = is_empty()
