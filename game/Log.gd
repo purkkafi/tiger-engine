@@ -4,12 +4,20 @@ class_name Log extends RefCounted
 
 
 const LOG_SIZE: int = 50 # amount of lines to keep
-var lines: Array[String] = [] # the log
+# the log
+# every line is either:
+# – a String
+# – a dict of form { speaker: [speaker object], line: [line] }
+var lines: Array[Variant] = []
 
 
 # adds a line to the log, removing old ones if necessary
-func add_line(line: String):
-	lines.push_back(line)
+# speaker is either the speaker object or null
+func add_line(line: String, speaker: Variant = null):
+	if speaker == null:
+		lines.push_back(line)
+	else:
+		lines.push_back({ 'speaker': speaker, 'line': line })
 	while len(lines) > LOG_SIZE:
 		lines.pop_front()
 

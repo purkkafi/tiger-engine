@@ -132,7 +132,7 @@ func next_line(ignore_log: bool = false) -> void:
 			TE.log_error('speaker not rezognized: %s' % id)
 	
 	if not ignore_log:
-		gamelog.add_line(process_line(lines[line_index])) # TODO speaker is not handled yet
+		gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
 	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
 	next_effect.reset()

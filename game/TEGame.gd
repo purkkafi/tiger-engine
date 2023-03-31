@@ -320,7 +320,6 @@ func take_screenshot() -> Image:
 
 
 func _back():
-	print(rollback.is_empty())
 	TE.load_from_save(rollback.pop(), rollback, gamelog)
 
 
