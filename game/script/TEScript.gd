@@ -68,6 +68,10 @@ class INvl extends BaseInstruction:
 					options['vcenter'] = true
 				'outline':
 					options['outline'] = [ opt.get_string_at(0), opt.get_string_at(1) ]
+				'text_color':
+					options['text_color'] = opt.get_string()
+				_:
+					push_error('unknown NVL option: %s' % opt.name)
 	
 	
 	func _to_string() -> String:

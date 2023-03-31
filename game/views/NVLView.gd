@@ -16,7 +16,8 @@ var options: Dictionary = {}
 var hcenter: bool = false
 var vcenter: bool = false
 var outline_size: float = 0
-var outline_color: String = '#00000000'
+var outline_color: Variant = null # Color or null
+var text_color: Variant = null # Color or null
 
 
 # indent that appears at the start of lines after the first
@@ -33,8 +34,10 @@ func _ready():
 	if 'vcenter' in options:
 		vcenter = options['vcenter']
 	if 'outline' in options:
-		outline_color = '#' + TE.defs.color(str(options['outline'][0])).to_html()
+		outline_color = TE.defs.color(str(options['outline'][0]))
 		outline_size = float(options['outline'][1])
+	if 'text_color' in options:
+		text_color = TE.defs.color(str(options['text_color']))
 	
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 	
@@ -72,7 +75,10 @@ func _next_line(line: String, _speaker: Definitions.Speaker = null):
 	var label: RichTextLabel = create_label()
 	
 	if outline_size != 0:
-		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color, line]
+		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color.to_html(), line]
+	
+	if text_color != null:
+		line = '[color=%s]%s[/color]' % [text_color.to_html(), line]
 	
 	if hcenter: # if centered: no indent and lines are farther apart
 		line = '[center]%s[/center]' % line
@@ -112,18 +118,30 @@ func _scroll_to_bottom():
 
 func get_state() -> Dictionary:
 	var state: Dictionary = super.get_state()
-	state['hcenter'] = hcenter
-	state['vcenter'] = vcenter
-	state['outline_color'] = outline_color
-	state['outline_size'] = outline_size
+	if hcenter:
+		state['hcenter'] = hcenter
+	if vcenter:
+		state['vcenter'] = vcenter
+	if outline_color != null:
+		state['outline_color'] = outline_color.to_html()
+	if outline_size != 0:
+		state['outline_size'] = outline_size
+	if text_color != null:
+		state['text_color'] = text_color.to_html()
 	return state
 
 
 func from_state(state: Dictionary):
-	hcenter = state['hcenter']
-	vcenter = state['vcenter']
-	outline_color = state['outline_color']
-	outline_size = state['outline_size']
+	if 'hcenter' in state:
+		hcenter = state['hcenter']
+	if 'vcenter' in state:
+		vcenter = state['vcenter']
+	if 'outline_color' in state:
+		outline_color = Color.html(state['outline_color'])
+	if 'outline_size' in state:
+		outline_size = state['outline_size']
+	if 'text_color' in state:
+		text_color = Color.html(state['text_color'])
 	# makes sure vcenter is applied since the option is not set in _ready()
 	_apply_vcenter()
 	super.from_state(state)
