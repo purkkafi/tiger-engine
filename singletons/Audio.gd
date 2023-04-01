@@ -4,8 +4,8 @@ extends Node
 
 # tween used for fading song in
 var music_tween: Tween = null
-# id of currently playing song
-var song_id: String
+# id of currently playing song; will be the empty string if no song is playing
+var song_id: String = ''
 
 
 # emitted with the song id when a song is played
@@ -16,10 +16,15 @@ signal song_paused
 
 # plays a song with the given id, fading in with the given duration in seconds
 # if another song is playing, it is faded out simultaneously
+# an empty string can be passed to stop playing a song
 func play_song(new_song_id: String, duration: float):
 	song_id = new_song_id
-	var path = TE.defs.songs[song_id]
-	var new_song = Assets.songs.get_resource(path, 'res://assets/music')
+	var new_song
+	if new_song_id != '':
+		var path = TE.defs.songs[song_id]
+		new_song = Assets.songs.get_resource(path, 'res://assets/music')
+	else:
+		new_song = null
 	
 	# if new song already fading in, end the transition
 	if music_tween != null and music_tween.is_running():
