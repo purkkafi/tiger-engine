@@ -51,6 +51,18 @@ const ease_types = {
 }
 
 
+# returns unlockables that belong in the given namespace
+# (i.e. their name starts with the given prefix)
+# idiomatically, unlockables are given ids of form namespace:unlockable_id
+# and, as such, this method can be called with a string of form "[namespace]:"
+func unlockables_in_namespace(prefix: String) -> Array[String]:
+	var found: Array[String] = []
+	for unlockable in unlockables:
+		if unlockable.begins_with(prefix):
+			found.append(unlockable)
+	return found
+
+
 # returns the corresponding color or null if the given value does not represent one
 # a valid color can be:
 # – the id of a color definition

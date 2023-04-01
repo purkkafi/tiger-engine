@@ -82,3 +82,11 @@ func translate_text(text: String):
 	if text.begins_with('%') and text.ends_with('%'):
 		return _get(text.substr(1, len(text)-2))
 	return text
+
+
+# if ui_strings autoquote_left and autoquote_right are defined, surrounds the
+# given text with them; otherwise, returns it as-is
+func autoquote(text: String):
+	if 'autoquote_left' in self.strings and 'autoquote_right' in self.strings:
+		return _get('autoquote_left') + text + _get('autoquote_right')
+	return text

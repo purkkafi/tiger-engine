@@ -8,6 +8,12 @@ var music_tween: Tween = null
 var song_id: String
 
 
+# emitted with the song id when a song is played
+signal song_played
+# emitted when audio is paused with id of current song & whether paused or unapaused
+signal song_paused
+
+
 # plays a song with the given id, fading in with the given duration in seconds
 # if another song is playing, it is faded out simultaneously
 func play_song(new_song_id: String, duration: float):
@@ -37,6 +43,9 @@ func play_song(new_song_id: String, duration: float):
 	if song_id in TE.defs.unlocked_by_song:
 		for unlockable in TE.defs.unlocked_by_song[song_id]:
 			TE.settings.unlock(unlockable)
+	
+	# emit signal
+	emit_signal('song_played', song_id)
 
 
 func _set_song_volume(val: float):
@@ -69,6 +78,7 @@ func set_paused(paused: bool):
 	$SongPlayer.stream_paused = paused
 	$NextSongPlayer.stream_paused = paused
 	$SoundPlayer.stream_paused = paused
+	emit_signal('song_paused', song_id, paused)
 
 
 # plays a sound effect with the given id
@@ -79,6 +89,13 @@ func play_sound(id: String):
 	
 	$SoundPlayer.stream = sound
 	$SoundPlayer.play()
+
+
+# returns the AudioStreamPlayer of currently playing song or null
+func song_player():
+	if $SongPlayer.get_stream() != null:
+		return $SongPlayer
+	return null
 
 
 # returns debug text that displays volumes of audio buses

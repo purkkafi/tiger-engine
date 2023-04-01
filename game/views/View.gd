@@ -29,7 +29,7 @@ const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	'.' : 14, '!' : 14, '?' : 14, '–' : 14, ':' : 14,
 	';' : 11,
 	',' : 8,
-	DEL : 10
+	DEL : 5
 }
 var GET_SPEAKER_REGEX = RegEx.create_from_string('\\[speaker\\](.+)\\[\\/speaker\\]')
 
@@ -127,7 +127,7 @@ func next_line(ignore_log: bool = false) -> void:
 		var id: String = search.strings[1]
 		if id in TE.defs.speakers:
 			speaker = TE.defs.speakers[id]
-			lines[line_index] = lines[line_index].substr(search.get_end())
+			lines[line_index] = TE.ui_strings.autoquote(lines[line_index].substr(search.get_end()))
 		else:
 			TE.log_error('speaker not rezognized: %s' % id)
 	
