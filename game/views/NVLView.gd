@@ -131,7 +131,7 @@ func get_state() -> Dictionary:
 	return state
 
 
-func from_state(state: Dictionary):
+func from_state(state: Dictionary, ctxt: ControlExpr.GameContext):
 	if 'hcenter' in state:
 		hcenter = state['hcenter']
 	if 'vcenter' in state:
@@ -144,4 +144,4 @@ func from_state(state: Dictionary):
 		text_color = Color.html(state['text_color'])
 	# makes sure vcenter is applied since the option is not set in _ready()
 	_apply_vcenter()
-	super.from_state(state)
+	super.from_state(state, ctxt)

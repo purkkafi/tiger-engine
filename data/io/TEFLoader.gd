@@ -241,6 +241,13 @@ func _resolve_definitions(tree: Tag):
 				if not folder_path.ends_with('/'):
 					push_error('sprite paths must end in /: %s' % folder_path)
 				defs.sprites[node.get_string_at(0)] = folder_path
+			
+			'var':
+				var name: String = node.get_string_at(0)
+				var ctrl: String = node.get_control_at(1)
+				var default_val: Variant = ControlExpr.exec_contextless(ctrl)
+				
+				defs.variables[name] = default_val
 				
 			_:
 				push_error('unknown definition: %s' % [node])

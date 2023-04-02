@@ -7,6 +7,7 @@ class_name TEGame extends Control
 var vm: TEScriptVM # virtual machine that runs the game script
 var rollback: Rollback # stores save states for Back button
 var gamelog: Log # the game log
+var context: ControlExpr.GameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 var overlay_active: bool = false # whether there is an overlay and game should be paused
@@ -46,6 +47,16 @@ func _ready():
 	# and in that case, the call is not needed
 	if vm != null:
 		next_blocking()
+	
+	# fill default values of variables
+	var var_names: Array[String] = []
+	var var_values: Array[Variant] = []
+	
+	for _var in TE.defs.variables.keys():
+		var_names.append(_var)
+		var_values.append(TE.defs.variables[_var])
+	
+	context = ControlExpr.GameContext.new(var_names, var_values)
 
 
 # advances to the next instruction that blocks the game, handling everything inbetween
@@ -111,7 +122,7 @@ func next_blocking():
 			if block == null:
 				TE.log_error('block not found: %s:%s' % [blocking.blockfile_id, blocking.block_id])
 				return
-			$View.show_block(block)
+			$View.show_block(block, context)
 			_unhide_ui()
 		
 		'Break':
@@ -270,10 +281,20 @@ func _record_last_save(save: Dictionary):
 
 # produces a dict containing the current state
 func create_save() -> Dictionary:
+	var var_dict: Dictionary = {}
+	for i in len(context.var_names):
+		# only store variables that don't have their default values
+		# this allows the game programmer to change the defaults later
+		# without breaking old saves
+		# (also saves some memory/processing time but that's not as important)
+		if context.var_values[i] != TE.defs.variables[context.var_names[i]]:
+			var_dict[context.var_names[i]] = context.var_values[i]
+	
 	var save = {
 		'vm' : vm.get_state(),
 		'view' : $View.get_state(),
 		'stage' : $VNStage.get_state(),
+		'variables' : var_dict,
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
 		'song_id' : Audio.song_id,
@@ -294,6 +315,11 @@ func load_save(save: Dictionary):
 	
 	vm = TEScriptVM.from_state(save['vm'])
 	
+	# set variables
+	var vars: Dictionary = save['variables']
+	for var_name in vars.keys():
+		context._assign(var_name, vars[var_name])
+	
 	# replace View with the correct scene first
 	var view_scene = load(save['view']['scene'])
 	if view_scene == null:
@@ -301,7 +327,7 @@ func load_save(save: Dictionary):
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
 	_replace_view(view_scene.instantiate())
-	$View.from_state(save['view'])
+	$View.from_state(save['view'], context)
 	
 	# keep song playing if it is currently playing
 	if Audio.song_id != save['song_id']:
