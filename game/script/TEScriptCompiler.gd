@@ -32,7 +32,13 @@ func compile_script(script_tag: Tag):
 			'playsound':
 				ins.append(TEScript.IPlaySound.new(tag.get_string()))
 			'playsong':
-				ins.append(TEScript.IPlaySong.new(tag.get_string_at(0), tag.get_string_at(1)))
+				var value = tag.get_value_at(0)
+				if value is String:
+					ins.append(TEScript.IPlaySong.new(value, tag.get_string_at(1)))
+				elif value is Tag and value.name == 'clear':
+					ins.append(TEScript.IPlaySong.new('', tag.get_string_at(1)))
+				else:
+					push_error('unknown argument for \\playsong: %s' % value)
 			'bg':
 				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))
 			'fg':
