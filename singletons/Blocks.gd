@@ -28,11 +28,12 @@ func resolve_string(block: Block, paragraph_separator: String = '\n\n') -> Strin
 
 # resolves this Block into an array of its parts, separated by Break objects
 # in the original taglist
-func resolve_parts(block: Block) -> Array[String]:
-	return _resolve_parts(block.taglist)
+# a context from which variables are resolved can optionally be provided
+func resolve_parts(block: Block, ctxt: ControlExpr.BaseContext=null) -> Array[String]:
+	return _resolve_parts(block.taglist, ctxt)
 
 
-func _resolve_parts(taglist: Array[Variant]) -> Array[String]:
+func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext) -> Array[String]:
 	var parts: Array[String] = []
 	parts.append('') # start building the first string
 	
@@ -44,9 +45,8 @@ func _resolve_parts(taglist: Array[Variant]) -> Array[String]:
 			# appends to the current String
 			parts.push_back(parts.pop_back() + node)
 		elif node is Tag.ControlTag:
-			# TODO implement handling of ControlTags
-			push_error('NYI: cannot stringify control tag: %s' % node)
-			parts.push_back(parts.pop_back() + str(node))
+			var result = ControlExpr.exec(node.string, ctxt)
+			parts.push_back(parts.pop_back() + str(result))
 		elif node is Tag:
 			# basic formatting
 			if node.name == 'i':
@@ -66,9 +66,13 @@ func _resolve_parts(taglist: Array[Variant]) -> Array[String]:
 				if prev != null and prev != '':
 					parts.push_back(prev)
 				
-				var contents: Array[String] = _resolve_parts(node.args[0])
+				var contents: Array[String] = _resolve_parts(node.args[0], ctxt)
 				for line in contents:
 					parts.push_back('[speaker]%s[/speaker]%s' % [node.name, line])
+			elif ctxt != null: # try resolving from context
+				var value = ctxt._get_var(node.name)
+				if value != null:
+					parts.push_back(parts.pop_back() + str(value))
 			else: # unknown tag
 				TE.log_error('cannot stringify tag: %s' % [node])
 				parts.push_back(str(node))

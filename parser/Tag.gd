@@ -69,6 +69,14 @@ func get_tag_at(index: int):
 	return args[index][0]
 
 
+# returns the string of the ControlTag at the given argument or null
+func get_control_at(index: int):
+	if index >= len(args) or (!args[index][0] is ControlTag):
+		push_error('expected control tag at index %s, got %s' % [index, self])
+		return null
+	return (args[index][0] as ControlTag).string
+
+
 # returns the concatenated Strings and Breaks of the single argument or null
 func get_text():
 	if len(args) != 1:
