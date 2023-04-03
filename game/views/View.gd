@@ -346,6 +346,12 @@ func _get_scene_path():
 	TE.log_error("view doesn't implement _get_scene_path()")
 
 
+# handles options passed to the view
+# overriding is not mandatory if the view doesn't want to handle options
+func parse_options(_options: Array[Tag]):
+	TE.log_error("view doesn't implement parse_options(), given %s" % _options)
+
+
 # returns the current state of this View as a dict
 func get_state() -> Dictionary:
 	return {

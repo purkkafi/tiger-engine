@@ -5,7 +5,7 @@ class_name TEScriptVM extends RefCounted
 var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
-var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'Adv', 'Nvl' ]
+var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):

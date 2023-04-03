@@ -33,6 +33,7 @@ class BaseInstruction extends RefCounted:
 	# returns a string id that is used to determine if the same instruction
 	# is already being handled
 	# can be overridden to allow instructions to be repeated based on their args
+	# an empty return value is ignored (the instruction can be repeated freely)
 	func repeat_id() -> String:
 		return self.name
 
@@ -52,36 +53,19 @@ class IBlock extends BaseInstruction:
 		return 'block %s, %s' % [blockfile_id, block_id]
 
 
-class INvl extends BaseInstruction:
-	const name: String = 'Nvl'
-	var options: Dictionary = {}
+class IView extends BaseInstruction:
+	const name: String = 'View'
+	var view_id: String
+	var options: Array[Tag]
 	
 	
-	func _init(opts: Variant):
-		if opts == null:
-			return
-		for opt in opts:
-			match opt.name:
-				'hcenter':
-					options['hcenter'] = true
-				'vcenter':
-					options['vcenter'] = true
-				'outline':
-					options['outline'] = [ opt.get_string_at(0), opt.get_string_at(1) ]
-				'text_color':
-					options['text_color'] = opt.get_string()
-				_:
-					push_error('unknown NVL option: %s' % opt.name)
+	func _init(_view_id: String, _options: Array[Tag]):
+		self.view_id = _view_id
+		self.options = _options
 	
 	
 	func _to_string() -> String:
-		return 'nvl %s' % options
-
-
-class IAdv extends BaseInstruction:
-	const name: String = 'Adv'
-	func _to_string() -> String:
-		return 'adv'
+		return 'view %s %s' % [view_id, options]
 
 
 class IPause extends BaseInstruction:
@@ -277,3 +261,19 @@ class IExit extends BaseInstruction:
 	
 	func _to_string() -> String:
 		return 'exit %s with %s' % [sprite, with]
+
+
+class IControlExpr extends BaseInstruction:
+	const name: String = 'ControlExpr'
+	var string: String
+	
+	
+	func _init(_string: String):
+		self.string = _string
+	
+	
+	func repeat_id() -> String: return ''
+	
+	
+	func _to_string() -> String:
+		return 'expr {{%s}}' % [string]

@@ -13,9 +13,6 @@ var mouse_advancing: bool = false # whether game is being advanced by holding th
 var overlay_active: bool = false # whether there is an overlay and game should be paused
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
-# default views
-var nvl_view = preload('res://tiger-engine/game/views/NVLView.tscn')
-var adv_view = preload('res://tiger-engine/game/views/ADVView.tscn')
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -41,7 +38,7 @@ func _ready():
 	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
 	
 	# initial View
-	_replace_view(adv_view.instantiate())
+	_replace_view(TE.defs.view_registry['adv'].instantiate())
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
@@ -70,7 +67,8 @@ func next_blocking():
 		# (the user probably doesn't want to do this)
 		if ins.repeat_id() in repeat_ids:
 			push_error('illegal repeat of instruction %s: already handling' % ins)
-		repeat_ids[ins.repeat_id()] = true
+		if ins.repeat_id() != '':
+			repeat_ids[ins.repeat_id()] = true
 		
 		match ins.name:
 			'PlaySong':
@@ -103,6 +101,9 @@ func next_blocking():
 			'Exit':
 				tween = $VNStage.exit_sprite(ins.sprite, ins.with, tween)
 			
+			'ControlExpr':
+				ControlExpr.exec(ins.string, context)
+			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
@@ -128,16 +129,17 @@ func next_blocking():
 		'Break':
 			pass
 		
-		'Nvl':
-			var nvl = nvl_view.instantiate()
-			nvl.options = blocking.options
-			_replace_view(nvl)
-		
-		'Adv':
-			_replace_view(adv_view.instantiate())
+		'View':
+			if blocking.view_id not in TE.defs.view_registry:
+				TE.log_error('unknown view or instruction: %s' % blocking.view_id)
+				return
+			var new_view: View = TE.defs.view_registry[blocking.view_id].instantiate()
+			if len(blocking.options) != 0:
+				new_view.parse_options(blocking.options)
+			_replace_view(new_view)
 			
 		_:
-			push_error('cannot handle blocking instruction: %s' % [blocking])
+			TE.log_error('cannot handle blocking instruction: %s' % [blocking])
 
 
 # replaces the current View with a new one, copying state over

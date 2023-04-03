@@ -10,8 +10,6 @@ var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
 # RichTextLabels containing the displayed lines
 @onready var paragraphs: VBoxContainer = %Paragraphs
 @onready var scroll: ScrollContainer = %Scroll
-# various options that determine the look of this view
-var options: Dictionary = {}
 # these will be set from options
 var hcenter: bool = false
 var vcenter: bool = false
@@ -24,20 +22,26 @@ var text_color: Variant = null # Color or null
 var INDENT: String = '        '
 
 
+func parse_options(tags: Array[Tag]):
+	for opt in tags:
+		match opt.name:
+			'hcenter':
+				hcenter = true
+			'vcenter':
+				vcenter = true
+			'outline':
+				outline_color = TE.defs.color(opt.get_string_at(0))
+				outline_size = float(opt.get_string_at(1))
+			'text_color':
+				text_color = TE.defs.color(opt.get_string())
+			_:
+				TE.log_error('unknown option for NVLView: %s' % opt)			
+
+
 func _ready():
 	# set sensible default value if running without theme
 	if width == 0:
 		width = 1000
-	
-	if 'hcenter' in options:
-		hcenter = options['hcenter']
-	if 'vcenter' in options:
-		vcenter = options['vcenter']
-	if 'outline' in options:
-		outline_color = TE.defs.color(str(options['outline'][0]))
-		outline_size = float(options['outline'][1])
-	if 'text_color' in options:
-		text_color = TE.defs.color(str(options['text_color']))
 	
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 	

@@ -28,6 +28,9 @@ var _colors: Dictionary = {}
 var sprites: Dictionary = {}
 # map of variable names to their default values
 var variables: Dictionary = {}
+# registry of Views recognized by the game
+# dict of view ids to PackedScenes
+var view_registry: Dictionary = {}
 
 
 const trans_types = {

@@ -11,20 +11,14 @@ func compile_script(script_tag: Tag):
 	
 	for tag in tags:
 		if tag is Tag.ControlTag:
-			push_error('TEScriptCompiler: control tags NYI')
+			var string = tag.string
+			ins.append(TEScript.IControlExpr.new(string))
 			continue
 		
 		# is Tag
 		match tag.name:
 			'block':
 				ins.append(TEScript.IBlock.new(tag.get_string_at(0), tag.get_string_at(1)))
-			'nvl':
-				if len(tag.args) == 0:
-					ins.append(TEScript.INvl.new(null))
-				else:
-					ins.append(TEScript.INvl.new(tag.get_tags()))
-			'adv':
-				ins.append(TEScript.IAdv.new())
 			'pause':
 				ins.append(TEScript.IPause.new(float(tag.get_string().trim_suffix('s'))))
 			'hideui':
@@ -128,6 +122,13 @@ func compile_script(script_tag: Tag):
 					ins.append(TEScript.IExit.new(sprite, with))
 			
 			_:
-				push_error('unknown instruction: %s' % [tag])
+				# interpret as the declaration of a View
+				if len(tag.args) == 0:
+					ins.append(TEScript.IView.new(tag.name, []))
+				else:
+					var options: Array[Tag] = []
+					for opt in tag.get_tags():
+						options.append(opt)
+					ins.append(TEScript.IView.new(tag.name, options))
 	
 	scripts[script_id] = TEScript.new(script_id, ins)

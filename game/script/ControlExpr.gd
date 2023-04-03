@@ -12,7 +12,7 @@ func _init(_string: String, _context: Variant):
 	self.string = _string
 	self.context = _context
 	
-	var is_assign = RegEx.create_from_string('\\s*([[:alnum:]]+)\\s*:=(.+)')
+	var is_assign = RegEx.create_from_string('\\s*([[:alnum:]_]+)\\s*:=(.+)')
 	
 	var assign = is_assign.search(self.string)
 	if assign != null:
@@ -107,7 +107,6 @@ class GameContext extends BaseContext:
 				var_values[i] = value
 				return OK
 		
-		push_error('cannot set variable "%s" in this context' % variable)
 		return FAILED
 	
 	
