@@ -54,6 +54,15 @@ func get_string_at(index: int):
 
 
 # returns the single String or Tag at the given argument or null
+func get_value():
+	if len(args) != 1 or len(args[0]) != 1:
+		push_error('expected single string or tag, got %s' % self)
+		return null
+	var value = args[0][0]
+	return value
+
+
+# returns the single String or Tag at the given argument or null
 func get_value_at(index: int):
 	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String and !args[index][0] is Tag):
 		push_error('expected string or tag at index %d, got %s' % [index, self])
