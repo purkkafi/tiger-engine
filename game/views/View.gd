@@ -356,9 +356,16 @@ func _waiting_custom_condition() -> bool:
 	return false
 
 
+# Views may initialize themselves in this method
+# called after _ready(), parse_options() and from_state(); as such,
+# the View should have any state it maintains available for use
+func initialize():
+	pass
+
+
 # handles options passed to the view
 # overriding is not mandatory if the view doesn't want to handle options
-func parse_options(_options: Array[Tag]):
+func parse_options(_options: Array[Tag], ctxt: ControlExpr.GameContext):
 	if len(_options) != 0:
 		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
 

@@ -39,6 +39,7 @@ func _ready():
 	
 	# initial View
 	_replace_view(TE.defs.view_registry['adv'].instantiate())
+	$View.initialize()
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
@@ -138,8 +139,9 @@ func next_blocking():
 				return
 			var new_view: View = TE.defs.view_registry[blocking.view_id].instantiate()
 			if len(blocking.options) != 0:
-				new_view.parse_options(blocking.options)
+				new_view.parse_options(blocking.options, context)
 			_replace_view(new_view)
+			new_view.initialize()
 			
 		_:
 			TE.log_error('cannot handle blocking instruction: %s' % [blocking])
@@ -337,8 +339,11 @@ func load_save(save: Dictionary):
 		TE.log_error('cannot load View: %s' % save['view']['scene'])
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
-	_replace_view(view_scene.instantiate())
-	$View.from_state(save['view'], context)
+	
+	var view = view_scene.instantiate()
+	_replace_view(view)
+	view.from_state(save['view'], context)
+	view.initialize()
 	
 	# keep song playing if it is currently playing
 	if Audio.song_id != save['song_id']:

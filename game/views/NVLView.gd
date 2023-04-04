@@ -22,7 +22,7 @@ var text_color: Variant = null # Color or null
 var INDENT: String = '        '
 
 
-func parse_options(tags: Array[Tag]):
+func parse_options(tags: Array[Tag], ctxt: ControlExpr.GameContext):
 	for opt in tags:
 		match opt.name:
 			'hcenter':
@@ -44,13 +44,11 @@ func _ready():
 		width = 1000
 	
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
-	
-	_apply_vcenter()
 
 
-func _apply_vcenter():
+func initialize():
 	if vcenter:
-		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER   
+		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER
 
 
 func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
@@ -119,31 +117,29 @@ func _scroll_to_bottom():
 
 
 func get_state() -> Dictionary:
-	var state: Dictionary = super.get_state()
+	var savestate: Dictionary = super.get_state()
 	if hcenter:
-		state['hcenter'] = hcenter
+		savestate['hcenter'] = hcenter
 	if vcenter:
-		state['vcenter'] = vcenter
+		savestate['vcenter'] = vcenter
 	if outline_color != null:
-		state['outline_color'] = outline_color.to_html()
+		savestate['outline_color'] = outline_color.to_html()
 	if outline_size != 0:
-		state['outline_size'] = outline_size
+		savestate['outline_size'] = outline_size
 	if text_color != null:
-		state['text_color'] = text_color.to_html()
-	return state
+		savestate['text_color'] = text_color.to_html()
+	return savestate
 
 
-func from_state(state: Dictionary, ctxt: ControlExpr.GameContext):
-	if 'hcenter' in state:
-		hcenter = state['hcenter']
-	if 'vcenter' in state:
-		vcenter = state['vcenter']
-	if 'outline_color' in state:
-		outline_color = Color.html(state['outline_color'])
-	if 'outline_size' in state:
-		outline_size = state['outline_size']
-	if 'text_color' in state:
-		text_color = Color.html(state['text_color'])
-	# makes sure vcenter is applied since the option is not set in _ready()
-	_apply_vcenter()
-	super.from_state(state, ctxt)
+func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+	if 'hcenter' in savestate:
+		hcenter = savestate['hcenter']
+	if 'vcenter' in savestate:
+		vcenter = savestate['vcenter']
+	if 'outline_color' in savestate:
+		outline_color = Color.html(savestate['outline_color'])
+	if 'outline_size' in savestate:
+		outline_size = savestate['outline_size']
+	if 'text_color' in savestate:
+		text_color = Color.html(savestate['text_color'])
+	super.from_state(savestate, ctxt)

@@ -15,11 +15,12 @@ var shadow: ColorRect
 var finished: bool = false
 
 
-func parse_options(options: Array[Tag]):
+func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
 	for opt in options:
 		match opt.name:
 			'block':
-				prompt_text = Blocks.resolve_string(Blocks.find(opt.get_string_at(0), opt.get_string_at(1)))
+				var _block: Block = Blocks.find(opt.get_string_at(0), opt.get_string_at(1))
+				prompt_text = Blocks.resolve_string(_block, '\n', ctxt)
 			'default':
 				default_val = opt.get_string()
 			_:
@@ -29,11 +30,15 @@ func parse_options(options: Array[Tag]):
 func _ready():
 	if width == 0: # default value in case theme doesn't set it
 		width = 600
+	
 	line_edit.custom_minimum_size.x = width
-	prompt.text = prompt_text
-	line_edit.text = default_val
 	TE.ui_strings.translate(self)
 	shadow = Overlay.add_shadow(self)
+
+
+func initialize():
+	prompt.text = prompt_text
+	line_edit.text = default_val
 
 
 # pointless argument allowing the method to be connected to both the LineEdit and the Button
@@ -70,7 +75,5 @@ func get_state() -> Dictionary:
 
 func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	prompt_text = savestate['prompt_text']
-	prompt.text = prompt_text
 	default_val = savestate['default_val']
-	line_edit.text = default_val
 	super.from_state(savestate, ctxt)
