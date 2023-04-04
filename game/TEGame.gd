@@ -66,6 +66,13 @@ func next_blocking():
 	if context != null and $View.result != null: # store the result of the current View
 		context.view_result = $View.result
 	
+	# autoreplace the view with previous one if it was temporary
+	if $View.is_temporary() and $View.previous_path != '':
+		var saved_view = load($View.previous_path).instantiate()
+		_replace_view(saved_view)
+		saved_view.from_state($View.previous_state, context)
+		saved_view.initialize()
+	
 	for ins in instructions:
 		# check that same instruction isn't already active
 		# (the user probably doesn't want to do this)
@@ -142,6 +149,17 @@ func next_blocking():
 				new_view.parse_options(blocking.options, context)
 			_replace_view(new_view)
 			new_view.initialize()
+		
+		'Jmp':
+			vm.jump_to(blocking.to)
+		
+		'JmpIf':
+			var comp = ControlExpr.exec(blocking.condition, context)
+			if comp is bool:
+				if comp:
+					vm.jump_to(blocking.to)
+			else:
+				TE.log_error("condition {{ %s }} didn't resolve to bool, got %s" % [blocking.condition, comp])
 			
 		_:
 			TE.log_error('cannot handle blocking instruction: %s' % [blocking])
@@ -163,6 +181,17 @@ func _replace_view(new_view: Node):
 	
 	new_view.name = old_view.name
 	new_view.gamelog = gamelog
+	
+	# store previous_path and previous_state for temporary views
+	if new_view.is_temporary():
+		# retain the original if multiple temporary Views are used in succession
+		if old_view.is_temporary():
+			new_view.previous_path = old_view.previous_path
+			new_view.previous_state = old_view.previous_state
+		else:
+			new_view.previous_path = old_view._get_scene_path()
+			new_view.previous_state = old_view.get_state()
+	
 	new_view.adjust_size($VNControls, TE.settings.gui_scale)
 	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
 	if old_view is View:

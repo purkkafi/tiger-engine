@@ -70,3 +70,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	for value in savestate['values']:
 		choice_values.append(value)
 	super.from_state(savestate, ctxt)
+
+
+func is_temporary() -> bool:
+	return true

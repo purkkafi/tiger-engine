@@ -5,12 +5,17 @@ class_name TEScriptVM extends RefCounted
 var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
-var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View' ]
+var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View', 'Jmp', 'JmpIf' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):
 	self.scriptfile = _scriptfile
 	self.current_script = scriptfile.scripts[script]
+
+
+func jump_to(script: String):
+	self.current_script = scriptfile.scripts[script]
+	index = 0
 
 
 func is_end_of_script() -> bool:

@@ -77,3 +77,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	prompt_text = savestate['prompt_text']
 	default_val = savestate['default_val']
 	super.from_state(savestate, ctxt)
+
+
+func is_temporary() -> bool:
+	return true

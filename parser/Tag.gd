@@ -26,6 +26,10 @@ class ControlTag extends RefCounted:
 	
 	func _init(_string: String):
 		self.string = _string
+	
+	
+	func _to_string() -> String:
+		return "{{%s}}" % string
 
 
 func _init(_name: String, _args: Array[Array]):

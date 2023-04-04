@@ -16,6 +16,8 @@ var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
 var gamelog: Log = null # the log where lines will be recorded
 var result: Variant = null # the optional value this View resulted in
+var previous_path: String = '' # the resource path of the previous View (for temporary Views)
+var previous_state: Dictionary = {} # the state of the previous View (for temporary Views)
 
 
 # TODO implement setting for skip speed?
@@ -370,20 +372,33 @@ func parse_options(_options: Array[Tag], ctxt: ControlExpr.GameContext):
 		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
 
 
+# if true, the View will be automatically replaced with the previous one
+# Views that don't intend to handle text can override this to conveniently
+# auto-dispose themselves after being finished
+func is_temporary() -> bool:
+	return false
+
+
 # returns the current state of this View as a dict
 func get_state() -> Dictionary:
-	if block == null: # no block info for Views that do not show blocks
-		return {
-			'scene' : _get_scene_path()
-		}
-	else:
-		return {
+	var savestate = {
+			'scene' : _get_scene_path(),
+	}
+	
+	if is_temporary():
+		savestate['previous_path'] = previous_path
+		savestate['previous_state'] = previous_state
+	
+	if block != null: # no block info for Views that do not show blocks
+		savestate.merge({
 			'line_index' : line_index,
 			'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
 			'blockfile' : block.blockfile_path,
 			'block' : block.id,
 			'scene' : _get_scene_path()
-		}
+		})
+	
+	return savestate
 
 
 # sets the current state based on the given Dictionary
@@ -391,6 +406,10 @@ func get_state() -> Dictionary:
 # the correct View scene is saved in the field 'scene'
 # you can load and instantiate it and then call this object
 func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+	if is_temporary():
+		previous_path = savestate['previous_path']
+		previous_state = savestate['previous_state']
+	
 	# NOP if View didn't save block information
 	if not 'block' in savestate:
 		return

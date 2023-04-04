@@ -10,6 +10,12 @@ var scripts: Dictionary
 func _init(_id: String, _scripts: Dictionary):
 	id = _id
 	scripts = _scripts
+	
+	for script in scripts.keys():
+		print(script + ':')
+		for i in scripts[script].instructions:
+			print(i)
+		print('\n')
 
 
 func _to_string() -> String:

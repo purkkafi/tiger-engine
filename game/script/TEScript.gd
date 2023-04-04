@@ -277,3 +277,31 @@ class IControlExpr extends BaseInstruction:
 	
 	func _to_string() -> String:
 		return 'expr {{%s}}' % [string]
+
+
+class IJmpIf extends BaseInstruction:
+	const name: String = 'JmpIf'
+	var condition: String
+	var to: String
+	
+	
+	func _init(_condition: String, _to: String):
+		self.condition = _condition
+		self.to = _to
+	
+	
+	func _to_string() -> String:
+		return 'jmpif {{%s}} to %s' % [condition, to]
+
+
+class IJmp extends BaseInstruction:
+	const name: String = 'Jmp'
+	var to: String
+	
+	
+	func _init(_to: String):
+		self.to = _to
+	
+	
+	func _to_string() -> String:
+		return 'jmp %s' % to
