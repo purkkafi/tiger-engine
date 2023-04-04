@@ -62,6 +62,9 @@ func next_blocking():
 	var tween: Tween = null
 	var repeat_ids: Dictionary = {}
 	
+	if context != null and $View.result != null: # store the result of the current View
+		context.view_result = $View.result
+	
 	for ins in instructions:
 		# check that same instruction isn't already active
 		# (the user probably doesn't want to do this)
@@ -146,6 +149,10 @@ func next_blocking():
 func _replace_view(new_view: Node):
 	var old_view: Node = $View
 	
+	# save the result of this view
+	if old_view is View and context != null:
+		context.view_result = old_view.result
+	
 	var old_pos: int = get_children().find(old_view)
 	remove_child(old_view)
 	old_view.queue_free()
@@ -204,7 +211,7 @@ func _process(delta):
 		return
 		
 	if $View.is_next_line_requested():
-		$View.next_line()
+		$View.next_line(context)
 		# current save state will be saved to rollback next time
 		if next_rollback != null:
 			rollback.push(next_rollback)
@@ -297,6 +304,7 @@ func create_save() -> Dictionary:
 		'view' : $View.get_state(),
 		'stage' : $VNStage.get_state(),
 		'variables' : var_dict,
+		'view_result' : context.view_result,
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
 		'song_id' : Audio.song_id,
@@ -316,6 +324,7 @@ func load_save(save: Dictionary):
 	$VNStage.set_state(save['stage'])   
 	
 	vm = TEScriptVM.from_state(save['vm'])
+	context.view_result = save['view_result']
 	
 	# set variables
 	var vars: Dictionary = save['variables']

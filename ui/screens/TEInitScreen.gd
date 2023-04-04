@@ -30,6 +30,7 @@ func _ready():
 	# setup view registry
 	TE.defs.view_registry['nvl'] = preload('res://tiger-engine/game/views/NVLView.tscn')
 	TE.defs.view_registry['adv'] = preload('res://tiger-engine/game/views/ADVView.tscn')
+	TE.defs.view_registry['input'] = preload('res://tiger-engine/game/views/InputView.tscn')
 	
 	# if settings file exists, read it and switch to the specified language
 	if Settings.has_settings_file():

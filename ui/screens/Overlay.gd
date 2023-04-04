@@ -7,7 +7,7 @@ class_name Overlay extends Control
 
 
 # shadow added behind this overlay
-var shadow: ColorRect = ColorRect.new()
+var shadow: ColorRect
 # callback to call when the overlay opening animation is finished
 var animated_in_callback: Callable = func(): pass
 # callback to call when the overlay is closed
@@ -29,7 +29,7 @@ func _ready():
 	else:
 		animated_in_callback.call()
 	
-	_add_shadow()
+	shadow = add_shadow(self)
 
 
 # subclasses should override this to initialize the overlay
@@ -43,7 +43,7 @@ func _initialize_overlay():
 func _close_overlay():
 	animating_out_callback.call()
 	
-	_remove_shadow()
+	remove_shadow(shadow)
 	
 	var tween = TE.opts.animate_overlay_out.call(self)
 	if tween == null:
@@ -58,24 +58,32 @@ func _animated_out():
 
 
 
-func _add_shadow():
-	shadow.position = Vector2(0, 0)
-	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
-	shadow.color = TE.opts.shadow_color
-	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+static func add_shadow(to_control: Control):
+	var _shadow: ColorRect = ColorRect.new()
+	_shadow.position = Vector2(0, 0)
+	_shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
+	_shadow.color = TE.opts.shadow_color
+	_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
-	self.add_sibling(shadow)
-	self.z_index += 1
-	TE.opts.animate_shadow_in.call(shadow)
+	to_control.add_sibling(_shadow)
+	to_control.z_index += 1
+	TE.opts.animate_shadow_in.call(_shadow)
+	return _shadow
 
 
-func _remove_shadow():
-	var tween: Tween = TE.opts.animate_shadow_out.call(shadow)
+static func remove_shadow(_shadow: ColorRect, callback = null):
+	var remove_callback: Callable = Callable(Overlay, '_do_remove_shadow').bind(_shadow)
+	var tween: Tween = TE.opts.animate_shadow_out.call(_shadow)
 	if tween == null:
-		_do_remove_shadow()
+		remove_callback.call()
+		if callback != null:
+			callback.call()
 	else:
-		tween.tween_callback(Callable(self, '_do_remove_shadow'))
+		tween.tween_callback(remove_callback)
+		if callback != null:
+			tween.tween_callback(callback)
 
-func _do_remove_shadow():
-	self.get_parent().remove_child(shadow)
+
+static func _do_remove_shadow(shadow: ColorRect):
+	shadow.get_parent().remove_child(shadow)
 	shadow.queue_free()

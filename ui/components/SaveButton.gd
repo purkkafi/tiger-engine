@@ -72,23 +72,32 @@ func _ready():
 # checks if save file's hashes match with game files and adds a warning icon
 # if they do not
 func check_hashes(save: Dictionary):
-	var hashes_match: bool = false
+	var script_hashes_match: bool = false
+	var block_hashes_match: bool = false
 	var vm: Dictionary = save['vm']
 	var view: Dictionary = save['view']
 	
-	if FileAccess.file_exists(vm['scriptfile']) and FileAccess.file_exists(view['blockfile']):
+	if FileAccess.file_exists(vm['scriptfile']):
 		# ensure game has loaded files & calculated hashes
 		Assets.scripts.get_resource(vm['scriptfile'])
-		Assets.blockfiles.get_resource(view['blockfile'])
-		
 		var script_hash_key = vm['scriptfile'] + ':' + vm['current_script']
+		
+		if script_hash_key in Assets.scripts.hashes:
+			if vm['hash'] == Assets.scripts.hashes[script_hash_key]:
+				script_hashes_match = true
+	
+	# save may not have block data if the View isn't used to show blocks
+	if 'block' in save['view'] and FileAccess.file_exists(view['blockfile']):
+		Assets.blockfiles.get_resource(view['blockfile'])
 		var block_hash_key = view['blockfile'] + ':' + view['block']
 		
-		if script_hash_key in Assets.scripts.hashes and block_hash_key in Assets.blockfiles.hashes:
-			if vm['hash'] == Assets.scripts.hashes[script_hash_key] and view['hash'] == Assets.blockfiles.hashes[block_hash_key]:
-				hashes_match = true
+		if block_hash_key in Assets.blockfiles.hashes:
+			if view['hash'] == Assets.blockfiles.hashes[block_hash_key]:
+				block_hashes_match = true
+	else:
+		block_hashes_match = true # nothing to compare to
 	
-	if not hashes_match: # place warning icon
+	if not (script_hashes_match and block_hashes_match): # place warning icon
 		icon_warn = TextureRect.new()
 		icon_warn.texture = get_theme_icon('image', 'SaveWarningIcon')
 		icon_warn.tooltip_text = TE.ui_strings.saving_bad_hash

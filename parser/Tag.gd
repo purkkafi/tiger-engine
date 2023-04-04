@@ -128,3 +128,11 @@ func get_dict() -> Dictionary:
 	for tag in get_tags():
 		dict[tag.name] = tag
 	return dict
+
+
+# returns the only argument as a taglist or null 
+func get_taglist():
+	if len(args) != 1:
+		push_error('expected single arg, got %s' % self)
+		return null
+	return args[0]

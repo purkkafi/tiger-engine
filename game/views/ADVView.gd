@@ -35,8 +35,6 @@ func _ready():
 	speaker_name.add_theme_color_override('font_shadow_color', speaker_font_shadow_color)
 	speaker_name.add_theme_constant_override('shadow_offset_x', speaker_shadow_offset_x)
 	speaker_name.add_theme_constant_override('shadow_offset_y', speaker_shadow_offset_y)
-	
-	super._ready()
 
 
 func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
@@ -57,12 +55,12 @@ func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y
 
 
-func _next_line(line: String, speaker: Definitions.Speaker = null):
+func _next_line(line: String, ctxt: ControlExpr.GameContext, speaker: Definitions.Speaker = null):
 	label.text = line
 	
 	if speaker != null:
 		speaker_panel.visible = true
-		speaker_name.text = speaker.name
+		speaker_name.text = Blocks._resolve_parts(speaker.name, ctxt)[0]
 		box.theme_type_variation = 'ADVViewWithSpeaker'
 		
 		var sb: StyleBox = speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker')

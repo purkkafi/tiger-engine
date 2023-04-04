@@ -225,7 +225,7 @@ func _resolve_definitions(tree: Tag):
 						'id':
 							speaker.id = tag.get_string()
 						'name':
-							speaker.name = tag.get_string()
+							speaker.name = tag.get_taglist()
 						'color':
 							speaker.color = Color(tag.get_string())
 						_:

@@ -46,8 +46,6 @@ func _ready():
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 	
 	_apply_vcenter()
-	
-	super._ready()
 
 
 func _apply_vcenter():
@@ -75,7 +73,7 @@ func _next_block():
 
 
 # Speakers are not handled right now
-func _next_line(line: String, _speaker: Definitions.Speaker = null):
+func _next_line(line: String, _ctxt: ControlExpr.GameContext, _speaker: Definitions.Speaker = null):
 	var label: RichTextLabel = create_label()
 	
 	if outline_size != 0:

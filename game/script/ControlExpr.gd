@@ -43,14 +43,14 @@ func _execute() -> Variant:
 
 
 # evaluates a control expression in some context, returning the result
-static func exec(string: String, ctxt: BaseContext) -> Variant:
-	return ControlExpr.new(string, ctxt)._execute()
+static func exec(_string: String, ctxt: BaseContext) -> Variant:
+	return ControlExpr.new(_string, ctxt)._execute()
 
 
 # evaluates a control expression in a dummy context
 # this means that variables cannot be accessed or set
-static func exec_contextless(string: String) -> Variant:
-	return ControlExpr.new(string, BaseContext.new())._execute()
+static func exec_contextless(_string: String) -> Variant:
+	return ControlExpr.new(_string, BaseContext.new())._execute()
 
 
 # base class for contexts, can also be used as an empty context
@@ -69,7 +69,7 @@ class BaseContext extends RefCounted:
 	
 	
 	# assigns the given variable, returning an Error indicating success/failure
-	func _assign(variable: String, value: Variant) -> Error:
+	func _assign(_variable: String, _value: Variant) -> Error:
 		return FAILED
 	
 	
@@ -86,6 +86,7 @@ class GameContext extends BaseContext:
 	
 	var var_names: Array[String]
 	var var_values: Array[Variant]
+	var view_result: Variant = null # result of last View or null
 	
 	
 	func _init(names: Array[String], values: Array[Variant]):
@@ -116,3 +117,9 @@ class GameContext extends BaseContext:
 				return var_values[i]
 		push_error('variable "%s" not found in this context' % variable)
 		return null
+	
+	
+	func result() -> Variant:
+		if view_result == null:
+			push_error('result() called when last View did not produce a result')
+		return view_result

@@ -15,6 +15,7 @@ var speedup: Speedup = Speedup.NORMAL # status of speedup
 var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
 var gamelog: Log = null # the log where lines will be recorded
+var result: Variant = null # the optional value this View resulted in
 
 
 # TODO implement setting for skip speed?
@@ -80,6 +81,8 @@ func wait_tween(tween: Tween):
 
 # returns whether this View is waiting for a tween or a pause to finish
 func _is_waiting():
+	if _waiting_custom_condition():
+		return true
 	if waiting_tween != null and waiting_tween.is_running():
 		return true
 	if pause_delta > 0:
@@ -119,7 +122,7 @@ func show_block(_block: Block, ctxt: ControlExpr.GameContext) -> void:
 
 
 # proceeds to the next line
-func next_line(ignore_log: bool = false) -> void:
+func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
 	# parse speaker specification
 	var speaker = null
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
@@ -133,7 +136,7 @@ func next_line(ignore_log: bool = false) -> void:
 	
 	if not ignore_log:
 		gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
-	_next_line(lines[line_index] + LINE_END, speaker)
+	_next_line(lines[line_index] + LINE_END, ctxt, speaker)
 	line_index += 1
 	next_effect.reset()
 	
@@ -327,7 +330,7 @@ func skip_pressed():
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
-func _next_line(_line: String, _speaker: Definitions.Speaker = null):
+func _next_line(_line: String, _ctxt: ControlExpr.GameContext, _speaker: Definitions.Speaker = null):
 	TE.log_error("view doesn't implement _next_line()")
 
 
@@ -346,60 +349,67 @@ func _get_scene_path():
 	TE.log_error("view doesn't implement _get_scene_path()")
 
 
+# returns whether the View is in waiting state and the game should not move on
+# subclasses can override to manage their life cycle in case they don't
+# interact with text via the mechanisms this class provides
+func _waiting_custom_condition() -> bool:
+	return false
+
+
 # handles options passed to the view
 # overriding is not mandatory if the view doesn't want to handle options
 func parse_options(_options: Array[Tag]):
-	TE.log_error("view doesn't implement parse_options(), given %s" % _options)
+	if len(_options) != 0:
+		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
 
 
 # returns the current state of this View as a dict
 func get_state() -> Dictionary:
-	return {
-		'line_index' : line_index,
-		'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
-		'blockfile' : block.blockfile_path,
-		'block' : block.id,
-		'scene' : _get_scene_path()
-	}
+	if block == null: # no block info for Views that do not show blocks
+		return {
+			'scene' : _get_scene_path()
+		}
+	else:
+		return {
+			'line_index' : line_index,
+			'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
+			'blockfile' : block.blockfile_path,
+			'block' : block.id,
+			'scene' : _get_scene_path()
+		}
 
 
 # sets the current state based on the given Dictionary
 # note: when loading game from a save state created with the help of get_state(),
 # the correct View scene is saved in the field 'scene'
 # you can load and instantiate it and then call this object
-func from_state(state: Dictionary, ctxt: ControlExpr.GameContext):
-	if not FileAccess.file_exists(state['blockfile']):
-		TE.log_error('blockfile %s not found' % state['blockfile'])
+func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+	# NOP if View didn't save block information
+	if not 'block' in savestate:
+		return
+	
+	if not FileAccess.file_exists(savestate['blockfile']):
+		TE.log_error('blockfile %s not found' % savestate['blockfile'])
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
 	
-	var blockfile: BlockFile = Assets.blockfiles.get_resource(state['blockfile'])
+	var blockfile: BlockFile = Assets.blockfiles.get_resource(savestate['blockfile'])
 	
-	if not state['block'] in blockfile.blocks:
-		TE.log_error('block %s not found in blockfile %s' % [state['block'], state['blockfile']])
+	if not savestate['block'] in blockfile.blocks:
+		TE.log_error('block %s not found in blockfile %s' % [savestate['block'], savestate['blockfile']])
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
 	
-	var _block: Block = blockfile.blocks[state['block']]
+	var _block: Block = blockfile.blocks[savestate['block']]
 	
 	show_block(_block, ctxt)
 	
-	if state['line_index']-1 > len(lines):
+	if savestate['line_index']-1 > len(lines):
 		TE.log_error('line index out of range')
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
 	
 	# skip to the correct line
-	while line_index <= state['line_index']-1:
-		next_line(true)
+	while line_index <= savestate['line_index']-1:
+		next_line(ctxt, true)
 		_to_end_of_line()
-
-
-# subclasses should call this via super if they override _ready()
-func _ready():
-	# do this if View is run directly in the editor
-	if self in get_tree().root.get_children():
-		adjust_size(null, Settings.GUIScale.NORMAL)
-		# display debug text
-		_next_line('Kissat ovat söpöjä ja hauskoja. Kissat ovat söpöjä ja hauskoja. '.repeat(4))
-		_current_label().visible_characters = -1

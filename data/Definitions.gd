@@ -134,5 +134,5 @@ class Transition extends RefCounted:
 
 class Speaker extends RefCounted:
 	var id: String
-	var name: String
+	var name: Array[Variant]
 	var color: Color

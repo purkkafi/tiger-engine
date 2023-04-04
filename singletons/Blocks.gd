@@ -17,10 +17,10 @@ static func find(blockfile_id: String, block_id: String) -> Variant:
 
 # resolves this Block into a String, with paragraphs being separated with
 # the given separator (two newlines by default)
-func resolve_string(block: Block, paragraph_separator: String = '\n\n') -> String:
+func resolve_string(block: Block, paragraph_separator: String = '\n\n', ctxt: ControlExpr.BaseContext=null) -> String:
 	var text: String = ''
 	
-	for part in resolve_parts(block):
+	for part in resolve_parts(block, ctxt):
 		text += part + paragraph_separator
 	
 	return text.strip_edges(true, true)
@@ -33,7 +33,7 @@ func resolve_parts(block: Block, ctxt: ControlExpr.BaseContext=null) -> Array[St
 	return _resolve_parts(block.taglist, ctxt)
 
 
-func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext) -> Array[String]:
+func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null) -> Array[String]:
 	var parts: Array[String] = []
 	parts.append('') # start building the first string
 	

@@ -75,6 +75,9 @@ static func is_progress_made(save1, save2):
 		if !save2.erase(field):
 			push_error("save didn't have field %s" % [field])
 	
+	if save1.keys() != save2.keys():
+		return false
+	
 	return !Savefile._deep_equals(save1, save2)
 
 
