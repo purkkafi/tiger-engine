@@ -2,6 +2,9 @@ class_name TEScriptCompiler extends RefCounted
 
 
 var scripts: Dictionary
+# number of branches generated for each script; dict of script name -> int
+# used by generate_label()
+var branch_count: Dictionary
 
 
 func compile_script(script_tag: Tag):
@@ -15,14 +18,17 @@ func compile_script(script_tag: Tag):
 # returns a suitable, unused name for a subscript
 # note: the caller needs to fill in the script, as otherwise
 # a problematic null value remains as a placeholder
-func anonymous_script_name(base: String):
-	var index: int = 0
-	var name: String = '%s$%d' % [base, index]
-	while name in scripts.keys():
-		index += 1
-		name = '%s$%d' % [base, index]
-	scripts[name] = null # store dummy value to mark the name as used
-	return name
+func generate_label(base: String):
+	if '$' in base: # remove everything after first $, if any
+		base = base.substr(0, base.find('$'))
+	
+	if base in branch_count:
+		var i = branch_count[base]+1
+		branch_count[base] = i
+		return '%s$%d' % [base, i]
+	
+	branch_count[base] = 1
+	return '%s$1' % base
 
 
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
@@ -150,12 +156,12 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 			
 			'if':
 				# name of the script containing the rest of the instructions
-				var rest_name = anonymous_script_name(script_id)
+				var rest_name = generate_label(script_id) + '_after_if'
 				
 				# generate a script to jump to if the condition is true
 				var condition: String = tag.get_control_at(0)
 				var branch_tags: Array = tag.get_tags_at(1)
-				var branch_name = anonymous_script_name(script_id)
+				var branch_name = generate_label(script_id) + '_if'
 				var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name)
 				# move on after the branch is over
 				branch_ins.append(TEScript.IJmp.new(rest_name))
@@ -172,6 +178,39 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				ins.append(TEScript.IJmpIf.new(condition, branch_name))
 				ins.append(TEScript.IJmp.new(rest_name))
 				
+				return ins
+			
+			'match':
+				var expr: String = tag.get_control_at(0)
+				# where every branch will jump to
+				var rest_name = generate_label(script_id) + '_after_match'
+				
+				for arm in tag.get_tags_at(1):
+					# compile the contents of the branch
+					var branch_tags = arm.get_tags_at(len(arm.args)-1)
+					var branch_name = generate_label(script_id) + ('_%s' % arm.name)
+					var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name)
+					branch_ins.append(TEScript.IJmp.new(rest_name))
+					scripts[branch_name] = TEScript.new(branch_name, branch_ins)
+					
+					if arm.name == 'case':
+						# generate JmpIf for each value given to the case
+						for i in range(len(arm.args)-1):
+							var cond: String = '(%s) == (%s)' % [expr, arm.get_control_at(i)]
+							ins.append(TEScript.IJmpIf.new(cond, branch_name))
+					elif arm.name == 'default':
+						# generate unconditional jump to the branch
+						ins.append(TEScript.IJmp.new(branch_name))
+					else:
+						push_error('unknown arm for match: %s' % arm.name)
+				
+				# jump to after branch; will be executed if there is no match and no default arm
+				ins.append(TEScript.IJmp.new(rest_name))
+				
+				# finally, generate branch for the rest of the instructions in the script
+				var rest_tags = tags.slice(index+1)
+				var rest_ins: Array[TEScript.BaseInstruction] = to_instructions(rest_tags, rest_name)
+				scripts[rest_name] = TEScript.new(rest_name, rest_ins)
 				return ins
 			
 			_:
