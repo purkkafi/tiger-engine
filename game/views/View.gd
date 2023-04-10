@@ -367,7 +367,7 @@ func initialize():
 
 # handles options passed to the view
 # overriding is not mandatory if the view doesn't want to handle options
-func parse_options(_options: Array[Tag], ctxt: ControlExpr.GameContext):
+func parse_options(_options: Array[Tag], _ctxt: ControlExpr.GameContext):
 	if len(_options) != 0:
 		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
 

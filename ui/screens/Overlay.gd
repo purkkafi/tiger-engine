@@ -84,6 +84,6 @@ static func remove_shadow(_shadow: ColorRect, callback = null):
 			tween.tween_callback(callback)
 
 
-static func _do_remove_shadow(shadow: ColorRect):
-	shadow.get_parent().remove_child(shadow)
-	shadow.queue_free()
+static func _do_remove_shadow(_shadow: ColorRect):
+	_shadow.get_parent().remove_child(_shadow)
+	_shadow.queue_free()

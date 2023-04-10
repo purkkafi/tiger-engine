@@ -19,7 +19,7 @@ func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
 	for opt in options:
 		match opt.name:
 			'block':
-				var _block: Block = Blocks.find(opt.get_string_at(0), opt.get_string_at(1))
+				var _block: Block = Blocks.find(opt.get_string())
 				prompt_text = Blocks.resolve_string(_block, '\n', ctxt)
 			'default':
 				default_val = opt.get_string()

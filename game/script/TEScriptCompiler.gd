@@ -45,7 +45,7 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 		# is Tag
 		match tag.name:
 			'block':
-				ins.append(TEScript.IBlock.new(tag.get_string_at(0), tag.get_string_at(1)))
+				ins.append(TEScript.IBlock.new(tag.get_string()))
 			'pause':
 				ins.append(TEScript.IPause.new(float(tag.get_string().trim_suffix('s'))))
 			'hideui':

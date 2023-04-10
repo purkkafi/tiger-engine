@@ -22,7 +22,7 @@ var text_color: Variant = null # Color or null
 var INDENT: String = '        '
 
 
-func parse_options(tags: Array[Tag], ctxt: ControlExpr.GameContext):
+func parse_options(tags: Array[Tag], _ctxt: ControlExpr.GameContext):
 	for opt in tags:
 		match opt.name:
 			'hcenter':

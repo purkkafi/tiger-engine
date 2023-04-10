@@ -3,9 +3,17 @@ extends Node
 # of class resolution problems
 
 
-# looks up a Block object by its blockfile id and block id
+# looks up a Block object by its id, a String of form "<blockfile_id>:<block_id>"
+# for instance, given "a:b", the block b in the blockfile a.tef is returned
 # null is returned if the Block cannot be found
-static func find(blockfile_id: String, block_id: String) -> Variant:
+static func find(id: String) -> Variant:
+	var parts = id.split(':')
+	if len(parts) != 2:
+		TE.log_error('block id should be of form <file>:<block>, got %s' % id)
+	
+	var blockfile_id: String = parts[0]
+	var block_id: String = parts[1]
+	
 	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:/text/' + blockfile_id + '.tef')
 	
 	if block_id in blockfile.blocks:

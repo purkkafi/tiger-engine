@@ -40,17 +40,15 @@ class BaseInstruction extends RefCounted:
 
 class IBlock extends BaseInstruction:
 	const name: String = 'Block'
-	var blockfile_id: String
 	var block_id: String
 	
 	
-	func _init(_blockfile_id: String, _block_id: String):
-		self.blockfile_id = _blockfile_id
+	func _init(_block_id: String):
 		self.block_id = _block_id
 	
 	
 	func _to_string() -> String:
-		return 'block %s, %s' % [blockfile_id, block_id]
+		return 'block %s' % [block_id]
 
 
 class IView extends BaseInstruction:

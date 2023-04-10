@@ -130,9 +130,9 @@ func next_blocking():
 			$View.pause(blocking.duration)
 		
 		'Block':
-			var block: Block = Blocks.find(blocking.blockfile_id, blocking.block_id)
+			var block: Block = Blocks.find(blocking.block_id)
 			if block == null:
-				TE.log_error('block not found: %s:%s' % [blocking.blockfile_id, blocking.block_id])
+				TE.log_error('block not found: %s' % [blocking.block_id])
 				return
 			$View.show_block(block, context)
 			_unhide_ui()
