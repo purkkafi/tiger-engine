@@ -58,11 +58,11 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 		elif node is Tag:
 			# basic formatting
 			if node.name == 'i':
-				parts.push_back(parts.pop_back() + '[i]' + node.args[0][0] + '[/i]')
+				parts.push_back(parts.pop_back() + '[i]' + node.get_string() + '[/i]')
 			elif node.name == 'b':
-				parts.push_back(parts.pop_back() + '[b]' + node.args[0][0] + '[/b]')
+				parts.push_back(parts.pop_back() + '[b]' + node.get_string() + '[/b]')
 			elif node.name == 'link':
-				parts.push_back(parts.pop_back() + '[url=' + node.args[1][0] + ']' + node.args[0][0] + '[/url]')
+				parts.push_back(parts.pop_back() + '[url=' + node.get_string_at(1) + ']' + node.get_string_at(0) + '[/url]')
 			elif node.name == 'erase':
 				var string: String = node.get_string()
 				parts.push_back(parts.pop_back() + string + View.DEL.repeat(len(string)))
