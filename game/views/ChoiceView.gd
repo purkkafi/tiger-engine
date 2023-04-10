@@ -13,9 +13,9 @@ func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
 	for opt in options:
 		match opt.name:
 			'block':
-				var _block: Block = Blocks.find(opt.get_string())
+				var _block: Block = Blocks.find(opt.get_string_at(0))
 				choice_strings.append(Blocks.resolve_string(_block, '\n', ctxt))
-				var value: Variant = ControlExpr.exec(opt.get_control_at(2), ctxt)
+				var value: Variant = ControlExpr.exec(opt.get_control_at(1), ctxt)
 				choice_values.append(value)
 
 
