@@ -19,6 +19,9 @@ var speaker_font_shadow_color: Color = get_theme_color('font_shadow_color', 'ADV
 var speaker_shadow_offset_x: int = get_theme_constant('shadow_offset_x', 'ADVSpeaker')
 var speaker_shadow_offset_y: int = get_theme_constant('shadow_offset_y', 'ADVSpeaker')
 
+@onready var default_speaker_name_color: Color = Color(speaker_name.get_theme_color('font_color'))
+var default_speaker_panel_bg_color: Color = Color.TRANSPARENT
+
 
 func _ready():
 	label = create_label()
@@ -35,6 +38,9 @@ func _ready():
 	speaker_name.add_theme_color_override('font_shadow_color', speaker_font_shadow_color)
 	speaker_name.add_theme_constant_override('shadow_offset_x', speaker_shadow_offset_x)
 	speaker_name.add_theme_constant_override('shadow_offset_y', speaker_shadow_offset_y)
+	
+	if speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker') is StyleBoxFlat:
+		default_speaker_panel_bg_color = speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker').bg_color
 
 
 func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
@@ -63,11 +69,27 @@ func _next_line(line: String, ctxt: ControlExpr.GameContext, speaker: Definition
 		speaker_name.text = Blocks._resolve_parts(speaker.name, ctxt)[0]
 		box.theme_type_variation = 'ADVViewWithSpeaker'
 		
+		if speaker.variation != '':
+			speaker_panel.theme_type_variation = speaker.variation
+		else:
+			speaker_panel.theme_type_variation = 'ADVSpeaker'
+		
+		# if speaker panel has a StyleBoxFlat, set its background color
 		var sb: StyleBox = speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker')
 		if sb is StyleBoxFlat:
-			sb.bg_color = speaker.color
+			if speaker.bg_color != Color.TRANSPARENT:
+				sb.bg_color = speaker.bg_color
+			else:
+				sb.bg_color = default_speaker_panel_bg_color
 			# in case previous speaker has the same name – it wouldn't redraw automatically
 			speaker_panel.queue_redraw()
+		
+		# add speaker name color override if specified, else remove the previous one (if any)
+		if speaker.name_color != Color.TRANSPARENT:
+			speaker_name.add_theme_color_override('font_color', speaker.name_color)
+		elif speaker_name.has_theme_color_override('font_color'):
+			speaker_name.remove_theme_color_override('font_color')
+		
 	else:
 		speaker_panel.visible = false
 		box.theme_type_variation = 'ADVView'

@@ -226,13 +226,19 @@ func _resolve_definitions(tree: Tag):
 							speaker.id = tag.get_string()
 						'name':
 							speaker.name = tag.get_taglist()
-						'color':
-							speaker.color = Color(tag.get_string())
+						'bg_color':
+							speaker.bg_color = Color(tag.get_string())
+						'name_color':
+							speaker.name_color = Color(tag.get_string())
+						'variation':
+							speaker.variation = tag.get_string()
 						_:
 							push_error('unknown value in speaker definition: %s' % tag)
 				
-				if speaker.id == null:
-					push_error('must specify speaker id')
+				var error = speaker.error_message()
+				if error != '':
+					push_error('error with speaker %s: %s' % [node, error])
+				
 				defs.speakers[speaker.id] = speaker
 				
 			'sprite':

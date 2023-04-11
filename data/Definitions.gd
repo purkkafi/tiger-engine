@@ -135,4 +135,16 @@ class Transition extends RefCounted:
 class Speaker extends RefCounted:
 	var id: String
 	var name: Array[Variant]
-	var color: Color
+	# default to TRANSPARENT, which should be treated as unset
+	var bg_color: Color = Color.TRANSPARENT
+	var name_color: Color = Color.TRANSPARENT
+	# default to the empty string, which should be treated as unset
+	var variation: String = ''
+	
+	
+	# validates this Speaker and returns a non-empty error message if it is invalid
+	# otherwise, returns the empty string
+	func error_message() -> String:
+		if id == null or name == null:
+			return 'speaker id and name required'
+		return ''
