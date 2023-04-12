@@ -8,6 +8,6 @@
 * built for multi-language VNs & episodic release models in particular
 * designed to make writing, editing, and translating prose a pleasant experience
 
-As of now, missing features include (composite) sprites, control flow, and a Godot plugin for writing game script files.
+Basic features are finished. In addition to refining the design of various parts of the engine, I'm now working on composite sprites and a Godot plugin for writing game script files.
 
-[Documentation](https://github.com/purkkafi/tiger-engine/wiki) is in progress.
+[Documentation](https://github.com/purkkafi/tiger-engine/wiki) is in progress. The [example project](https://github.com/purkkafi/tigerengine-example-project) shows examples of how the engine's features can be used and functions as a project template.
