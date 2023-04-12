@@ -5,7 +5,9 @@ class_name TEScriptVM extends RefCounted
 var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
+var lookahead_index: int = 0
 var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View', 'Jmp', 'JmpIf' ]
+var BRANCHING_INSTRUCTIONS: Array[String] = [ 'Jmp', 'JmpIf' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):
@@ -31,21 +33,82 @@ func _current() -> Variant:
 	return current_script.instructions[index]
 
 
-func _is_blocking(instruction) -> bool:
+func _is_blocking(instruction: TEScript.BaseInstruction) -> bool:
 	return instruction.name in BLOCKING_INSTRUCTIONS
+
+
+func _is_branching(instruction: TEScript.BaseInstruction) -> bool:
+	return instruction.name in BRANCHING_INSTRUCTIONS
 
 
 # proceeds to the next blocking instruction, returning an Array
 # of instructions that should be handled by the executor
 # after this, the next call of next_blocking() will return the blocking instruction
 func to_next_blocking() -> Array[Variant]:
-	var handle_ins: Array[Variant] = []
+	var handle_ins: Array[TEScript.BaseInstruction] = []
 	
 	while _current() != null and not _is_blocking(_current()):
 		handle_ins.append(_current())
 		index += 1
 	
+	queue_resources(lookahead())
+	
 	return handle_ins
+
+
+# returns a list of instructions whose associated resources may be queued for loading
+# in general, this method:
+# – limits how far it looks with the help of several heuristics
+# – will only return each instruction once
+# – will stop at branches (i.e. every instruction returned will be encountered inevitably)
+func lookahead() -> Array[TEScript.BaseInstruction]:
+	var found: Array[TEScript.BaseInstruction] = []
+	var blocking_count = 0
+	
+	while lookahead_index < len(current_script.instructions):
+		var ins = current_script.instructions[lookahead_index]
+		
+		# limit how far ahead we look
+		if lookahead_index > index+5:
+			break 
+		
+		# limit the amount of blocking instructions we look past
+		if _is_blocking(ins):
+			blocking_count += 1
+			if blocking_count >= 3:
+				break
+		
+		# do not go past branches to prevent accidentally queuing
+		# assets that don't actually get used
+		# (might react badly with Godot's queue mechanism? not sure)
+		if _is_branching(ins):
+			break
+		
+		found.append(ins)
+		lookahead_index += 1
+	
+	return found
+
+
+# queues the resources in the given instructions for loading
+func queue_resources(instructions: Array[TEScript.BaseInstruction]):
+	for ins in instructions:
+		match ins.name:
+			'Block':
+				Blocks.find(ins.block_id, true)
+			'BG':
+				if ins.bg_id in TE.defs.imgs:
+					Assets.imgs.queue(TE.defs.imgs[ins.bg_id], 'res://assets/img')
+			'FG':
+				if ins.fg_id in TE.defs.imgs:
+					Assets.imgs.queue(TE.defs.imgs[ins.fg_id], 'res://assets/img')
+			'PlaySong':
+				if ins.song_id != '':
+					Assets.songs.queue(TE.defs.songs[ins.song_id], 'res://assets/music')
+			'PlaySound':
+				Assets.sounds.queue(TE.defs.sounds[ins.sound_id], 'res://assets/sound')
+			_: # do nothing, cannot handle this instruction
+				pass
 
 
 func next_blocking() -> Variant:

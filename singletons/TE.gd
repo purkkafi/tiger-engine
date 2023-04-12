@@ -102,6 +102,10 @@ func log_error(msg: String):
 	push_error(_log_time() + msg)
 
 
+func log_warning(msg: String):
+	push_warning(_log_time() + msg)
+
+
 # returns whether game should act as if running on a mobile platform
 # in addition to running on mobile normally, this is true if the hidden secret
 # pretend_mobile has been set to true

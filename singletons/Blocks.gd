@@ -6,13 +6,18 @@ extends Node
 # looks up a Block object by its id, a String of form "<blockfile_id>:<block_id>"
 # for instance, given "a:b", the block b in the blockfile a.tef is returned
 # null is returned if the Block cannot be found
-static func find(id: String) -> Variant:
+# if queue_only is true, the blockfile is queued for loading and null is returned
+static func find(id: String, queue_only = false) -> Variant:
 	var parts = id.split(':')
 	if len(parts) != 2:
 		TE.log_error('block id should be of form <file>:<block>, got %s' % id)
 	
 	var blockfile_id: String = parts[0]
 	var block_id: String = parts[1]
+	
+	if queue_only:
+		Assets.blockfiles.queue('lang:/text/' + blockfile_id + '.tef')
+		return null
 	
 	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:/text/' + blockfile_id + '.tef')
 	

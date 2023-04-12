@@ -3,11 +3,11 @@ extends Node
 # contains specific Cache instances for different resources
 
 
-var songs: Cache = Cache.new('songs', 3)
+var songs: Cache = Cache.new('songs', 5)
 var sounds: Cache = Cache.new('sounds', 5)
-var imgs: Cache = Cache.new('imgs', 5)
-var blockfiles: Cache = Cache.new('blockfiles', 20)
-var scripts: Cache = Cache.new('scripts', 20)
+var imgs: Cache = Cache.new('imgs', 10)
+var blockfiles: Cache = Cache.new('blockfiles', 10)
+var scripts: Cache = Cache.new('scripts', 10)
 var sprites: Cache = Cache.new('sprites', 10) # note: stores TagResources, not actual sprites
 var sprite_files: Cache = Cache.new('sprite_files', 30)
 # for misc resources that don't have to be cached
@@ -137,13 +137,13 @@ class Cache:
 		cache.append(new_entry)
 		# remove oldest entry if too large
 		if len(cache) > size:
-			cache.pop_front()
+			var old = cache.pop_front()
 	
 	
 	# queues a resource for loading in the background and adds it to
 	# the front of the cache
 	func queue(path: String, relative_to: Variant = null):
-		Assets._resolve(path, relative_to)
+		path = Assets._resolve(path, relative_to)
 		
 		# don't queue if already in cache/queued
 		for entry in cache:
@@ -156,11 +156,16 @@ class Cache:
 		return err
 	
 	
+	# like get_resource() but does not print a warning if the given resource was not queued
+	func get_unqueued(path: String, relative_to: Variant = null):
+		return get_resource(path, relative_to, false)
+	
+	
 	# gets the given resource, optionally relative to a path. it may be:
 	# – returned from the cache, if in there
 	# – loaded now and added to the cache
 	# if a resource hasn't been queued with queue() or if loading is in progress, the method blocks
-	func get_resource(path: String, relative_to: Variant = null):
+	func get_resource(path: String, relative_to: Variant = null, warn_not_queued = true):
 		path = Assets._resolve(path, relative_to)
 		
 		for entry in cache:
@@ -171,7 +176,10 @@ class Cache:
 		
 		# resource was not queued, load and add to cache
 		if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
-			TE.log_info('[Assets/%s] get not queued: %s ' % [id, path])
+			if warn_not_queued:
+				TE.log_warning('[Assets/%s] %s not queued in time, cache: %s' % [id, path, cache])
+			else:
+				TE.log_info('[Assets/%s] get not queued: %s' % [id, path])
 			var resource = ResourceLoader.load(path)
 			var entry = Entry.new(path)
 			entry.resource = resource
@@ -180,9 +188,9 @@ class Cache:
 			return resource
 		else: # queued or already loaded, get it now anyway
 			if ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED:
-				TE.log_info('[Assets/%s] get loaded: %s' % [id, path])
+				TE.log_info('[Assets/%s] get queued: %s' % [id, path])
 			else:
-				TE.log_info('[Assets/%s] get loading in progress: %s' % [id, path])
+				TE.log_info('[Assets/%s] get queued, loading in progress: %s' % [id, path])
 			var resource = ResourceLoader.load_threaded_get(path)
 			var entry = Entry.new(path)
 			entry.resource = resource
