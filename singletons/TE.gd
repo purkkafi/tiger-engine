@@ -117,3 +117,9 @@ func is_mobile():
 # this is true on mobile and on desktop if the setting is on
 func is_large_gui():
 	return is_mobile() or (settings != null and settings.gui_scale == Settings.GUIScale.LARGE)
+
+
+# exits the game
+func quit_game():
+	get_tree().get_root().propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+	get_tree().quit()

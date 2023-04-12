@@ -220,7 +220,7 @@ func _quit_game():
 
 
 func _do_quit():
-	get_tree().quit()
+	TE.quit_game()
 
 
 func _to_title():
