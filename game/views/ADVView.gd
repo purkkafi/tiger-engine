@@ -32,6 +32,9 @@ func _ready():
 		width = 1000
 		height = 200
 	
+	if TE.is_large_gui():
+		speaker_font_size += MobileUI.FONT_SIZE_INCREASE
+	
 	speaker_panel.visible = false
 	speaker_name.add_theme_font_override('font', speaker_font)
 	speaker_name.add_theme_font_size_override('font_size', speaker_font_size)

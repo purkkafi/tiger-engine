@@ -14,7 +14,7 @@ var language_disabled: bool = false
 @onready var music_volume: Slider = %MusicVolSlider
 @onready var sfx_volume: Slider = %SFXVolSlider
 @onready var text_speed: Slider = %TextSpeedSlider
-@onready var dyn_text_speed: CheckButton = %DynTextSpeed
+@onready var dyn_text_speed: CheckBox = %DynTextSpeed
 @onready var lang_options: OptionButton = %LangOptions
 @onready var gui_scale_container: HBoxContainer = %GUIScaleContainer
 @onready var gui_scale: OptionButton = %GUIScale
@@ -55,11 +55,7 @@ func _initialize_overlay():
 	if language_disabled:
 		lang_options.disabled = true
 	
-	# no GUI scale setting on mobile
-	if TE.is_mobile():
-		gui_scale_container.visible = false
-	else:
-		gui_scale.selected = TE.settings.gui_scale
+	gui_scale.selected = TE.settings.gui_scale
 	
 	save_exit.grab_focus()
 
@@ -92,10 +88,10 @@ func _save_exit():
 	TE.settings.text_speed = text_speed.value
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
 	TE.settings.lang_id = TE.language.id
+	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	
 	if not TE.is_mobile():
 		TE.settings.fullscreen = window_options.selected == WM_FULLSCREEN
-		TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	
 	TE.settings.save_to_file()
 	_exit()

@@ -126,11 +126,12 @@ text = "%settings_text_speed%"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
+size_flags_vertical = 4
 tooltip_text = "%settings_text_speed_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="DynTextSpeed" type="CheckButton" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
