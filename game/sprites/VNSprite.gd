@@ -17,8 +17,8 @@ var id: String # id the sprite is referred to with
 var path: String # path of the sprite folder
 
 
-# construct this sprite from the tag read from [sprite folder]/sprite.tef
-func _init(_tag: Tag):
+# construct this sprite from its SpriteResource
+func _init(_resource: SpriteResource):
 	TE.log_error("VNSprite doesn't override constructor")
 
 

@@ -2,10 +2,10 @@ class_name SimpleSprite extends VNSprite
 # simple sprite with a list of states corresponding to different images it shows
 
 
+# the SpriteResource containing the files for this sprite
+var resource: SpriteResource
 # map of frame ids to the corresponding paths
 var paths: Dictionary = {}
-# map of state ids to the corresponding textures
-var textures: Dictionary = {}
 # the default frame of the sprite
 var default_frame: String = ''
 # currently shown frame
@@ -14,14 +14,15 @@ var current_frame: String = ''
 var rect: TextureRect
 
 
-func _init(tag: Tag):
-	for framedef in tag.get_tags():
+func _init(_resource: SpriteResource):
+	resource = _resource
+	
+	for framedef in resource.tag.get_tags():
 		if framedef.name != 'frame':
 			TE.log_error('unknown tag in SimpleSprite: %s' % framedef)
 		var frame_id: String = framedef.get_string_at(0)
 		var texture_path: String = framedef.get_string_at(1)
 		paths[frame_id] = texture_path
-		textures[frame_id] = null
 		
 		# set default frame to the first frame
 		if default_frame == '':
@@ -29,9 +30,6 @@ func _init(tag: Tag):
 
 
 func enter_stage(initial_state: Variant = null):
-	for state in textures.keys():
-		textures[state] = Assets.sprite_files.get_resource(paths[state], self.path)
-	
 	rect = TextureRect.new()
 	add_child(rect)
 	
@@ -48,7 +46,7 @@ func _sprite_width() -> float:
 
 func show_as(frame: String):
 	current_frame = frame
-	rect.texture = textures[frame]
+	rect.texture = resource.files[paths[frame]]
 	self.position.y = get_parent().size.y - rect.texture.get_height()
 	move_to(sprite_position, Definitions.instant(), null)
 

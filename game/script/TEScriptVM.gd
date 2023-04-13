@@ -107,6 +107,8 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 					Assets.songs.queue(TE.defs.songs[ins.song_id], 'res://assets/music')
 			'PlaySound':
 				Assets.sounds.queue(TE.defs.sounds[ins.sound_id], 'res://assets/sound')
+			'Enter':
+				Assets.sprites.queue('sprite.tef', Assets._resolve(TE.defs.sprites[ins.sprite], 'res://assets/sprites'))
 			_: # do nothing, cannot handle this instruction
 				pass
 

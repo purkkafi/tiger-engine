@@ -121,11 +121,11 @@ func enter_sprite(path: String, at: Variant, with: Variant, by: Variant, tween: 
 
 # creats a sprite object when given the full path of the sprite folder
 func _create_sprite(path: String) -> VNSprite:
-	var tag: Tag = Assets.sprites.get_resource('sprite.tef', path).tag
+	var resource: SpriteResource = Assets.sprites.get_resource('sprite.tef', path)
 	var sprite: VNSprite
 	# TODO: implement registering of custom sprite providers
-	if tag.name == 'simple_sprite':
-		sprite = SimpleSprite.new(tag)
+	if resource.tag.name == 'simple_sprite':
+		sprite = SimpleSprite.new(resource)
 		sprite.path = path
 		# default id to being last part of sprite folder's path
 		sprite.id = path.split('/')[-1]

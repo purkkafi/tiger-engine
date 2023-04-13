@@ -83,6 +83,11 @@ func _load(path, _original_path, _use_sub_threads, _cache_mode):
 	if len(tree) != 1:
 		push_error('single top-level tag required for %s in %s' % [type, path])
 		return FAILED
+	
+	# special handling for sprites
+	if path.ends_with('/sprite.tef'):
+		return _resolve_sprite(path, tree[0])
+	
 	return _resolve_top_level(tree[0])
 
 
@@ -286,3 +291,21 @@ func _resolve_options(tree: Tag):
 				push_error('unknown option: %s' % [node])
 	
 	return opts
+
+
+# resolves a folder containing a sprite.tef file into a SpriteResource
+func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
+	var sprite: SpriteResource = SpriteResource.new()
+	var dir_path: String = path.trim_suffix('/sprite.tef')
+	var dir: DirAccess = DirAccess.open(dir_path)
+	
+	sprite.tag = sprite_tef
+	
+	for file in dir.get_files():
+		if file.ends_with('.import') or file == 'sprite.tef':
+			continue
+		sprite.files[file] = load(dir_path + '/' + file)
+	
+	return sprite
+	
+	
