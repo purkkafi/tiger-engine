@@ -213,6 +213,16 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				scripts[rest_name] = TEScript.new(rest_name, rest_ins)
 				return ins
 			
+			'jmp':
+				var to: String = tag.get_string()
+				if ':' in to:
+					var parts = to.split(':')
+					if len(parts) != 2:
+						push_error('bad \\jmp destination: %s' % to)
+					ins.append(TEScript.IJmp.new(parts[1], parts[0]))
+				else:
+					ins.append(TEScript.IJmp.new(to))
+			
 			_:
 				# interpret as the declaration of a View
 				if len(tag.args) == 0:

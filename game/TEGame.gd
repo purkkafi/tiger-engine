@@ -18,6 +18,8 @@ var game_name: Variant = null # name of the game, can be set by the script and i
 # sets the 'main' script in the given ScriptFile to be run
 # call this before switching to the scene
 func run_script(script_file: ScriptFile):
+	if not 'main' in script_file.scripts:
+		TE.log_error("no 'main' script in %s, scriptfile probably doesn't support being run directly" % script_file.resource_path)
 	vm = TEScriptVM.new(script_file, 'main')
 
 
@@ -151,7 +153,11 @@ func next_blocking():
 			new_view.initialize()
 		
 		'Jmp':
-			vm.jump_to(blocking.to)
+			if blocking.in_file == null:
+				vm.jump_to(blocking.to)
+			else:
+				var scriptfile = Assets.scripts.get_resource(blocking.in_file + '.tef', 'res://assets/scripts')
+				vm.jump_to_file(scriptfile, blocking.to)
 		
 		'JmpIf':
 			var comp = ControlExpr.exec(blocking.condition, context)

@@ -295,11 +295,13 @@ class IJmpIf extends BaseInstruction:
 class IJmp extends BaseInstruction:
 	const name: String = 'Jmp'
 	var to: String
+	var in_file: Variant # null or String
 	
 	
-	func _init(_to: String):
+	func _init(_to: String, _in_file = null):
 		self.to = _to
+		self.in_file = _in_file
 	
 	
 	func _to_string() -> String:
-		return 'jmp %s' % to
+		return 'jmp %s %s' % [to, in_file]

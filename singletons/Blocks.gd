@@ -16,10 +16,10 @@ static func find(id: String, queue_only = false) -> Variant:
 	var block_id: String = parts[1]
 	
 	if queue_only:
-		Assets.blockfiles.queue('lang:/text/' + blockfile_id + '.tef')
+		Assets.blockfiles.queue('lang:text/' + blockfile_id + '.tef')
 		return null
 	
-	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:/text/' + blockfile_id + '.tef')
+	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:text/' + blockfile_id + '.tef')
 	
 	if block_id in blockfile.blocks:
 		return blockfile.blocks[block_id]

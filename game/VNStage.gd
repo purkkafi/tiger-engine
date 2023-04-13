@@ -100,7 +100,7 @@ func _replace_with(layer: Node, new_layer: Node):
 # by is an alternative id to give to the sprite or null
 # tween is the tween to use or null, in case it will be created; returned for chaining
 func enter_sprite(path: String, at: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
-	var sprite: VNSprite = _create_sprite(Assets._resolve(path, 'res://assets/sprites/'))
+	var sprite: VNSprite = _create_sprite(Assets._resolve(path, 'res://assets/sprites'))
 	if by != null:
 		sprite.id = by as String
 	$Sprites.add_child(sprite)

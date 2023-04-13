@@ -7,7 +7,7 @@ var current_script: TEScript
 var index: int = 0
 var lookahead_index: int = 0
 var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View', 'Jmp', 'JmpIf' ]
-var BRANCHING_INSTRUCTIONS: Array[String] = [ 'Jmp', 'JmpIf' ]
+var CONDITIONAL_INSTRUCTIONS: Array[String] = [ 'JmpIf' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):
@@ -16,8 +16,16 @@ func _init(_scriptfile: ScriptFile, script: String):
 
 
 func jump_to(script: String):
+	if not script in scriptfile.scripts:
+		TE.log_error('tried to jump to unknown script: %s' % script)
 	self.current_script = scriptfile.scripts[script]
-	index = 0
+	index = 0   
+	lookahead_index = 0
+
+
+func jump_to_file(file: ScriptFile, script: String):
+	self.scriptfile = file
+	jump_to(script)
 
 
 func is_end_of_script() -> bool:
@@ -37,8 +45,8 @@ func _is_blocking(instruction: TEScript.BaseInstruction) -> bool:
 	return instruction.name in BLOCKING_INSTRUCTIONS
 
 
-func _is_branching(instruction: TEScript.BaseInstruction) -> bool:
-	return instruction.name in BRANCHING_INSTRUCTIONS
+func _is_conditional(instruction: TEScript.BaseInstruction) -> bool:
+	return instruction.name in CONDITIONAL_INSTRUCTIONS
 
 
 # proceeds to the next blocking instruction, returning an Array
@@ -78,10 +86,10 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 			if blocking_count >= 3:
 				break
 		
-		# do not go past branches to prevent accidentally queuing
-		# assets that don't actually get used
+		# do not go past instructions that affect control flow unpredictably
+		# (to not load assets that don't actually get used)
 		# (might react badly with Godot's queue mechanism? not sure)
-		if _is_branching(ins):
+		if _is_conditional(ins):
 			break
 		
 		found.append(ins)
@@ -96,6 +104,9 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 		match ins.name:
 			'Block':
 				Blocks.find(ins.block_id, true)
+			'Jmp':
+				if ins.in_file != null:
+					Assets.scripts.queue(ins.in_file + '.tef', 'res://assets/scripts')
 			'BG':
 				if ins.bg_id in TE.defs.imgs:
 					Assets.imgs.queue(TE.defs.imgs[ins.bg_id], 'res://assets/img')
@@ -108,7 +119,7 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 			'PlaySound':
 				Assets.sounds.queue(TE.defs.sounds[ins.sound_id], 'res://assets/sound')
 			'Enter':
-				Assets.sprites.queue('sprite.tef', Assets._resolve(TE.defs.sprites[ins.sprite], 'res://assets/sprites'))
+				Assets.sprites.queue(TE.defs.sprites[ins.sprite] + '/sprite.tef', 'res://assets/sprites')
 			_: # do nothing, cannot handle this instruction
 				pass
 

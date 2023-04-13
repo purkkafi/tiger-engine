@@ -249,8 +249,8 @@ func _resolve_definitions(tree: Tag):
 			'sprite':
 				# just put the sprite path in there, it will be resolved later
 				var folder_path: String = node.get_string_at(1)
-				if not folder_path.ends_with('/'):
-					push_error('sprite paths must end in /: %s' % folder_path)
+				if folder_path.ends_with('/'):
+					push_error('sprite paths must not end in /: %s' % folder_path)
 				defs.sprites[node.get_string_at(0)] = folder_path
 			
 			'var':

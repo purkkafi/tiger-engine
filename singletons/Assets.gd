@@ -26,17 +26,27 @@ func _ready():
 # – 'assets:' causes the path to be resolved relative to the assets folder
 # – 'lang:' causes the path to be resolved relative to the chosen language's folder
 static func _resolve(path: String, relative_to: Variant = null) -> String:
+	var result: String = ''
+	
 	if path.begins_with('assets:'):
-		return 'res://assets/' + path.lstrip('assets:')
+		result = 'res://assets/' + path.lstrip('assets:')
 	elif path.begins_with('lang:'):
-		return TE.language.path + '/' + path.lstrip('lang:')
+		result = TE.language.path + '/' + path.lstrip('lang:')
 	elif relative_to != null:
-		return relative_to + '/' + path
+		result = relative_to + '/' + path
 	elif FileAccess.file_exists(path):
-		return path
+		result = path
 	else:
 		TE.log_error('cannot resolve nonexistent path: %s (no prefix or relative path given)' % [path])
-		return path
+		result = path
+	
+	# warn against double slashes for now
+	# it matters because we're comparing paths later and Godot doesn't appear to have
+	# a function for normalizing paths (?)
+	if '//' in result.lstrip('res://'):
+		TE.log_warning("bad path (double slashes lead to problems with caching): %s (resolved to %s)" % [path, result])
+	
+	return result
 
 
 # calculates the hash of every Block in the given BlockFile

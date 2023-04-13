@@ -17,7 +17,7 @@ func _on_run_pressed():
 
 
 func _run_script(script_path: String):
-	var script: ScriptFile = load(script_path)
+	var script: ScriptFile = Assets.scripts.get_unqueued(script_path)
 	var game: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
 	game.run_script(script)
 	TE.switch_scene(game)
