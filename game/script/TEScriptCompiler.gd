@@ -61,7 +61,7 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				else:
 					push_error('unknown argument for \\playsong: %s' % value)
 			'bg':
-				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))
+				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))  
 			'fg':
 				ins.append(TEScript.IFG.new(tag.get_string_at(0), tag.get_string_at(1)))
 			'meta':

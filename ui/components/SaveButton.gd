@@ -79,7 +79,7 @@ func check_hashes(save: Dictionary):
 	
 	if FileAccess.file_exists(vm['scriptfile']):
 		# ensure game has loaded files & calculated hashes
-		Assets.scripts.get_resource(vm['scriptfile'])
+		Assets.scripts.get_unqueued(vm['scriptfile'])
 		var script_hash_key = vm['scriptfile'] + ':' + vm['current_script']
 		
 		if script_hash_key in Assets.scripts.hashes:
@@ -88,7 +88,7 @@ func check_hashes(save: Dictionary):
 	
 	# save may not have block data if the View isn't used to show blocks
 	if 'block' in save['view'] and FileAccess.file_exists(view['blockfile']):
-		Assets.blockfiles.get_resource(view['blockfile'])
+		Assets.blockfiles.get_unqueued(view['blockfile'])
 		var block_hash_key = view['blockfile'] + ':' + view['block']
 		
 		if block_hash_key in Assets.blockfiles.hashes:

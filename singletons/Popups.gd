@@ -128,5 +128,5 @@ func add_shadow(to_node: Node):
 
 
 func _remove_shadow(shadow: ColorRect):
-	shadow.get_parent().remove_child(shadow)
+	shadow.get_parent().remove_child.call_deferred(shadow)
 	shadow.queue_free()

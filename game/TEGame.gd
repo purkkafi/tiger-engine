@@ -358,7 +358,7 @@ func load_save(save: Dictionary):
 	last_save = save
 	game_name = save['game_name']
 	
-	$VNStage.set_state(save['stage'])   
+	$VNStage.set_state(save['stage'])
 	
 	vm = TEScriptVM.from_state(save['vm'])
 	context.view_result = save['view_result']

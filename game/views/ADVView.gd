@@ -64,7 +64,12 @@ func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y
 
 
+func _game_paused():
+	box.visible = false
+
+
 func _next_line(line: String, ctxt: ControlExpr.GameContext, speaker: Definitions.Speaker = null):
+	box.visible = true
 	label.text = line
 	
 	if speaker != null:

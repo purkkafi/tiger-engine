@@ -71,6 +71,7 @@ func adjust_size(_controls: VNControls, _gui_scale: Settings.GUIScale) -> void:
 
 # pauses the game for the given amount of time, preventing the View from updating
 func pause(seconds: float):
+	_game_paused()
 	pause_delta = seconds
 
 
@@ -334,6 +335,13 @@ func skip_pressed():
 # a Speaker may also additionally be specified
 func _next_line(_line: String, _ctxt: ControlExpr.GameContext, _speaker: Definitions.Speaker = null):
 	TE.log_error("view doesn't implement _next_line()")
+
+
+# subclasses can override to respond to the game being paused with the \pause instruction
+# for now, there is no _game_unpaused() counterpart
+# if desired, the effects can be undone in a method like _next_line()
+func _game_paused():
+	pass
 
 
 # optionally, subclasses may respond to a new block starting

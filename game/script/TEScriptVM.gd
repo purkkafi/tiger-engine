@@ -92,6 +92,7 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 		if _is_conditional(ins):
 			break
 		
+		print(lookahead_index, ': ', ins)
 		found.append(ins)
 		lookahead_index += 1
 	
@@ -162,6 +163,7 @@ static func from_state(state: Dictionary) -> TEScriptVM:
 	
 	var vm: TEScriptVM = TEScriptVM.new(_scriptfile, script)
 	vm.index = state['index']
+	vm.lookahead_index = state['index']
 	
 	if vm.index > len(vm.current_script.instructions):
 		TE.log_error('instruction index out of range')
