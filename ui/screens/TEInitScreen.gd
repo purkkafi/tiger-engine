@@ -32,6 +32,7 @@ func _ready():
 	TE.defs.view_registry['adv'] = preload('res://tiger-engine/game/views/ADVView.tscn')
 	TE.defs.view_registry['input'] = preload('res://tiger-engine/game/views/InputView.tscn')
 	TE.defs.view_registry['choice'] = preload('res://tiger-engine/game/views/ChoiceView.tscn')
+	TE.defs.view_registry['cutscene'] = preload('res://tiger-engine/game/views/CutsceneView.tscn')
 	
 	# if settings file exists, read it and switch to the specified language
 	if Settings.has_settings_file():

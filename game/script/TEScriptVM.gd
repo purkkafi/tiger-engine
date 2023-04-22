@@ -92,7 +92,6 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 		if _is_conditional(ins):
 			break
 		
-		print(lookahead_index, ': ', ins)
 		found.append(ins)
 		lookahead_index += 1
 	
@@ -121,6 +120,13 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 				Assets.sounds.queue(TE.defs.sounds[ins.sound_id], 'res://assets/sound')
 			'Enter':
 				Assets.sprites.queue(TE.defs.sprites[ins.sprite] + '/sprite.tef', 'res://assets/sprites')
+			
+			'View': # hardcode queuing resources for built-in Views
+				# load the scene a CutsceneView shows
+				if ins is TEScript.IView and ins.view_id == 'cutscene':
+					for opt in ins.options:
+						if opt.name == 'path':
+							Assets.noncached.queue(opt.get_string())
 			_: # do nothing, cannot handle this instruction
 				pass
 

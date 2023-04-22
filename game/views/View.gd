@@ -307,6 +307,11 @@ func create_label() -> RichTextLabel:
 func copy_state_from(old: View):
 	advance_held = old.advance_held
 	speedup = old.speedup
+	
+	# don't keep skip toggled accross Views that don't treat it as a toggle button
+	if not is_skip_toggleable():
+		speedup = Speedup.NORMAL
+	
 	state = old.state
 	waiting_tween = old.waiting_tween
 

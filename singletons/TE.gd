@@ -122,4 +122,5 @@ func is_large_gui():
 # exits the game
 func quit_game():
 	get_tree().get_root().propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
-	get_tree().quit.call_deferred()
+	await get_tree().process_frame
+	get_tree().quit()
