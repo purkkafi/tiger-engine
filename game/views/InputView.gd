@@ -46,11 +46,8 @@ func _finish(_new_string=null):
 	result = line_edit.text
 	if result == '': # use default value, if any, instead of the empty string
 		result = default_val
-	Overlay.remove_shadow(shadow, Callable(self, '_finished'))
-
-
-func _finished():
 	finished = true
+	Overlay.remove_shadow(shadow, func(): pass)
 
 
 func _waiting_custom_condition() -> bool:
@@ -81,3 +78,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 
 func is_temporary() -> bool:
 	return true
+
+
+func get_skip_mode() -> SkipMode:
+	return SkipMode.DISABLED

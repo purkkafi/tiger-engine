@@ -160,6 +160,10 @@ func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
 		Speedup.FASTER, Speedup.SKIP:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
+			
+			if line_index == len(lines):
+				_block_ended()
+			
 			line_switch_delta = LINE_SWITCH_COOLDOWN
 			state = State.WAITING_LINE_SWITCH_COOLDOWN
 
@@ -275,6 +279,10 @@ func game_advanced(delta: float):
 		_to_end_of_line()
 		line_switch_delta = LINE_SWITCH_COOLDOWN
 		state = State.WAITING_LINE_SWITCH_COOLDOWN
+		
+		if line_index == len(lines):
+			_block_ended()
+		
 	elif speedup == Speedup.NORMAL and advance_held >= SPEEDUP_THRESHOLD_FAST:
 		speedup = Speedup.FAST
 		_to_end_of_line()
@@ -467,3 +475,10 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	while line_index <= savestate['line_index']-1:
 		next_line(ctxt, true)
 		_to_end_of_line()
+
+
+# resets speedup-related data; may be needed if a View alternates between showing
+# text and doing something else
+func reset_speedup():
+	speedup = Speedup.NORMAL
+	advance_held = 0

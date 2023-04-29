@@ -202,6 +202,7 @@ func _replace_view(new_view: Node):
 	new_view.adjust_size($VNControls, TE.settings.gui_scale)
 	
 	if new_view.get_skip_mode() == View.SkipMode.DISABLED:
+		$VNControls.btn_skip.set_pressed_no_signal(false)
 		$VNControls.btn_skip.disabled = true
 	else:
 		$VNControls.btn_skip.disabled = false

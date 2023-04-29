@@ -40,11 +40,8 @@ func initialize():
 
 func _finish(chosen_index: int):
 	result = choice_values[chosen_index]
-	Overlay.remove_shadow(shadow, Callable(self, '_finished'))
-
-
-func _finished():
 	finished = true
+	Overlay.remove_shadow(shadow, func(): pass)
 
 
 func _waiting_custom_condition() -> bool:
@@ -76,3 +73,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 
 func is_temporary() -> bool:
 	return true
+
+
+func get_skip_mode() -> SkipMode:
+	return SkipMode.DISABLED
