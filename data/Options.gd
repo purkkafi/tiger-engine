@@ -19,3 +19,5 @@ var animate_shadow_out: Callable = func(_shadow: ColorRect) -> Variant: return n
 # callback that returns the game version or an empty string for none
 # should take no arguments and return a String
 var version_callback: Callable = func() -> String: return ''
+# dict of custom view ids to paths of the View scenes
+var custom_views: Dictionary = {}

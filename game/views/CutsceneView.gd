@@ -47,8 +47,8 @@ func _get_scene_path():
 	return 'res://tiger-engine/game/views/CutsceneView.tscn'
 
 
-func is_skip_toggleable() -> bool:
-	return false
+func get_skip_mode():
+	return View.SkipMode.PRESS
 
 
 func skip_pressed():

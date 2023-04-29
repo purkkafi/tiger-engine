@@ -63,7 +63,7 @@ func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
 	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2
 
 
-func _next_block():
+func _block_started():
 	# erase current paragraphs
 	for par in paragraphs.get_children():
 		paragraphs.remove_child(par)

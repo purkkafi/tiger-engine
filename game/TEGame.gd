@@ -13,6 +13,7 @@ var mouse_advancing: bool = false # whether game is being advanced by holding th
 var overlay_active: bool = false # whether there is an overlay and game should be paused
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
+var _custom_data: Dictionary = {} # persistent, game-specific custom save data
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -186,7 +187,7 @@ func _replace_view(new_view: Node):
 	move_child(new_view, old_pos)
 	
 	new_view.name = old_view.name
-	new_view.gamelog = gamelog
+	new_view.game = self
 	
 	# store previous_path and previous_state for temporary views
 	if new_view.is_temporary():
@@ -199,7 +200,13 @@ func _replace_view(new_view: Node):
 			new_view.previous_state = old_view.get_state()
 	
 	new_view.adjust_size($VNControls, TE.settings.gui_scale)
-	$VNControls.btn_skip.toggle_mode = new_view.is_skip_toggleable()
+	
+	if new_view.get_skip_mode() == View.SkipMode.DISABLED:
+		$VNControls.btn_skip.disabled = true
+	else:
+		$VNControls.btn_skip.disabled = false
+		$VNControls.btn_skip.toggle_mode = new_view.get_skip_mode() == View.SkipMode.TOGGLE
+	
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
 
@@ -291,7 +298,7 @@ func _do_quit():
 
 
 func _skip():
-	if $View.is_skip_toggleable():
+	if $View.get_skip_mode() == View.SkipMode.TOGGLE:
 		$View.skip_toggled($VNControls.btn_skip.button_pressed)
 	else:
 		$View.skip_pressed()
@@ -347,8 +354,10 @@ func create_save() -> Dictionary:
 		'song_id' : Audio.song_id,
 		'save_name' : null,
 		'save_datetime' : null, # these 2 should be handled by saving screen
-		'save_utime' : null
+		'save_utime' : null,
 	}
+	# do last to allow Views to write custom data during the get_state() call
+	save['custom_data'] = _custom_data.duplicate(true)
 	return save
 
 
@@ -374,6 +383,9 @@ func load_save(save: Dictionary):
 		TE.log_error('cannot load View: %s' % save['view']['scene'])
 		Popups.error_dialog(Popups.GameError.BAD_SAVE)
 		return
+	
+	# custom save data
+	_custom_data = save['custom_data'].duplicate(true)
 	
 	var view = view_scene.instantiate()
 	_replace_view(view)
@@ -406,3 +418,18 @@ func _log():
 	log_overlay.animating_out_callback = func(): after_overlay()
 	before_overlay()
 	add_child(log_overlay)
+
+
+# sets the custom data associated with the given key
+func set_custom_data(key: String, value: Variant):
+	_custom_data[key] = value
+
+
+# returns whether custom data is associated with the given key
+func has_custom_data(key: String):
+	return key in _custom_data
+
+
+# returns the custom data set with set_custom_data() or null if empty
+func get_custom_data(key: String):
+	return _custom_data[key]

@@ -34,6 +34,10 @@ func _ready():
 	TE.defs.view_registry['choice'] = preload('res://tiger-engine/game/views/ChoiceView.tscn')
 	TE.defs.view_registry['cutscene'] = preload('res://tiger-engine/game/views/CutsceneView.tscn')
 	
+	# install custom views
+	for custom_view in TE.opts.custom_views:
+		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
+	
 	# if settings file exists, read it and switch to the specified language
 	if Settings.has_settings_file():
 		TE.settings = Settings.load_from_file()

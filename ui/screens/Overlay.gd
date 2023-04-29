@@ -63,10 +63,12 @@ static func add_shadow(to_control: Control):
 	_shadow.position = Vector2(0, 0)
 	_shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
 	_shadow.color = TE.opts.shadow_color
-	_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_shadow.mouse_filter = Control.MOUSE_FILTER_STOP
 	
-	to_control.add_sibling(_shadow)
-	to_control.z_index += 1
+	var parent = to_control.get_parent()
+	var to_index = to_control.get_index()
+	parent.add_child(_shadow)
+	parent.move_child(_shadow, to_index)
 	TE.opts.animate_shadow_in.call(_shadow)
 	return _shadow
 

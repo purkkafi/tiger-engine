@@ -14,7 +14,7 @@ var line_switch_delta = 0.0 # delta until advancing to the next line if on FASTE
 var speedup: Speedup = Speedup.NORMAL # status of speedup
 var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
-var gamelog: Log = null # the log where lines will be recorded
+var game: TEGame = null # TEGame object used to access various game data
 var result: Variant = null # the optional value this View resulted in
 var previous_path: String = '' # the resource path of the previous View (for temporary Views)
 var previous_state: Dictionary = {} # the state of the previous View (for temporary Views)
@@ -57,6 +57,13 @@ enum State {
 	WAITING_UNADVANCE, # at end of line, waiting for user to not advance (release spacebar/mouse)
 	WAITING_LINE_SWITCH_COOLDOWN, # at an end of line, waiting for cooldown
 	READY_TO_PROCEED, # can proceed to next line/block
+}
+
+# how the skip button should behave
+enum SkipMode {
+	TOGGLE, # skip can be toggled on and off
+	PRESS, # skip can be pressed (not a toggle button)
+	DISABLED # skip is disabled
 }
 
 
@@ -121,7 +128,7 @@ func show_block(_block: Block, ctxt: ControlExpr.GameContext) -> void:
 	block = _block
 	lines = Blocks.resolve_parts(block, ctxt)
 	line_index = 0
-	_next_block()
+	_block_started()
 
 
 # proceeds to the next line
@@ -138,7 +145,7 @@ func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
 			TE.log_error('speaker not rezognized: %s' % id)
 	
 	if not ignore_log:
-		gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
+		game.gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
 	_next_line(lines[line_index] + LINE_END, ctxt, speaker)
 	line_index += 1
 	next_effect.reset()
@@ -258,6 +265,9 @@ func game_advanced(delta: float):
 	advance_held += delta
 	
 	if state == State.WAITING_ADVANCE:
+		# call callback if this is the end of the current block
+		if line_index == len(lines):
+			_block_ended()
 		state = State.READY_TO_PROCEED
 	
 	if speedup == Speedup.FAST and advance_held >= SPEEDUP_THRESHOLD_FASTER:
@@ -309,19 +319,19 @@ func copy_state_from(old: View):
 	speedup = old.speedup
 	
 	# don't keep skip toggled accross Views that don't treat it as a toggle button
-	if not is_skip_toggleable():
+	if not get_skip_mode() == SkipMode.TOGGLE:
 		speedup = Speedup.NORMAL
 	
 	state = old.state
 	waiting_tween = old.waiting_tween
 
 
-# returns whether the skip button should act as a toggle button during this view
-# subclasses should override to return a constant value and then override
-# either skip_toggled() or skip_pressed()
-# the default implementation toggles Speedup to SKIP and back
-func is_skip_toggleable() -> bool:
-	return true
+# how the skip button should work with this View
+# by default is toggleable and affects speedup
+# subclasses can override this and skip_toggled() / skip_pressed() to
+# control skip behaviour
+func get_skip_mode() -> SkipMode:
+	return SkipMode.TOGGLE
 
 
 func skip_toggled(on: bool):
@@ -350,7 +360,12 @@ func _game_paused():
 
 
 # optionally, subclasses may respond to a new block starting
-func _next_block():
+func _block_started():
+	pass
+
+
+# callback for when a Block ends
+func _block_ended():
 	pass
 
 

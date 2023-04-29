@@ -31,6 +31,8 @@ func initialize():
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.connect('pressed', Callable(self, '_finish').bind(i))
 		vbox.add_child(btn)
+		
+		#text.custom_minimum_size = Vector2(btn.size.x, btn.size.y)
 	
 	TE.ui_strings.translate(self)
 	shadow = Overlay.add_shadow(self)
