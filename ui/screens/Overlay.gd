@@ -72,7 +72,7 @@ static func add_shadow(to_control: Control, skip_animation=false):
 	
 	var tween: Tween = TE.opts.animate_shadow_in.call(_shadow)
 	
-	if skip_animation:
+	if skip_animation and tween != null:
 		# this is probably illegal but ACAB
 		tween.set_speed_scale(INF)
 	
