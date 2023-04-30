@@ -8,7 +8,7 @@ var cutscene: Node2D
 var is_finished: bool
 
 
-func parse_options(tags: Array[Tag], _ctxt: ControlExpr.GameContext):
+func parse_options(tags: Array[Tag]):
 	for tag in tags:
 		match tag.name:
 			'path':
@@ -62,9 +62,9 @@ func get_state() -> Dictionary:
 	return savestate
 
 
-func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+func from_state(savestate: Dictionary):
 	path = savestate['cutscene_path']
-	super.from_state(savestate, ctxt)
+	super.from_state(savestate)
 
 
 func is_temporary() -> bool:

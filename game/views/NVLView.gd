@@ -22,7 +22,7 @@ var text_color: Variant = null # Color or null
 var INDENT: String = '        '
 
 
-func parse_options(tags: Array[Tag], _ctxt: ControlExpr.GameContext):
+func parse_options(tags: Array[Tag]):
 	for opt in tags:
 		match opt.name:
 			'hcenter':
@@ -71,7 +71,7 @@ func _block_started():
 
 
 # Speakers are not handled right now
-func _next_line(line: String, _ctxt: ControlExpr.GameContext, _speaker: Definitions.Speaker = null):
+func _next_line(line: String, _speaker: Definitions.Speaker = null):
 	var label: RichTextLabel = create_label()
 	
 	if outline_size != 0:
@@ -131,7 +131,7 @@ func get_state() -> Dictionary:
 	return savestate
 
 
-func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+func from_state(savestate: Dictionary):
 	if 'hcenter' in savestate:
 		hcenter = savestate['hcenter']
 	if 'vcenter' in savestate:
@@ -142,4 +142,4 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 		outline_size = savestate['outline_size']
 	if 'text_color' in savestate:
 		text_color = Color.html(savestate['text_color'])
-	super.from_state(savestate, ctxt)
+	super.from_state(savestate)

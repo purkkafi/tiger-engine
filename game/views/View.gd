@@ -131,15 +131,15 @@ func is_next_line_requested():
 
 
 # displays the given block next
-func show_block(_block: Block, ctxt: ControlExpr.GameContext) -> void:
+func show_block(_block: Block) -> void:
 	block = _block
-	lines = Blocks.resolve_parts(block, ctxt)
+	lines = Blocks.resolve_parts(block, game.context)
 	line_index = 0
 	_block_started()
 
 
 # proceeds to the next line
-func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
+func next_line(ignore_log: bool = false) -> void:
 	# parse speaker specification
 	var speaker = null
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
@@ -153,7 +153,7 @@ func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
 	
 	if not ignore_log:
 		game.gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
-	_next_line(lines[line_index] + LINE_END, ctxt, speaker)
+	_next_line(lines[line_index] + LINE_END, speaker)
 	line_index += 1
 	next_effect.reset()
 	
@@ -362,7 +362,7 @@ func skip_pressed():
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
-func _next_line(_line: String, _ctxt: ControlExpr.GameContext, _speaker: Definitions.Speaker = null):
+func _next_line(_line: String, _speaker: Definitions.Speaker = null):
 	TE.log_error("view doesn't implement _next_line()")
 
 
@@ -409,7 +409,7 @@ func initialize(_ctxt: InitContext):
 
 # handles options passed to the view
 # overriding is not mandatory if the view doesn't want to handle options
-func parse_options(_options: Array[Tag], _ctxt: ControlExpr.GameContext):
+func parse_options(_options: Array[Tag]):
 	if len(_options) != 0:
 		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
 
@@ -447,7 +447,7 @@ func get_state() -> Dictionary:
 # note: when loading game from a save state created with the help of get_state(),
 # the correct View scene is saved in the field 'scene'
 # you can load and instantiate it and then call this object
-func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+func from_state(savestate: Dictionary):
 	if is_temporary():
 		previous_path = savestate['previous_path']
 		previous_state = savestate['previous_state']
@@ -470,7 +470,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	
 	var _block: Block = blockfile.blocks[savestate['block']]
 	
-	show_block(_block, ctxt)
+	show_block(_block)
 	
 	if savestate['line_index']-1 > len(lines):
 		TE.log_error('line index out of range')
@@ -479,7 +479,7 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 	
 	# skip to the correct line
 	while line_index <= savestate['line_index']-1:
-		next_line(ctxt, true)
+		next_line(true)
 		_to_end_of_line()
 
 

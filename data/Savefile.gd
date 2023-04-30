@@ -60,7 +60,7 @@ func path():
 # returns whether progress was made between saves
 # (generally meaning: are their gameplay-related values different)
 # if either argument is null (i.e. game was not saved), returns true
-static func is_progress_made(save1, save2):
+static func is_progress_made(save1: Dictionary, save2: Dictionary):
 	if save1 == null or save2 == null:
 		return true
 	
@@ -75,18 +75,26 @@ static func is_progress_made(save1, save2):
 		if !save2.erase(field):
 			push_error("save didn't have field %s" % [field])
 	
-	if save1.keys() != save2.keys():
-		return false
-	
-	return !Savefile._deep_equals(save1, save2)
+	var result: bool = !Savefile._deep_equals(save1, save2)
+	return result
 
 
 # deeply compares dicts
-# only works when they share the same keys
 static func _deep_equals(d1: Dictionary, d2: Dictionary):
+	var keys1: Array = d1.keys()
+	var keys2: Array = d2.keys()
+	keys1.sort()
+	keys2.sort()
+	
+	if keys1 != keys2:
+		return false
+	
 	for k in d1.keys():
-		if d1[k] is Dictionary:
+		if d1[k] is Dictionary and d2[k] is Dictionary:
 			if !_deep_equals(d1[k], d2[k]):
+				return false
+		elif d1[k] is float and d2[k] is float:
+			if d1[k] - d2[k] > 0.00001:
 				return false
 		else:
 			if d1[k] != d2[k]:

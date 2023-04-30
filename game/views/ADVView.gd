@@ -68,13 +68,13 @@ func _game_paused():
 	box.visible = false
 
 
-func _next_line(line: String, ctxt: ControlExpr.GameContext, speaker: Definitions.Speaker = null):
+func _next_line(line: String, speaker: Definitions.Speaker = null):
 	box.visible = true
 	label.text = line
 	
 	if speaker != null:
 		speaker_panel.visible = true
-		speaker_name.text = Blocks._resolve_parts(speaker.name, ctxt)[0]
+		speaker_name.text = Blocks._resolve_parts(speaker.name, game.context)[0]
 		box.theme_type_variation = 'ADVViewWithSpeaker'
 		
 		if speaker.variation != '':

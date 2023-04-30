@@ -9,13 +9,13 @@ var choice_strings: Array[String] = []
 var choice_values: Array[Variant] = []
 
 
-func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
+func parse_options(options: Array[Tag]):
 	for opt in options:
 		match opt.name:
 			'block':
 				var _block: Block = Blocks.find(opt.get_string_at(0))
-				choice_strings.append(Blocks.resolve_string(_block, '\n', ctxt))
-				var value: Variant = ControlExpr.exec(opt.get_control_at(1), ctxt)
+				choice_strings.append(Blocks.resolve_string(_block, '\n', game.context))
+				var value: Variant = ControlExpr.exec(opt.get_control_at(1), game.context)
 				choice_values.append(value)
 
 
@@ -64,12 +64,12 @@ func get_state() -> Dictionary:
 	return savestate
 
 
-func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+func from_state(savestate: Dictionary):
 	for string in savestate['strings']:
 		choice_strings.append(string)
 	for value in savestate['values']:
 		choice_values.append(value)
-	super.from_state(savestate, ctxt)
+	super.from_state(savestate)
 
 
 func is_temporary() -> bool:

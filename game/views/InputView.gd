@@ -15,12 +15,12 @@ var shadow: ColorRect
 var finished: bool = false
 
 
-func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
+func parse_options(options: Array[Tag]):
 	for opt in options:
 		match opt.name:
 			'block':
 				var _block: Block = Blocks.find(opt.get_string())
-				prompt_text = Blocks.resolve_string(_block, '\n', ctxt)
+				prompt_text = Blocks.resolve_string(_block, '\n', game.context)
 			'default':
 				default_val = opt.get_string()
 			_:
@@ -71,10 +71,10 @@ func get_state() -> Dictionary:
 	return savestate
 
 
-func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
+func from_state(savestate: Dictionary):
 	prompt_text = savestate['prompt_text']
 	default_val = savestate['default_val']
-	super.from_state(savestate, ctxt)
+	super.from_state(savestate)
 
 
 func is_temporary() -> bool:

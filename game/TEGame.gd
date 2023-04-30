@@ -74,7 +74,7 @@ func next_blocking():
 	if $View.is_temporary() and $View.previous_path != '':
 		var saved_view = load($View.previous_path).instantiate()
 		_replace_view(saved_view)
-		saved_view.from_state($View.previous_state, context)
+		saved_view.from_state($View.previous_state)
 		saved_view.initialize(View.InitContext.NEW_VIEW)
 	
 	for ins in instructions:
@@ -138,7 +138,7 @@ func next_blocking():
 			if block == null:
 				TE.log_error('block not found: %s' % [blocking.block_id])
 				return
-			$View.show_block(block, context)
+			$View.show_block(block)
 			_unhide_ui()
 		
 		'Break':
@@ -150,7 +150,8 @@ func next_blocking():
 				return
 			var new_view: View = TE.defs.view_registry[blocking.view_id].instantiate()
 			if len(blocking.options) != 0:
-				new_view.parse_options(blocking.options, context)
+				new_view.game = self
+				new_view.parse_options(blocking.options)
 			_replace_view(new_view)
 			new_view.initialize(View.InitContext.NEW_VIEW)
 		
@@ -267,7 +268,7 @@ func _process(delta):
 		return
 		
 	if $View.is_next_line_requested():
-		$View.next_line(context)
+		$View.next_line()
 		# current save state will be saved to rollback next time
 		save_rollback()
 		return
@@ -407,7 +408,7 @@ func load_save(save: Dictionary):
 	
 	var view = view_scene.instantiate()
 	_replace_view(view)
-	view.from_state(save['view'], context)
+	view.from_state(save['view'])
 	view.initialize(View.InitContext.SAVESTATE)
 	
 	# keep song playing if it is currently playing
