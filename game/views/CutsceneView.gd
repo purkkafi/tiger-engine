@@ -17,7 +17,7 @@ func parse_options(tags: Array[Tag], _ctxt: ControlExpr.GameContext):
 				TE.log_error('unknown argument for CutsceneView: %s' % tag)
 
 
-func initialize():
+func initialize(_ctxt: InitContext):
 	cutscene = Assets.noncached.get_resource(path).instantiate()
 	var anim_player = cutscene.get_node('AnimationPlayer')
 	

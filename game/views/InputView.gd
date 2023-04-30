@@ -33,12 +33,12 @@ func _ready():
 	
 	line_edit.custom_minimum_size.x = width
 	TE.ui_strings.translate(self)
-	shadow = Overlay.add_shadow(self)
 
 
-func initialize():
+func initialize(ctxt: InitContext):
 	prompt.text = prompt_text
 	line_edit.text = default_val
+	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
 
 
 # pointless argument allowing the method to be connected to both the LineEdit and the Button

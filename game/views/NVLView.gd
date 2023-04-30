@@ -46,7 +46,7 @@ func _ready():
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 
 
-func initialize():
+func initialize(_ctxt: InitContext):
 	if vcenter:
 		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER
 

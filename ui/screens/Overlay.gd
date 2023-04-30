@@ -58,7 +58,7 @@ func _animated_out():
 
 
 
-static func add_shadow(to_control: Control):
+static func add_shadow(to_control: Control, skip_animation=false):
 	var _shadow: ColorRect = ColorRect.new()
 	_shadow.position = Vector2(0, 0)
 	_shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
@@ -69,7 +69,13 @@ static func add_shadow(to_control: Control):
 	var to_index = to_control.get_index()
 	parent.add_child(_shadow)
 	parent.move_child(_shadow, to_index)
-	TE.opts.animate_shadow_in.call(_shadow)
+	
+	var tween: Tween = TE.opts.animate_shadow_in.call(_shadow)
+	
+	if skip_animation:
+		# this is probably illegal but ACAB
+		tween.set_speed_scale(INF)
+	
 	return _shadow
 
 

@@ -14,6 +14,7 @@ var overlay_active: bool = false # whether there is an overlay and game should b
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
 var _custom_data: Dictionary = {} # persistent, game-specific custom save data
+var last_skip_mode: View.SkipMode # skip mode of previous frame
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -42,7 +43,7 @@ func _ready():
 	
 	# initial View
 	_replace_view(TE.defs.view_registry['adv'].instantiate())
-	$View.initialize()
+	$View.initialize(View.InitContext.NEW_VIEW)
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
@@ -74,7 +75,7 @@ func next_blocking():
 		var saved_view = load($View.previous_path).instantiate()
 		_replace_view(saved_view)
 		saved_view.from_state($View.previous_state, context)
-		saved_view.initialize()
+		saved_view.initialize(View.InitContext.NEW_VIEW)
 	
 	for ins in instructions:
 		# check that same instruction isn't already active
@@ -151,7 +152,7 @@ func next_blocking():
 			if len(blocking.options) != 0:
 				new_view.parse_options(blocking.options, context)
 			_replace_view(new_view)
-			new_view.initialize()
+			new_view.initialize(View.InitContext.NEW_VIEW)
 		
 		'Jmp':
 			if blocking.in_file == null:
@@ -201,12 +202,7 @@ func _replace_view(new_view: Node):
 	
 	new_view.adjust_size($VNControls, TE.settings.gui_scale)
 	
-	if new_view.get_skip_mode() == View.SkipMode.DISABLED:
-		$VNControls.btn_skip.set_pressed_no_signal(false)
-		$VNControls.btn_skip.disabled = true
-	else:
-		$VNControls.btn_skip.disabled = false
-		$VNControls.btn_skip.toggle_mode = new_view.get_skip_mode() == View.SkipMode.TOGGLE
+	update_skip_button()
 	
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
@@ -216,6 +212,16 @@ func _gui_scale_changed(gui_scale: Settings.GUIScale):
 	# needs to happen in this order to ensure View sees the updated VNControls size
 	$VNControls._set_gui_size(gui_scale)
 	$View.adjust_size($VNControls, gui_scale)
+
+
+# updates the state of the toggle button according to the current View's skip mode
+func update_skip_button():
+	if $View.get_skip_mode() == View.SkipMode.DISABLED:
+		$VNControls.btn_skip.set_pressed_no_signal(false)
+		$VNControls.btn_skip.disabled = true
+	else:
+		$VNControls.btn_skip.disabled = false
+		$VNControls.btn_skip.toggle_mode = $View.get_skip_mode() == View.SkipMode.TOGGLE
 
 
 # hides the currently active View, returning the Tween used in the transition
@@ -243,13 +249,18 @@ func _process(delta):
 	if overlay_active:
 		return
 	
+	var skip_mode: View.SkipMode = $View.get_skip_mode()
+	if skip_mode != last_skip_mode:
+		update_skip_button()
+		last_skip_mode = skip_mode
+	
 	# notify View of user input by calling either game_advanced or game_not_advanced
 	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
 		$View.game_advanced(delta)
 	else:
 		$View.game_not_advanced(delta)
 	
-	# move to next block, move to next line, or just update state is neither is requested
+	# move to next block, move to next line, or just update state if neither is requested
 	
 	if $View.is_next_block_requested() and not vm.is_end_of_script():
 		next_blocking()
@@ -391,7 +402,7 @@ func load_save(save: Dictionary):
 	var view = view_scene.instantiate()
 	_replace_view(view)
 	view.from_state(save['view'], context)
-	view.initialize()
+	view.initialize(View.InitContext.SAVESTATE)
 	
 	# keep song playing if it is currently playing
 	if Audio.song_id != save['song_id']:

@@ -19,7 +19,7 @@ func parse_options(options: Array[Tag], ctxt: ControlExpr.GameContext):
 				choice_values.append(value)
 
 
-func initialize():
+func initialize(ctxt: InitContext):
 	if width == 0: # default value in case theme doesn't set it
 		width = 800
 	
@@ -35,7 +35,7 @@ func initialize():
 		#text.custom_minimum_size = Vector2(btn.size.x, btn.size.y)
 	
 	TE.ui_strings.translate(self)
-	shadow = Overlay.add_shadow(self)
+	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
 
 
 func _finish(chosen_index: int):

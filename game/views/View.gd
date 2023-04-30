@@ -67,6 +67,13 @@ enum SkipMode {
 }
 
 
+# in which context initialize() is called
+enum InitContext {
+	NEW_VIEW, # the View is newly created
+	SAVESTATE # the View is loaded from a save state in some way (load screen, back button...)
+}
+
+
 # adjusts the size of this View based on how the VNControls instance has
 # decided to set its size. will be called with a null parameter if the View
 # is run directly in the editor; in this case, the controls should be treated
@@ -161,9 +168,6 @@ func next_line(ctxt: ControlExpr.GameContext, ignore_log: bool = false) -> void:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
 			
-			if line_index == len(lines):
-				_block_ended()
-			
 			line_switch_delta = LINE_SWITCH_COOLDOWN
 			state = State.WAITING_LINE_SWITCH_COOLDOWN
 
@@ -214,6 +218,8 @@ func update_state(delta: float):
 	if state == State.WAITING_LINE_SWITCH_COOLDOWN or speedup == Speedup.SKIP:
 		line_switch_delta -= delta
 		if line_switch_delta < 0:
+			if line_index == len(lines):
+				_block_ended()
 			state = State.READY_TO_PROCEED
 		return
 	else:
@@ -397,7 +403,7 @@ func _waiting_custom_condition() -> bool:
 # Views may initialize themselves in this method
 # called after _ready(), parse_options() and from_state(); as such,
 # the View should have any state it maintains available for use
-func initialize():
+func initialize(_ctxt: InitContext):
 	pass
 
 
@@ -481,4 +487,5 @@ func from_state(savestate: Dictionary, ctxt: ControlExpr.GameContext):
 # text and doing something else
 func reset_speedup():
 	speedup = Speedup.NORMAL
+	state = State.READY_TO_PROCEED
 	advance_held = 0
