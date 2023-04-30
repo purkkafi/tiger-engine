@@ -36,6 +36,7 @@ func initialize(ctxt: InitContext):
 	
 	TE.ui_strings.translate(self)
 	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
+	game.save_rollback()
 
 
 func _finish(chosen_index: int):

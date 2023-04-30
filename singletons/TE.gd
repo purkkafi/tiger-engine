@@ -35,15 +35,16 @@ func _ready():
 
 # sets the scene to the gien scene
 # the old one will be freed automatically
-func switch_scene(new_scene: Node):
-	call_deferred('_switch_scene_deferred', new_scene)
+func switch_scene(new_scene: Node, after: Callable = func(): pass):
+	call_deferred('_switch_scene_deferred', new_scene, after)
 
 
-func _switch_scene_deferred(new_scene: Node):
+func _switch_scene_deferred(new_scene: Node, after: Callable):
 	current_scene.queue_free()
 	current_scene = new_scene
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
+	after.call()
 
 
 # switches the language by loading files associated with it and configures
@@ -76,15 +77,16 @@ func load_language(new_lang: Lang):
 # appropriately, which is used for implementing rollback
 func load_from_save(save: Dictionary, rollback: Rollback = null, gamelog: Log = null):
 	var game_scene: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
-	switch_scene(game_scene)
-	
+	switch_scene(game_scene, _after_load_from_save.bind(game_scene, save, rollback, gamelog))
+
+
+func _after_load_from_save(game_scene: TEGame, save: Dictionary, rollback: Rollback = null, gamelog: Log = null):
 	if rollback != null and gamelog != null:
-		await get_tree().process_frame
 		game_scene.rollback.set_rollback(rollback.entries)
 		gamelog.remove_last()
 		game_scene.gamelog = gamelog
 	
-	game_scene.load_save.call_deferred(save)
+	game_scene.load_save.call(save)#_deferred(save) # was deferred
 
 
 func _log_time() -> String:

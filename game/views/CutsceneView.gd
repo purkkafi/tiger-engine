@@ -28,6 +28,7 @@ func initialize(_ctxt: InitContext):
 	
 	Audio.play_song('', 0) # stop previous song, if any
 	add_child(cutscene)
+	game.save_rollback()
 
 
 func check_finished():

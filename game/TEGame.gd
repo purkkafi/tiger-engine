@@ -269,9 +269,7 @@ func _process(delta):
 	if $View.is_next_line_requested():
 		$View.next_line(context)
 		# current save state will be saved to rollback next time
-		if next_rollback != null:
-			rollback.push(next_rollback)
-		next_rollback = create_save()
+		save_rollback()
 		return
 	
 	if vm.is_end_of_script():
@@ -280,6 +278,14 @@ func _process(delta):
 			return
 	
 	$View.update_state(delta)
+
+
+# advances rollback, saving the current state for later and appending the
+# previously saved state
+func save_rollback():
+	if next_rollback != null:
+		rollback.push(next_rollback)
+	next_rollback = create_save()
 
 
 # detect if mouse is held to advance the game

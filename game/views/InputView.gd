@@ -39,6 +39,7 @@ func initialize(ctxt: InitContext):
 	prompt.text = prompt_text
 	line_edit.text = default_val
 	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
+	game.save_rollback()
 
 
 # pointless argument allowing the method to be connected to both the LineEdit and the Button
