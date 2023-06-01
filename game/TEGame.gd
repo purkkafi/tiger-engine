@@ -27,8 +27,7 @@ func run_script(script_file: ScriptFile):
 
 func _ready():
 	TE.ui_strings.translate(self)
-	MobileUI.initialize_gui(self)
-	MobileUI.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
+	TETheme.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
 	
 	rollback = Rollback.new($VNControls.btn_back)
 	gamelog = Log.new()

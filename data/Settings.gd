@@ -69,7 +69,7 @@ static func change_fullscreen(to_fullscreen: bool):
 
 
 static func change_gui_scale(scale: GUIScale):
-	MobileUI.change_gui_scale(TE.current_scene, scale)
+	TETheme.force_change_gui_scale(scale)
 
 
 # changes language unless the given id is the current language;

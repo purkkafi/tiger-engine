@@ -14,15 +14,16 @@ class_name VNControls extends Control
 @onready var btn_settings: Button = %Settings
 @onready var btn_quit: Button = %Quit
 
-var width: float = get_theme_constant('width', 'VNControlsPanel')
-var height: float =  get_theme_constant('height', 'VNControlsPanel')
-var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'VNControlsPanel')
-var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'VNControlsPanel')
-var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
-var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
+@onready var width: float = get_theme_constant('width', 'VNControlsPanel')
+@onready var height: float =  get_theme_constant('height', 'VNControlsPanel')
+@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'VNControlsPanel')
+@onready var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'VNControlsPanel')
+@onready var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
+@onready var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
 
 
 func _ready():
+	print(bottom_offset, ' ', top_offset)
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
 	
 	# provide default values if running without a theme

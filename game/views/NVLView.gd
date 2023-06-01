@@ -3,10 +3,10 @@ class_name NVLView extends View
 
 
 # constants from theme used to calculate size
-var top_margin: float = get_theme_constant('top_margin', 'NVLView')
-var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
-var width: float = get_theme_constant('width', 'NVLView')
-var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
+@onready var top_margin: float = get_theme_constant('top_margin', 'NVLView')
+@onready var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
+@onready var width: float = get_theme_constant('width', 'NVLView')
+@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
 # RichTextLabels containing the displayed lines
 @onready var paragraphs: VBoxContainer = %Paragraphs
 @onready var scroll: ScrollContainer = %Scroll

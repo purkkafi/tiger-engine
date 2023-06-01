@@ -42,6 +42,7 @@ func switch_scene(new_scene: Node, after: Callable = func(): pass):
 func _switch_scene_deferred(new_scene: Node, after: Callable):
 	current_scene.queue_free()
 	current_scene = new_scene
+	current_scene.theme = TETheme.current_theme
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
 	after.call()

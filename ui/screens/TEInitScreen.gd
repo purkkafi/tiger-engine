@@ -19,6 +19,10 @@ func _ready():
 	get_window().min_size = Vector2i(962, 542)
 	get_window().set_title('')
 	
+	# load default theme or use an empty theme if not specified
+	if TE.opts.default_theme != null:
+		TETheme.set_theme(TETheme.resolve_theme_id(TE.opts.default_theme))
+	
 	# load translation package from the file 'translation.zip' if it exists
 	if FileAccess.file_exists('res://translation.zip'):
 		var result = ProjectSettings.load_resource_pack('res://translation.zip', true)

@@ -21,3 +21,5 @@ var animate_shadow_out: Callable = func(_shadow: ColorRect) -> Variant: return n
 var version_callback: Callable = func() -> String: return ''
 # dict of custom view ids to paths of the View scenes
 var custom_views: Dictionary = {}
+# the id of the game's default theme; if null, the engine default theme is used
+var default_theme: String

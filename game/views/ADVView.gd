@@ -6,18 +6,18 @@ class_name ADVView extends View
 @onready var speaker_name: Label = %SpeakerName
 var label: RichTextLabel
 
-var width: float = get_theme_constant('width', 'ADVView')
-var height: float = get_theme_constant('height', 'ADVView')
-var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'ADVView')
-var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'ADVView')
-var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
-var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
+@onready var width: float = get_theme_constant('width', 'ADVView')
+@onready var height: float = get_theme_constant('height', 'ADVView')
+@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'ADVView')
+@onready var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'ADVView')
+@onready var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
+@onready var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
 
-var speaker_font: Font = get_theme_font('font', 'ADVSpeaker')
-var speaker_font_size: int = get_theme_font_size('font_size', 'ADVSpeaker')
-var speaker_font_shadow_color: Color = get_theme_color('font_shadow_color', 'ADVSpeaker')
-var speaker_shadow_offset_x: int = get_theme_constant('shadow_offset_x', 'ADVSpeaker')
-var speaker_shadow_offset_y: int = get_theme_constant('shadow_offset_y', 'ADVSpeaker')
+@onready var speaker_font: Font = get_theme_font('font', 'ADVSpeaker')
+@onready var speaker_font_size: int = get_theme_font_size('font_size', 'ADVSpeaker')
+@onready var speaker_font_shadow_color: Color = get_theme_color('font_shadow_color', 'ADVSpeaker')
+@onready var speaker_shadow_offset_x: int = get_theme_constant('shadow_offset_x', 'ADVSpeaker')
+@onready var speaker_shadow_offset_y: int = get_theme_constant('shadow_offset_y', 'ADVSpeaker')
 
 @onready var default_speaker_name_color: Color = Color(speaker_name.get_theme_color('font_color'))
 var default_speaker_panel_bg_color: Color = Color.TRANSPARENT
@@ -33,7 +33,7 @@ func _ready():
 		height = 200
 	
 	if TE.is_large_gui():
-		speaker_font_size += MobileUI.FONT_SIZE_INCREASE
+		speaker_font_size += TETheme.FONT_SIZE_INCREASE
 	
 	speaker_panel.visible = false
 	speaker_name.add_theme_font_override('font', speaker_font)

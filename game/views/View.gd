@@ -78,7 +78,7 @@ enum InitContext {
 # decided to set its size. will be called with a null parameter if the View
 # is run directly in the editor; in this case, the controls should be treated
 # as if they had the height 0
-# automatically connected to MobileUI's relevant signal by TEGame
+# automatically connected to TETheme's relevant signal by TEGame
 func adjust_size(_controls: VNControls, _gui_scale: Settings.GUIScale) -> void:
 	pass
 

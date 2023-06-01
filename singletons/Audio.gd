@@ -17,12 +17,12 @@ signal song_paused
 # plays a song with the given id, fading in with the given duration in seconds
 # if another song is playing, it is faded out simultaneously
 # an empty string can be passed to stop playing a song
-func play_song(new_song_id: String, duration: float):
+func play_song(new_song_id: String, duration: float, warn_not_queued: bool = true):
 	song_id = new_song_id
 	var new_song
 	if new_song_id != '':
 		var path = TE.defs.songs[song_id]
-		new_song = Assets.songs.get_resource(path, 'res://assets/music')
+		new_song = Assets.songs.get_resource(path, 'res://assets/music', warn_not_queued)
 	else:
 		new_song = null
 	
