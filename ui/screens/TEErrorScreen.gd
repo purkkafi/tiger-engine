@@ -4,4 +4,4 @@ extends ColorRect
 
 
 func _ready():
-	self.color = TE.opts.background_color
+	self.color = TETheme.background_color

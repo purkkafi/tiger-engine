@@ -13,7 +13,7 @@ func _ready():
 	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
 		get_tree().quit(TestRunner.run_tests())
 	
-	self.color = TE.opts.background_color
+	self.color = TETheme.background_color
 	
 	# set initial window settings
 	get_window().min_size = Vector2i(962, 542)

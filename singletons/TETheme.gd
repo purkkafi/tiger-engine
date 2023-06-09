@@ -6,6 +6,9 @@ extends Node
 var _base_theme: Theme = Theme.new()
 # the Theme instance representing the current base theme with variations applied
 var current_theme: Theme = Theme.new()
+# global values retreived from the theme
+var background_color: Color = Color.BLACK
+var shadow_color: Color = Color.TRANSPARENT
 
 
 # signal emitted when force_change_gui_scale() is called
@@ -19,6 +22,10 @@ signal gui_scale_changed
 # this will also update current_theme
 func set_theme(base_theme: Theme):
 	_base_theme = base_theme
+	
+	background_color = _base_theme.get_color('background_color', 'Global')
+	shadow_color = _base_theme.get_color('shadow_color', 'Global')
+	
 	_apply_variations()
 
 

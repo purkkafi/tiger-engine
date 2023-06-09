@@ -119,7 +119,7 @@ func add_shadow(to_node: Node):
 	shadow.position = Vector2(0, 0)
 	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
 	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shadow.color = TE.opts.shadow_color
+	shadow.color = TETheme.shadow_color
 	shadow.z_index += 99
 	
 	TE.current_scene.add_child(shadow)

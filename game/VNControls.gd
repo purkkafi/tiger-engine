@@ -23,7 +23,6 @@ class_name VNControls extends Control
 
 
 func _ready():
-	print(bottom_offset, ' ', top_offset)
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
 	
 	# provide default values if running without a theme

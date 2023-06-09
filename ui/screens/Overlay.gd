@@ -62,7 +62,7 @@ static func add_shadow(to_control: Control, skip_animation=false):
 	var _shadow: ColorRect = ColorRect.new()
 	_shadow.position = Vector2(0, 0)
 	_shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
-	_shadow.color = TE.opts.shadow_color
+	_shadow.color = TETheme.shadow_color
 	_shadow.mouse_filter = Control.MOUSE_FILTER_STOP
 	
 	var parent = to_control.get_parent()
