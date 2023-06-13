@@ -12,6 +12,13 @@ var current_theme: Theme = Theme.new()
 var background_color: Color = Color.BLACK
 var shadow_color: Color = Color.TRANSPARENT
 var default_text_color: Color = Color.WHITE # the color of Label's font
+# animations
+# empty animation used if animations aren't specified
+var NO_ANIM: Callable = func(_target: Control) -> Tween: return null
+var anim_overlay_in: Callable = NO_ANIM
+var anim_overlay_out: Callable = NO_ANIM
+var anim_shadow_in: Callable = NO_ANIM
+var anim_shadow_out: Callable = NO_ANIM
 
 
 # signal emitted when the variable current_theme is changed
@@ -24,6 +31,31 @@ signal theme_changed
 func set_theme(theme_id: String):
 	_base_theme = _resolve_base_theme(theme_id)
 	_large_theme = _resolve_large_theme(theme_id)
+	
+	# load animations, which are static funcs in 'animations.gd'
+	var animations = _resolve_animations(theme_id)
+	if animations != null:
+		# workaround for godot issue:
+		# Callable.is_valid() doesn't understand static methods properly
+		# using an instance as the object of Callable instead of the GDScript works
+		animations = animations.new()
+		
+		var overlay_in = Callable(animations, 'overlay_in')
+		anim_overlay_in = overlay_in if overlay_in.is_valid() else NO_ANIM
+		
+		var overlay_out = Callable(animations, 'overlay_out')
+		anim_overlay_out = overlay_out if overlay_out.is_valid() else NO_ANIM
+		
+		var shadow_in = Callable(animations, 'shadow_in')
+		anim_shadow_in = shadow_in if shadow_in.is_valid() else NO_ANIM
+		
+		var shadow_out = Callable(animations, 'shadow_out')
+		anim_shadow_out = shadow_out if shadow_out.is_valid() else NO_ANIM
+	else:
+		anim_overlay_in = NO_ANIM
+		anim_overlay_out = NO_ANIM
+		anim_shadow_in = NO_ANIM
+		anim_shadow_out = NO_ANIM
 	
 	background_color = _base_theme.get_color('background_color', 'Global')
 	shadow_color = _base_theme.get_color('shadow_color', 'Global')
@@ -112,6 +144,11 @@ static func _resolve_large_theme(id: String) -> Theme:
 	if theme == null:
 		TE.log_error('theme resource not found: %s' % path)
 	return theme
+
+
+static func _resolve_animations(id: String) -> Variant:
+	var path = 'res://assets/themes/%s/animations.gd' % id
+	return load(path)
 
 
 # applies the given settings to the theme

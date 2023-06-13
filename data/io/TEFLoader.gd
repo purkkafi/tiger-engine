@@ -273,14 +273,6 @@ func _resolve_options(tree: Tag):
 		match node.name:
 			'title_screen':
 				opts.title_screen = node.get_string()
-			'animate_overlay_in':
-				opts.animate_overlay_in = Callable(load(node.get_string_at(0)), node.get_string_at(1))
-			'animate_overlay_out':
-				opts.animate_overlay_out = Callable(load(node.get_string_at(0)), node.get_string_at(1))
-			'animate_shadow_in':
-				opts.animate_shadow_in = Callable(load(node.get_string_at(0)), node.get_string_at(1))
-			'animate_shadow_out':
-				opts.animate_shadow_out = Callable(load(node.get_string_at(0)), node.get_string_at(1))
 			'version_callback':
 				opts.version_callback = Callable(load(node.get_string_at(0)), node.get_string_at(1))
 			'register_view':

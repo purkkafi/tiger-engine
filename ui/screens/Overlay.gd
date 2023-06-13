@@ -23,7 +23,7 @@ func _ready():
 	
 	# setup animations
 	await get_tree().process_frame
-	var tween: Tween = TE.opts.animate_overlay_in.call(self)
+	var tween: Tween = TETheme.anim_overlay_in.call(self)
 	if tween != null:
 		tween.tween_callback(animated_in_callback)
 	else:
@@ -45,7 +45,7 @@ func _close_overlay():
 	
 	remove_shadow(shadow)
 	
-	var tween = TE.opts.animate_overlay_out.call(self)
+	var tween = TETheme.anim_overlay_out.call(self)
 	if tween == null:
 		_animated_out()
 	else:
@@ -70,7 +70,7 @@ static func add_shadow(to_control: Control, skip_animation=false):
 	parent.add_child(_shadow)
 	parent.move_child(_shadow, to_index)
 	
-	var tween: Tween = TE.opts.animate_shadow_in.call(_shadow)
+	var tween: Tween = TETheme.anim_shadow_in.call(_shadow)
 	
 	if skip_animation and tween != null:
 		# this is probably illegal but ACAB
@@ -81,7 +81,7 @@ static func add_shadow(to_control: Control, skip_animation=false):
 
 static func remove_shadow(_shadow: ColorRect, callback = null):
 	var remove_callback: Callable = Callable(Overlay, '_do_remove_shadow').bind(_shadow)
-	var tween: Tween = TE.opts.animate_shadow_out.call(_shadow)
+	var tween: Tween = TETheme.anim_shadow_out.call(_shadow)
 	if tween == null:
 		remove_callback.call()
 		if callback != null:
