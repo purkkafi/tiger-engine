@@ -61,6 +61,11 @@ text = "%settings_window_mode%"
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_window_mode_tooltip%"
+item_count = 2
+popup/item_0/text = "%settings_window_fullscreen%"
+popup/item_0/id = 0
+popup/item_1/text = "%settings_window_windowed%"
+popup/item_1/id = 1
 
 [node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
 layout_mode = 2

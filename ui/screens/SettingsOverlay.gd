@@ -27,9 +27,6 @@ func _initialize_overlay():
 	if TE.is_mobile(): # no fullscreen setting on mobile
 		window_mode_container.visible = false
 	else:
-		window_options.add_item(TE.ui_strings.settings_window_fullscreen, WM_FULLSCREEN)
-		window_options.add_item(TE.ui_strings.settings_window_windowed, WM_WINDOWED)
-		
 		if TE.settings.fullscreen:
 			window_options.selected = WM_FULLSCREEN
 		else:
