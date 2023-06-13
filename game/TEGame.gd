@@ -27,7 +27,7 @@ func run_script(script_file: ScriptFile):
 
 func _ready():
 	TE.ui_strings.translate(self)
-	TETheme.connect('gui_scale_changed', Callable(self, '_gui_scale_changed'))
+	TETheme.connect('theme_changed', Callable(self, '_theme_changed'))
 	
 	rollback = Rollback.new($VNControls.btn_back)
 	gamelog = Log.new()
@@ -200,7 +200,7 @@ func _replace_view(new_view: Node):
 			new_view.previous_path = old_view._get_scene_path()
 			new_view.previous_state = old_view.get_state()
 	
-	new_view.adjust_size($VNControls, TE.settings.gui_scale)
+	new_view.adjust_size($VNControls)
 	
 	update_skip_button()
 	
@@ -208,10 +208,10 @@ func _replace_view(new_view: Node):
 		new_view.copy_state_from(old_view as View)
 
 
-func _gui_scale_changed(gui_scale: Settings.GUIScale):
+func _theme_changed():
 	# needs to happen in this order to ensure View sees the updated VNControls size
-	$VNControls._set_gui_size(gui_scale)
-	$View.adjust_size($VNControls, gui_scale)
+	$VNControls.adjust_size()
+	$View.adjust_size($VNControls)
 
 
 # updates the state of the toggle button according to the current View's skip mode

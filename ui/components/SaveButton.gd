@@ -12,6 +12,7 @@ var name_label: Label = Label.new()
 var reload_callback: Callable # callback for when this SaveButton should be reloaded
 var clicked_callback: Callable # callback for when the icon is clicked
 var icon_warn: TextureRect
+var is_hovered: bool
 
 
 func _init(_bank: SavingOverlay.SaveBank, _index: int, _icon: Texture2D, _reload_callback: Callable, _clicked_callback: Callable):
@@ -21,6 +22,9 @@ func _init(_bank: SavingOverlay.SaveBank, _index: int, _icon: Texture2D, _reload
 	self.reload_callback = _reload_callback
 	self.clicked_callback = _clicked_callback
 	add_theme_constant_override('separation', 5)
+	self.mouse_filter = Control.MOUSE_FILTER_STOP
+	self.connect('mouse_entered', func(): is_hovered = true; queue_redraw())
+	self.connect('mouse_exited', func(): is_hovered = false; queue_redraw())
 
 
 func _ready():
@@ -144,4 +148,6 @@ func _input(event: InputEvent):
 
 func _draw():
 	if has_focus():
-		draw_style_box(get_theme_stylebox('hover', 'Button'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))
+		draw_style_box(get_theme_stylebox('focus', 'SaveBox'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))
+	if is_hovered:
+		draw_style_box(get_theme_stylebox('hover', 'SaveBox'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))

@@ -32,6 +32,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Title screen scene has not been specified. You can do so by creating the file res://assets/options.tef.
 
 Run a script by providing its full path:"
+autowrap_mode = 3
 
 [node name="ScriptPath" type="LineEdit" parent="VBox"]
 unique_name_in_owner = true
@@ -51,5 +52,6 @@ layout_mode = 2
 size_flags_horizontal = 5
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Or run one of these:"
+autowrap_mode = 3
 
 [connection signal="pressed" from="VBox/Run" to="." method="_on_run_pressed"]

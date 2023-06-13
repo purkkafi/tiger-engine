@@ -21,7 +21,7 @@ func _ready():
 	
 	# load default theme or use an empty theme if not specified
 	if TE.opts.default_theme != null:
-		TETheme.set_theme(TETheme.resolve_theme_id(TE.opts.default_theme))
+		TETheme.set_theme(TE.opts.default_theme)
 	
 	# load translation package from the file 'translation.zip' if it exists
 	if FileAccess.file_exists('res://translation.zip'):

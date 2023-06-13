@@ -2,11 +2,6 @@ class_name NVLView extends View
 # TODO scrolling text smoothly
 
 
-# constants from theme used to calculate size
-@onready var top_margin: float = get_theme_constant('top_margin', 'NVLView')
-@onready var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
-@onready var width: float = get_theme_constant('width', 'NVLView')
-@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'NVLView')
 # RichTextLabels containing the displayed lines
 @onready var paragraphs: VBoxContainer = %Paragraphs
 @onready var scroll: ScrollContainer = %Scroll
@@ -39,10 +34,6 @@ func parse_options(tags: Array[Tag]):
 
 
 func _ready():
-	# set sensible default value if running without theme
-	if width == 0:
-		width = 1000
-	
 	scroll.get_v_scroll_bar().connect('changed', Callable(self, '_scroll_to_bottom'))
 
 
@@ -51,14 +42,16 @@ func initialize(_ctxt: InitContext):
 		paragraphs.alignment = BoxContainer.ALIGNMENT_CENTER
 
 
-func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
+func adjust_size(controls: VNControls):
 	var controls_height = controls.size.y if controls != null else 0.0
+	var top_margin: float = get_theme_constant('top_margin', 'NVLView')
+	var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
+	var width: float = get_theme_constant('width', 'NVLView')
+	
 	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin
 	
 	var w = width
-	if gui_scale == Settings.GUIScale.LARGE:
-		w += mobile_offset_x
 	$Scroll.size.x = w
 	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2
 

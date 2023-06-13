@@ -14,37 +14,22 @@ class_name VNControls extends Control
 @onready var btn_settings: Button = %Settings
 @onready var btn_quit: Button = %Quit
 
-@onready var width: float = get_theme_constant('width', 'VNControlsPanel')
-@onready var height: float =  get_theme_constant('height', 'VNControlsPanel')
-@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'VNControlsPanel')
-@onready var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'VNControlsPanel')
-@onready var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
-@onready var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
-
 
 func _ready():
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
 	
-	# provide default values if running without a theme
-	if width == 0:
-		width = 1000
-	if height == 0:
-		height = 80
-	
-	_set_gui_size(TE.settings.gui_scale)
+	adjust_size()
 
 
-func _set_gui_size(gui_scale: Settings.GUIScale):
+func adjust_size():
 	# centers controls to bottom center of the screen and sets sizes:
 	# width is 'width' as defined in 'VNControlsPanel'
 	# height is 'bottom_offset' + 'height' + 'top_offset'
-	# mobile size options are also factored in
 	
-	var w: float = width
-	var h: float = height
-	if gui_scale == Settings.GUIScale.LARGE:
-		w += mobile_offset_x
-		h += mobile_offset_y
+	var w: float = get_theme_constant('width', 'VNControlsPanel')
+	var h: float =  get_theme_constant('height', 'VNControlsPanel')
+	var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
+	var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
 	
 	panel.size.x = w
 	panel.size.y = h

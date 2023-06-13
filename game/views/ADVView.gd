@@ -6,19 +6,6 @@ class_name ADVView extends View
 @onready var speaker_name: Label = %SpeakerName
 var label: RichTextLabel
 
-@onready var width: float = get_theme_constant('width', 'ADVView')
-@onready var height: float = get_theme_constant('height', 'ADVView')
-@onready var mobile_offset_x: float = get_theme_constant('mobile_offset_x', 'ADVView')
-@onready var mobile_offset_y: float = get_theme_constant('mobile_offset_y', 'ADVView')
-@onready var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
-@onready var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
-
-@onready var speaker_font: Font = get_theme_font('font', 'ADVSpeaker')
-@onready var speaker_font_size: int = get_theme_font_size('font_size', 'ADVSpeaker')
-@onready var speaker_font_shadow_color: Color = get_theme_color('font_shadow_color', 'ADVSpeaker')
-@onready var speaker_shadow_offset_x: int = get_theme_constant('shadow_offset_x', 'ADVSpeaker')
-@onready var speaker_shadow_offset_y: int = get_theme_constant('shadow_offset_y', 'ADVSpeaker')
-
 @onready var default_speaker_name_color: Color = Color(speaker_name.get_theme_color('font_color'))
 var default_speaker_panel_bg_color: Color = Color.TRANSPARENT
 
@@ -27,33 +14,18 @@ func _ready():
 	label = create_label()
 	box.add_child(label)
 	
-	# sensible default values if without theme
-	if width == 0:
-		width = 1000
-		height = 200
-	
-	if TE.is_large_gui():
-		speaker_font_size += TETheme.FONT_SIZE_INCREASE
-	
 	speaker_panel.visible = false
-	speaker_name.add_theme_font_override('font', speaker_font)
-	speaker_name.add_theme_font_size_override('font_size', speaker_font_size)
-	speaker_name.add_theme_color_override('font_shadow_color', speaker_font_shadow_color)
-	speaker_name.add_theme_constant_override('shadow_offset_x', speaker_shadow_offset_x)
-	speaker_name.add_theme_constant_override('shadow_offset_y', speaker_shadow_offset_y)
 	
 	if speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker') is StyleBoxFlat:
 		default_speaker_panel_bg_color = speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker').bg_color
 
 
-func adjust_size(controls: VNControls, gui_scale: Settings.GUIScale):
+func adjust_size(controls: VNControls):
 	var controls_height: float = controls.size.y if controls != null else 0.0
-	var w: float = width
-	var h: float = height
-	
-	if gui_scale == Settings.GUIScale.LARGE:
-		w += mobile_offset_x
-		h += mobile_offset_y
+	var w: float = get_theme_constant('width', 'ADVView')
+	var h: float = get_theme_constant('height', 'ADVView')
+	var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
+	var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
 	
 	box.size.x = w
 	box.size.y = h

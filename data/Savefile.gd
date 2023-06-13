@@ -60,7 +60,7 @@ func path():
 # returns whether progress was made between saves
 # (generally meaning: are their gameplay-related values different)
 # if either argument is null (i.e. game was not saved), returns true
-static func is_progress_made(save1: Dictionary, save2: Dictionary):
+static func is_progress_made(save1, save2):
 	if save1 == null or save2 == null:
 		return true
 	

@@ -29,6 +29,7 @@ func initialize(ctxt: InitContext):
 		var btn: Button = Button.new()
 		btn.text = choice_strings[i]
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.theme_type_variation = 'ChoiceButton'
 		btn.connect('pressed', Callable(self, '_finish').bind(i))
 		vbox.add_child(btn)
 		

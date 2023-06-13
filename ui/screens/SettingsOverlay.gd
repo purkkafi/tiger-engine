@@ -18,6 +18,7 @@ var language_disabled: bool = false
 @onready var lang_options: OptionButton = %LangOptions
 @onready var gui_scale_container: HBoxContainer = %GUIScaleContainer
 @onready var gui_scale: OptionButton = %GUIScale
+@onready var dyslexic_font: CheckButton = %DyslexicFont
 @onready var save_exit: Button = %SaveExit
 @onready var discard: Button = %Discard
 
@@ -56,6 +57,7 @@ func _initialize_overlay():
 		lang_options.disabled = true
 	
 	gui_scale.selected = TE.settings.gui_scale
+	dyslexic_font.button_pressed = TE.settings.dyslexic_font
 	
 	save_exit.grab_focus()
 
@@ -76,10 +78,23 @@ func _window_mode_selected(selection):
 		Settings.change_fullscreen(false)
 
 
+func _change_theme_settings():
+	TETheme.force_change_settings(
+		gui_scale.selected as Settings.GUIScale,
+		dyslexic_font.button_pressed
+	)
+
+
 func _gui_scale_selected(selection):
-	Settings.change_gui_scale(selection)
+	_change_theme_settings()
 	await get_tree().process_frame
 	scroll.ensure_control_visible(gui_scale)
+
+
+func _dyslexic_font_toggled(pressed):
+	_change_theme_settings()
+	await get_tree().process_frame
+	scroll.ensure_control_visible(dyslexic_font)
 
 
 func _save_exit():
@@ -89,6 +104,7 @@ func _save_exit():
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
 	TE.settings.lang_id = TE.language.id
 	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
+	TE.settings.dyslexic_font = dyslexic_font.button_pressed
 	
 	if not TE.is_mobile():
 		TE.settings.fullscreen = window_options.selected == WM_FULLSCREEN
