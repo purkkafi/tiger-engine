@@ -17,7 +17,7 @@ func add_line(line: String, speaker: Variant = null):
 	if speaker == null:
 		lines.push_back(line)
 	else:
-		lines.push_back({ 'speaker': speaker, 'line': line })
+		lines.push_back({ 'speaker': (speaker as Speaker), 'line': line })
 	while len(lines) > LOG_SIZE:
 		lines.pop_front()
 

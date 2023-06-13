@@ -224,7 +224,7 @@ func _resolve_definitions(tree: Tag):
 						push_error('unknown trigger for unlockable %s: %s' % [id, trigger.name])
 			
 			'speaker':
-				var speaker: Definitions.Speaker = Definitions.Speaker.new()
+				var speaker: Definitions.SpeakerDef = Definitions.SpeakerDef.new()
 				for tag in node.get_tags():
 					match tag.name:
 						'id':

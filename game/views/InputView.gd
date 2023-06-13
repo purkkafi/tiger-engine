@@ -5,7 +5,6 @@ class_name InputView extends View
 @onready var prompt: Label = %Prompt
 @onready var line_edit: LineEdit = %LineEdit
 @onready var OK: Button = %OK
-var width: float = get_theme_constant('width', 'InputView')
 # text that will be displayed to tbe user above the LineEdit
 var prompt_text: String = ''
 # default value; used as the initial value of the LineEdit and as the result
@@ -27,11 +26,12 @@ func parse_options(options: Array[Tag]):
 				TE.log_error('unknown option for input: %s' % opt)
 
 
-func _ready():
-	if width == 0: # default value in case theme doesn't set it
-		width = 600
-	
+func adjust_size(controls: VNControls):
+	var width: float = get_theme_constant('width', 'InputView')
 	line_edit.custom_minimum_size.x = width
+
+
+func _ready():
 	TE.ui_strings.translate(self)
 
 

@@ -64,7 +64,7 @@ func _block_started():
 
 
 # Speakers are not handled right now
-func _next_line(line: String, _speaker: Definitions.Speaker = null):
+func _next_line(line: String, _speaker: Speaker = null):
 	var label: RichTextLabel = create_label()
 	
 	if outline_size != 0:

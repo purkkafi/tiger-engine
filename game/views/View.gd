@@ -141,12 +141,14 @@ func show_block(_block: Block) -> void:
 # proceeds to the next line
 func next_line(ignore_log: bool = false) -> void:
 	# parse speaker specification
-	var speaker = null
+	var speaker: Speaker
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
+	
 	if search != null:
 		var id: String = search.strings[1]
 		if id in TE.defs.speakers:
-			speaker = TE.defs.speakers[id]
+			speaker = Speaker.resolve(TE.defs.speakers[id], game.context)
+			
 			lines[line_index] = TE.ui_strings.autoquote(lines[line_index].substr(search.get_end()))
 		else:
 			TE.log_error('speaker not rezognized: %s' % id)
@@ -362,7 +364,7 @@ func skip_pressed():
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
-func _next_line(_line: String, _speaker: Definitions.Speaker = null):
+func _next_line(_line: String, _speaker: Speaker = null):
 	TE.log_error("view doesn't implement _next_line()")
 
 

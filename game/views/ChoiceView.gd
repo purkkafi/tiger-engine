@@ -2,7 +2,6 @@ class_name ChoiceView extends View
 
 
 @onready var vbox: VBoxContainer = %VBox
-var width: float = get_theme_constant('width', 'ChoiceView')
 var shadow: ColorRect
 var finished: bool = false
 var choice_strings: Array[String] = []
@@ -19,12 +18,12 @@ func parse_options(options: Array[Tag]):
 				choice_values.append(value)
 
 
-func initialize(ctxt: InitContext):
-	if width == 0: # default value in case theme doesn't set it
-		width = 800
-	
+func adjust_size(controls: VNControls):
+	var width: float = get_theme_constant('width', 'ChoiceView')
 	vbox.custom_minimum_size.x = width
-	
+
+
+func initialize(ctxt: InitContext):
 	for i in range(len(choice_strings)):
 		var btn: Button = Button.new()
 		btn.text = choice_strings[i]
@@ -32,8 +31,6 @@ func initialize(ctxt: InitContext):
 		btn.theme_type_variation = 'ChoiceButton'
 		btn.connect('pressed', Callable(self, '_finish').bind(i))
 		vbox.add_child(btn)
-		
-		#text.custom_minimum_size = Vector2(btn.size.x, btn.size.y)
 	
 	TE.ui_strings.translate(self)
 	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)

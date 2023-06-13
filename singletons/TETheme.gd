@@ -11,6 +11,7 @@ var current_theme: Theme = Theme.new()
 # global values retreived from the theme
 var background_color: Color = Color.BLACK
 var shadow_color: Color = Color.TRANSPARENT
+var default_text_color: Color = Color.WHITE # the color of Label's font
 
 
 # signal emitted when the variable current_theme is changed
@@ -26,6 +27,7 @@ func set_theme(theme_id: String):
 	
 	background_color = _base_theme.get_color('background_color', 'Global')
 	shadow_color = _base_theme.get_color('shadow_color', 'Global')
+	default_text_color = _base_theme.get_color('font_color', 'Label')
 	
 	_apply_variations()
 

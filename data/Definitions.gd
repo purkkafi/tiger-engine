@@ -132,7 +132,7 @@ class Transition extends RefCounted:
 		return 'Transition(%s %s %s)' % [trans_type, ease_type, duration]
 
 
-class Speaker extends RefCounted:
+class SpeakerDef extends RefCounted:
 	var id: String
 	var name: Array[Variant]
 	# default to TRANSPARENT, which should be treated as unset
