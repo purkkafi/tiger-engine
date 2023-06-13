@@ -66,6 +66,7 @@ func _block_started():
 # Speakers are not handled right now
 func _next_line(line: String, _speaker: Speaker = null):
 	var label: RichTextLabel = create_label()
+	label.fit_content = true
 	
 	if outline_size != 0:
 		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color.to_html(), line]

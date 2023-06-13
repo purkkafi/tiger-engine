@@ -322,7 +322,6 @@ func create_label() -> RichTextLabel:
 	var label: RichTextLabel = RichTextLabel.new()
 	label.install_effect(next_effect)
 	label.bbcode_enabled = true
-	label.fit_content = true
 	label.mouse_filter = Control.MOUSE_FILTER_PASS
 	label.text = ''
 	return label

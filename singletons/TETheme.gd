@@ -68,11 +68,13 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 		
 		for tp in current_theme.get_type_list():
 			for fn in current_theme.get_font_list(tp):
-				if 'bold' in fn and 'italic' in fn:
+				var normal: String = current_theme.get_font(fn, tp).resource_path.to_lower()
+				
+				if ('bold' in fn and 'italic' in fn) or ('bold' in normal and 'italic' in normal):
 					current_theme.set_font(fn, tp, bold_italic)
-				elif 'italic' in fn:
+				elif 'italic' in fn or 'italic' in normal:
 					current_theme.set_font(fn, tp, italic)
-				elif 'bold' in fn:
+				elif 'bold' in fn or 'bold' in normal:
 					current_theme.set_font(fn, tp, bold)
 				else:
 					current_theme.set_font(fn, tp, regular)
