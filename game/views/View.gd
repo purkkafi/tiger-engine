@@ -394,6 +394,16 @@ func _get_scene_path():
 	TE.log_error("view doesn't implement _get_scene_path()")
 
 
+# returns the control that should be hidden when the hide keyboard shortcut
+# the return value can be:
+# – null to hide nothing
+# – a single Control to hide
+# – an Array of Controls to hide
+# the default implementation returns 'self', i.e. the entire scene is hidden
+func get_hidable_control() -> Variant:
+	return self
+
+
 # returns whether the View is in waiting state and the game should not move on
 # subclasses can override to manage their life cycle in case they don't
 # interact with text via the mechanisms this class provides

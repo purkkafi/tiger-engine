@@ -69,3 +69,8 @@ func from_state(savestate: Dictionary):
 
 func is_temporary() -> bool:
 	return true
+
+
+# do not hide anything with the hide button
+func get_hidable_control():
+	return null

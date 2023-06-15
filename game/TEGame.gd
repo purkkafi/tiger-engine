@@ -249,6 +249,13 @@ func _process(delta):
 	if overlay_active:
 		return
 	
+	if Input.is_action_just_pressed('game_screenshot'):
+		take_user_screenshot()
+	
+	# hide is active while the key is being held down
+	if Input.is_action_just_pressed('game_hide') or Input.is_action_just_released('game_hide'):
+		toggle_hide()
+	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	if skip_mode != last_skip_mode:
 		update_skip_button()
@@ -338,7 +345,7 @@ func _save_load(mode):
 	overlay.mode = mode
 	if mode == SavingOverlay.SavingMode.SAVE:
 		overlay.save = create_save()
-		overlay.screenshot = await take_screenshot()
+		overlay.screenshot = await take_save_screenshot()
 		overlay.saved_callback = Callable(self, '_record_last_save')
 	overlay.warn_about_progress = Savefile.is_progress_made(last_save, create_save())
 	overlay.animating_out_callback = func(): after_overlay()
@@ -374,6 +381,7 @@ func create_save() -> Dictionary:
 		'save_datetime' : null, # these 2 should be handled by saving screen
 		'save_utime' : null,
 	}
+	
 	# do last to allow Views to write custom data during the get_state() call
 	save['custom_data'] = _custom_data.duplicate(true)
 	return save
@@ -418,12 +426,28 @@ func load_save(save: Dictionary):
 	next_rollback = save
 
 
-func take_screenshot() -> Image:
+func take_save_screenshot() -> Image:
 	await RenderingServer.frame_post_draw
 	var screenshot = get_viewport().get_texture().get_image()
 	screenshot.convert(SavingOverlay.THUMB_FORMAT)
 	screenshot.resize(SavingOverlay.THUMB_WIDTH, SavingOverlay.THUMB_HEIGHT, Image.INTERPOLATE_BILINEAR)
 	return screenshot
+
+
+func take_user_screenshot():
+	await RenderingServer.frame_post_draw
+	var screenshot: Image = get_viewport().get_texture().get_image()
+	var path: String = ''
+	var timestamp: String = Time.get_datetime_string_from_datetime_dict(Time.get_datetime_dict_from_system(), true)
+	
+	if OS.has_feature('editor'):
+		path = ProjectSettings.globalize_path('res://')
+	else:
+		path = OS.get_executable_path().get_base_dir() + '/'
+	path = path + timestamp + '.png'
+	
+	screenshot.save_png(path)
+	print('Saved screenshot %s' % path)
 
 
 func _back():
@@ -451,3 +475,19 @@ func has_custom_data(key: String):
 # returns the custom data set with set_custom_data() or null if empty
 func get_custom_data(key: String):
 	return _custom_data[key]
+
+
+# toggles whether VNControls and the view are hidden
+func toggle_hide():
+	var show: bool = not $VNControls.visible
+	$VNControls.visible = show
+	
+	var hidable_view_control = $View.get_hidable_control()
+	if hidable_view_control != null:
+		if hidable_view_control is Control:
+			hidable_view_control.visible = show
+		elif hidable_view_control is Array:
+			for ctrl in hidable_view_control:
+				ctrl.visible = show
+		else:
+			TE.log_error("toggle_hide() given '%s', not Control or Array" % hidable_view_control)

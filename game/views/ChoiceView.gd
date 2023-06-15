@@ -76,3 +76,4 @@ func is_temporary() -> bool:
 
 func get_skip_mode() -> SkipMode:
 	return SkipMode.DISABLED
+

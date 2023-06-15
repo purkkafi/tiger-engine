@@ -51,6 +51,7 @@ func change_settings():
 	Settings.change_fullscreen(fullscreen)
 	Settings.change_language(lang_id)
 	TETheme.force_change_settings(gui_scale, dyslexic_font)
+	Settings.change_keyboard_shortcuts()
 
 
 static func change_music_volume(vol_linear: float):
@@ -67,6 +68,20 @@ static func change_fullscreen(to_fullscreen: bool):
 	if is_fullscreen != to_fullscreen:
 		var mode = DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN if (to_fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
 		DisplayServer.window_set_mode(mode)
+
+
+static func change_keyboard_shortcuts():
+	# TODO implement setting to change these
+	_setup_keyboard_shortcut('game_screenshot', KEY_S)
+	_setup_keyboard_shortcut('game_hide', KEY_H)
+
+
+static func _setup_keyboard_shortcut(eventName: String, keycode: Key):
+	InputMap.action_erase_events(eventName)
+	var event = InputEventKey.new()
+	event.keycode = keycode
+	InputMap.action_add_event(eventName, event)
+	
 
 
 # changes language unless the given id is the current language;
