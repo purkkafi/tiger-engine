@@ -66,7 +66,7 @@ func set_theme(theme_id: String):
 
 # constructs a new current_theme instance from the base theme and applies variations
 # by default, variations are based on current settings; parameters can be passed to force changes
-func _apply_variations(gui_scale = null, dyslexic_font = null):
+func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 	current_theme = Theme.new()
 	current_theme.merge_with(_base_theme)
 	
@@ -74,8 +74,8 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 	
 	# applies large theme variant
 	var is_large_gui = TE.is_large_gui()
-	if gui_scale != null:
-		is_large_gui = gui_scale == Settings.GUIScale.LARGE
+	if force_gui_scale != null:
+		is_large_gui = force_gui_scale == Settings.GUIScale.LARGE
 	
 	if is_large_gui:
 		current_theme.merge_with(_large_theme)
@@ -84,8 +84,8 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 	# applies OpenDyslexic
 	# also reduces font size of everything by 25 % because the font takes more space to display
 	var is_dyslexic_font = TE.settings != null and TE.settings.dyslexic_font
-	if dyslexic_font != null:
-		is_dyslexic_font = true
+	if force_dyslexic_font != null:
+		is_dyslexic_font = force_dyslexic_font
 	
 	if is_dyslexic_font:
 		var regular = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
