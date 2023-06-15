@@ -26,7 +26,7 @@ func parse_options(options: Array[Tag]):
 				TE.log_error('unknown option for input: %s' % opt)
 
 
-func adjust_size(controls: VNControls):
+func adjust_size(_controls: VNControls):
 	var width: float = get_theme_constant('width', 'InputView')
 	line_edit.custom_minimum_size.x = width
 

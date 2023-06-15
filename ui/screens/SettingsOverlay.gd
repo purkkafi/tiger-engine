@@ -82,13 +82,13 @@ func _change_theme_settings():
 	)
 
 
-func _gui_scale_selected(selection):
+func _gui_scale_selected(_selection):
 	_change_theme_settings()
 	await get_tree().process_frame
 	scroll.ensure_control_visible(gui_scale)
 
 
-func _dyslexic_font_toggled(pressed):
+func _dyslexic_font_toggled(_pressed):
 	_change_theme_settings()
 	await get_tree().process_frame
 	scroll.ensure_control_visible(dyslexic_font)

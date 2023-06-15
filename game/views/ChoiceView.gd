@@ -18,7 +18,7 @@ func parse_options(options: Array[Tag]):
 				choice_values.append(value)
 
 
-func adjust_size(controls: VNControls):
+func adjust_size(_controls: VNControls):
 	var width: float = get_theme_constant('width', 'ChoiceView')
 	vbox.custom_minimum_size.x = width
 

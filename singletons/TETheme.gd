@@ -85,9 +85,9 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 	# also reduces font size of everything by 25 % because the font takes more space to display
 	var is_dyslexic_font = TE.settings != null and TE.settings.dyslexic_font
 	if dyslexic_font != null:
-		is_dyslexic_font = dyslexic_font
+		is_dyslexic_font = true
 	
-	if dyslexic_font:
+	if is_dyslexic_font:
 		var regular = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
 		var bold = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold.otf')
 		var italic = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
@@ -96,7 +96,7 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 		if current_theme.has_default_font():
 			current_theme.default_font = regular
 		if current_theme.has_default_font_size():
-			current_theme.default_font_size = current_theme.default_font_size * 0.75
+			current_theme.default_font_size = int(current_theme.default_font_size * 0.75)
 		
 		for tp in current_theme.get_type_list():
 			for fn in current_theme.get_font_list(tp):
@@ -113,7 +113,7 @@ func _apply_variations(gui_scale = null, dyslexic_font = null):
 			
 			for fs in current_theme.get_font_size_list(tp):
 				var size: int = current_theme.get_font_size(fs, tp)
-				current_theme.set_font_size(fs, tp, size * 0.75)
+				current_theme.set_font_size(fs, tp, int(size * 0.75))
 	
 	TE.current_scene.theme = current_theme
 	emit_signal('theme_changed')
