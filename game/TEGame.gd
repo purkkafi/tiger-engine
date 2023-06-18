@@ -261,6 +261,17 @@ func _process(delta):
 		update_skip_button()
 		last_skip_mode = skip_mode
 	
+	# handle skipping via the keyboard shortcut
+	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip'):
+		$VNControls.btn_skip.emit_signal('pressed')
+	elif skip_mode == View.SkipMode.TOGGLE:
+		if Input.is_action_just_pressed('game_skip'):
+			$VNControls.btn_skip.button_pressed = true
+			$View.skip_toggled(true)
+		elif Input.is_action_just_released('game_skip'):
+			$VNControls.btn_skip.button_pressed = false
+			$View.skip_toggled(false)
+	
 	# notify View of user input by calling either game_advanced or game_not_advanced
 	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
 		$View.game_advanced(delta)

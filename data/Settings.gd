@@ -8,6 +8,8 @@ var text_speed: float # text speed, in range [0, 1]
 var dynamic_text_speed: bool # dynamic text speed on/off
 var fullscreen: bool # fullscreen on/off
 var lang_id # language id; String or null if unset
+# keyboard shortcuts; values should be dictionaries with keys 'keycode' and 'unicode'
+var keys: Dictionary
 var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
 
@@ -19,6 +21,20 @@ var unlocked: Dictionary
 
 # path of file where settings are stored
 const SETTINGS_PATH: String = 'user://settings.cfg'
+# properties that are not saved to disk
+const TRANSIENT_PROPERTIES: Array[String] = [ 'RefCounted', 'script', 'Settings.gd' ]
+# properties that have special handling when loaded
+# (not automatically getting their default value if absent)
+const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys' ]
+# available keyboard shortcuts and their default values
+# every shortcut is saved as a dict of:
+# – the keycode, a Key
+# – the key's unicode value or 0 if it doesn't correspond to a character
+const KEYBOARD_SHORTCUTS: Dictionary = {
+	'game_screenshot': { 'keycode': KEY_S, 'unicode': 83 },
+	'game_hide': { 'keycode': KEY_H, 'unicode': 72 },
+	'game_skip': { 'keycode': KEY_CTRL, 'unicode': 0 }
+}
 
 
 enum GUIScale { NORMAL = 0, LARGE = 1 }
@@ -51,7 +67,7 @@ func change_settings():
 	Settings.change_fullscreen(fullscreen)
 	Settings.change_language(lang_id)
 	TETheme.force_change_settings(gui_scale, dyslexic_font)
-	Settings.change_keyboard_shortcuts()
+	Settings.change_keyboard_shortcuts(keys)
 
 
 static func change_music_volume(vol_linear: float):
@@ -70,10 +86,9 @@ static func change_fullscreen(to_fullscreen: bool):
 		DisplayServer.window_set_mode(mode)
 
 
-static func change_keyboard_shortcuts():
-	# TODO implement setting to change these
-	_setup_keyboard_shortcut('game_screenshot', KEY_S)
-	_setup_keyboard_shortcut('game_hide', KEY_H)
+static func change_keyboard_shortcuts(keys: Dictionary):
+	for key in keys.keys():
+		_setup_keyboard_shortcut(key, keys[key]['keycode'])
 
 
 static func _setup_keyboard_shortcut(eventName: String, keycode: Key):
@@ -109,18 +124,13 @@ func save_to_file():
 
 
 func _to_dict() -> Dictionary:
-	return {
-		'music_volume' : music_volume,
-		'sfx_volume' : sfx_volume,
-		'text_speed' : text_speed,
-		'dynamic_text_speed' : dynamic_text_speed,
-		'fullscreen' : fullscreen,
-		'pretend_mobile' : pretend_mobile,
-		'lang_id' : lang_id,
-		'gui_scale' : gui_scale,
-		'dyslexic_font' : dyslexic_font,
-		'unlocked' : unlocked
-	}
+	var dict: Dictionary = {}
+	
+	for p in get_property_list():
+		if p.name not in TRANSIENT_PROPERTIES:
+			dict[p.name] = get(p.name)
+	
+	return dict
 
 
 # returns whether the settings file exists
@@ -156,18 +166,20 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	var settings = Settings.new()
 	var defaults = default_settings()
 	
-	settings.music_volume = dict.get('music_volume', defaults['music_volume'])
-	settings.sfx_volume = dict.get('sfx_volume', defaults['sfx_volume'])
-	settings.text_speed = dict.get('text_speed', defaults['text_speed'])
-	settings.dynamic_text_speed = dict.get('dynamic_text_speed', defaults['dynamic_text_speed'])
-	settings.fullscreen = dict.get('fullscreen', defaults['fullscreen'])
-	settings.pretend_mobile = dict.get('pretend_mobile', defaults['pretend_mobile'])
+	for p in settings.get_property_list():
+		if p.name not in TRANSIENT_PROPERTIES and p.name not in NO_DEFAULT_PROPERTIES:
+			settings.set(p.name, dict.get(p.name, defaults[p.name]))
+	
+	# must be set, no possible default value
 	settings.lang_id = dict['lang_id']
-	settings.gui_scale = dict.get('gui_scale', defaults['gui_scale'])
-	settings.dyslexic_font = dict.get('dyslexic_font', defaults['dyslexic_font'])
+	
 	# include auto-unlocks from default settings, overwriting them with whatever is in the given dict
-	settings.unlocked = dict.get('unlocked', {})
-	settings.unlocked.merge(defaults['unlocked'])
+	settings.unlocked = defaults['unlocked']
+	settings.unlocked.merge(dict.get('unlocked', {}))
+	
+	# same for keys
+	settings.keys = defaults['keys']
+	settings.keys.merge(dict.get('keys', {}))
 	
 	return settings
 
@@ -188,6 +200,7 @@ static func default_settings():
 	defs.fullscreen = false
 	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
+	defs.keys = KEYBOARD_SHORTCUTS.duplicate(true)
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	defs.dyslexic_font = false
 	

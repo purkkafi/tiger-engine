@@ -352,9 +352,9 @@ func get_skip_mode() -> SkipMode:
 func skip_toggled(on: bool):
 	if on:
 		speedup = Speedup.SKIP
-		_to_end_of_line()
 	else:
 		speedup = Speedup.NORMAL
+		state = State.SCROLLING_TEXT
 
 
 func skip_pressed():

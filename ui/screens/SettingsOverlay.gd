@@ -16,11 +16,16 @@ var language_disabled: bool = false
 @onready var text_speed: Slider = %TextSpeedSlider
 @onready var dyn_text_speed: CheckBox = %DynTextSpeed
 @onready var lang_options: OptionButton = %LangOptions
+@onready var keys_section: MarginContainer = %Keys
+@onready var keys_grid: GridContainer = %KeysGrid
 @onready var gui_scale_container: HBoxContainer = %GUIScaleContainer
 @onready var gui_scale: OptionButton = %GUIScale
 @onready var dyslexic_font: CheckButton = %DyslexicFont
 @onready var save_exit: Button = %SaveExit
 @onready var discard: Button = %Discard
+
+var unhandled_input_callback = null
+var key_buttons: Array[Button] = []
 
 
 func _initialize_overlay():
@@ -53,6 +58,24 @@ func _initialize_overlay():
 	if language_disabled:
 		lang_options.disabled = true
 	
+	# hide button settings on mobile
+	if TE.is_mobile():
+		keys_section.get_parent().remove_child(keys_section)
+	
+	# setup keyboard shortcut controls
+	for key in Settings.KEYBOARD_SHORTCUTS.keys():
+		var label: Label = Label.new()
+		label.text = '%key_' + key +'%'
+		keys_grid.add_child(label)
+		
+		var button: Button = Button.new()
+		button.set_meta('key_id', key)
+		button.set_meta('key', TE.settings.keys[key])
+		_update_key_button_text(button)
+		button.connect('pressed', _key_button_pressed.bind(button))
+		keys_grid.add_child(button)
+		key_buttons.append(button)
+	
 	gui_scale.selected = TE.settings.gui_scale
 	dyslexic_font.button_pressed = TE.settings.dyslexic_font
 	
@@ -73,6 +96,36 @@ func _window_mode_selected(selection):
 		Settings.change_fullscreen(true)
 	else:
 		Settings.change_fullscreen(false)
+
+
+func _key_button_pressed(btn: Button):
+	btn.text = '_'
+	unhandled_input_callback = _key_button_changed.bind(btn)
+
+
+func _key_button_changed(event: InputEventKey, btn: Button):
+	# do a swap if the keycode is already in use
+	for other in key_buttons:
+		if other.get_meta('key')['keycode'] == event.keycode:
+			other.set_meta('key', btn.get_meta('key'))
+			_update_key_button_text(other)
+	
+	btn.set_meta('key', { 'keycode': event.keycode, 'unicode': event.unicode })
+	_update_key_button_text(btn)
+
+
+func _update_key_button_text(btn: Button):
+	var unicode: int = btn.get_meta('key')['unicode']
+	if unicode != 0:
+		btn.text = char(int(unicode)).to_upper()
+	else:
+		btn.text = OS.get_keycode_string(btn.get_meta('key')['keycode'])
+
+
+func _unhandled_key_input(event):
+	if event is InputEventKey and unhandled_input_callback != null:
+		unhandled_input_callback.call(event)
+		unhandled_input_callback = null
 
 
 func _change_theme_settings():
@@ -100,6 +153,11 @@ func _save_exit():
 	TE.settings.text_speed = text_speed.value
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
 	TE.settings.lang_id = TE.language.id
+	
+	for btn in key_buttons:
+		if btn is Button:
+			TE.settings.keys[btn.get_meta('key_id')] = btn.get_meta('key')
+	
 	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	TE.settings.dyslexic_font = dyslexic_font.button_pressed
 	
