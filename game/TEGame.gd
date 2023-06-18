@@ -40,6 +40,10 @@ func _ready():
 	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
 	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
 	
+	# no hide button on desktop
+	if not TE.is_mobile():
+		%MobileHideContainer.visible = false
+	
 	# initial View
 	_replace_view(TE.defs.view_registry['adv'].instantiate())
 	$View.initialize(View.InitContext.NEW_VIEW)
@@ -254,7 +258,7 @@ func _process(delta):
 	
 	# hide is active while the key is being held down
 	if Input.is_action_just_pressed('game_hide') or Input.is_action_just_released('game_hide'):
-		toggle_hide()
+		toggle_user_hide()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	if skip_mode != last_skip_mode:
@@ -265,10 +269,10 @@ func _process(delta):
 	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip'):
 		$VNControls.btn_skip.emit_signal('pressed')
 	elif skip_mode == View.SkipMode.TOGGLE:
-		if Input.is_action_just_pressed('game_skip'):
+		if Input.is_action_just_pressed('game_skip') and not $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = true
 			$View.skip_toggled(true)
-		elif Input.is_action_just_released('game_skip'):
+		elif Input.is_action_just_released('game_skip') and $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = false
 			$View.skip_toggled(false)
 	
@@ -489,9 +493,11 @@ func get_custom_data(key: String):
 
 
 # toggles whether VNControls and the view are hidden
-func toggle_hide():
+func toggle_user_hide():
 	var show: bool = not $VNControls.visible
 	$VNControls.visible = show
+	# modulate instead because visibility messes with the input events
+	%MobileHideContainer.modulate = Color.WHITE if show else Color.TRANSPARENT
 	
 	var hidable_view_control = $View.get_hidable_control()
 	if hidable_view_control != null:

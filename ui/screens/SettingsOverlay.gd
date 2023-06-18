@@ -9,6 +9,7 @@ const WM_WINDOWED: int = 1
 var language_disabled: bool = false
 
 @onready var scroll: ScrollContainer = %Scroll
+@onready var video_section: MarginContainer = %Video
 @onready var window_mode_container: HBoxContainer = %WindowModeContainer
 @onready var window_options: OptionButton = %WindowOptions
 @onready var music_volume: Slider = %MusicVolSlider
@@ -30,7 +31,7 @@ var key_buttons: Array[Button] = []
 
 func _initialize_overlay():
 	if TE.is_mobile(): # no fullscreen setting on mobile
-		window_mode_container.visible = false
+		video_section.get_parent().remove_child(video_section)
 	else:
 		if TE.settings.fullscreen:
 			window_options.selected = WM_FULLSCREEN

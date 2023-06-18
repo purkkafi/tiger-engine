@@ -39,6 +39,7 @@ follow_focus = true
 layout_mode = 2
 
 [node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Video"]

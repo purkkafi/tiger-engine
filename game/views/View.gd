@@ -354,7 +354,8 @@ func skip_toggled(on: bool):
 		speedup = Speedup.SKIP
 	else:
 		speedup = Speedup.NORMAL
-		state = State.SCROLLING_TEXT
+		if _current_label() != null:
+			state = State.SCROLLING_TEXT
 
 
 func skip_pressed():
