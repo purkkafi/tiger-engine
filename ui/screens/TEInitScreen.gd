@@ -5,17 +5,16 @@ class_name TEInitScreen extends ColorRect
 # otherwise, the title screen will be displayed
 
 
-@onready var title_screen: PackedScene = load(TE.opts.title_screen)
-
-
 func _ready():
 	# run tests instead of launching game if cmd line arg is passed
 	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
 		get_tree().quit(TestRunner.run_tests())
 	
-	self.color = TETheme.background_color
+	# queue title screen for loading
+	Assets.noncached.queue(TE.opts.title_screen)
 	
 	# set initial window settings
+	self.color = TETheme.background_color
 	get_window().min_size = Vector2i(962, 542)
 	get_window().set_title('')
 	
@@ -30,6 +29,10 @@ func _ready():
 	
 	# read language options
 	TE.all_languages = TEInitScreen.get_languages()
+	
+	# setup events for keyboard shortcuts
+	for shortcut in Settings.KEYBOARD_SHORTCUTS.keys():
+		InputMap.add_action(shortcut)
 	
 	# setup view registry
 	TE.defs.view_registry['nvl'] = preload('res://tiger-engine/game/views/NVLView.tscn')
@@ -49,7 +52,7 @@ func _ready():
 		# the file being from an older version of the game
 		TE.settings.save_to_file()
 		TE.settings.change_settings()
-		TE.switch_scene(title_screen.instantiate())
+		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
 	else:
 		# setup default settings and show the user the language choice
 		TE.settings = Settings.default_settings()
@@ -70,7 +73,7 @@ func _language_selected(selected: Lang):
 	TE.load_language(selected)
 	TE.settings.lang_id = selected.id
 	TE.settings.save_to_file()
-	TE.switch_scene(title_screen.instantiate())
+	TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
 
 
 # returns all defined languages

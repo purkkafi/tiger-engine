@@ -7,7 +7,7 @@ class_name TEGame extends Control
 var vm: TEScriptVM # virtual machine that runs the game script
 var rollback: Rollback # stores save states for Back button
 var gamelog: Log # the game log
-var context: ControlExpr.GameContext # stores in-game variables
+var context: GameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
 var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
 var overlay_active: bool = false # whether there is an overlay and game should be paused
@@ -61,7 +61,7 @@ func _ready():
 		var_names.append(_var)
 		var_values.append(TE.defs.variables[_var])
 	
-	context = ControlExpr.GameContext.new(var_names, var_values)
+	context = GameContext.new(var_names, var_values)
 
 
 # advances to the next instruction that blocks the game, handling everything inbetween
