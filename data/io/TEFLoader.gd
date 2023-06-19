@@ -273,6 +273,8 @@ func _resolve_options(tree: Tag):
 		match node.name:
 			'title_screen':
 				opts.title_screen = node.get_string()
+			'splash_screen':
+				opts.splash_screen = node.get_string()
 			'version_callback':
 				opts.version_callback = Callable(load(node.get_string_at(0)), node.get_string_at(1))
 			'register_view':

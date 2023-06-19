@@ -8,12 +8,13 @@ var strings: Dictionary
 
 # functions that translate the given Control type
 var TRANSLATORS: Dictionary = {
-	'Button': Callable(self, '_translate_node_text'),
-	'Label': Callable(self, '_translate_node_text'),
-	'CheckBox': Callable(self, '_translate_node_text'),
-	'CheckButton': Callable(self, '_translate_node_text'),
-	'OptionButton': Callable(self, '_translate_option_button'),
-	'TextureRect': Callable(self, '_translate_texture_rect')
+	'Button': _translate_node_text,
+	'Label': _translate_node_text,
+	'RichTextLabel' : _translate_node_text,
+	'CheckBox': _translate_node_text,
+	'CheckButton': _translate_node_text,
+	'OptionButton': _translate_option_button,
+	'TextureRect': _translate_texture_rect
 }
 
 
@@ -21,12 +22,12 @@ const meta_missing: String = '!!!<UISTRING_METADATA_NOT_SET>!!!'
 
 
 # translates any Control that has a 'text' property
-func _translate_node_text(btn: Control):
-	if btn.get_meta('uistring_text_id', meta_missing) != meta_missing:
-		btn.text = translate_text(btn.get_meta('uistring_text_id'))
+func _translate_node_text(ctrl: Control):
+	if ctrl.get_meta('uistring_text_id', meta_missing) != meta_missing:
+		ctrl.text = translate_text(ctrl.get_meta('uistring_text_id'))
 	else:
-		btn.set_meta('uistring_text_id', btn.text)
-		btn.text = translate_text(btn.text)
+		ctrl.set_meta('uistring_text_id', ctrl.text)
+		ctrl.text = translate_text(ctrl.text)
 
 
 func _translate_option_button(btn: OptionButton):

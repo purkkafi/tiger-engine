@@ -17,6 +17,8 @@ var dyslexic_font: bool # whether dyslexia-friendly font is used
 var pretend_mobile: bool # act as mobile even on desktop
 # dict of ids of unlockables to bool (whether unlockeds)
 var unlocked: Dictionary
+# persistent data saved with settings for use by games
+var persistent: Dictionary
 
 
 # path of file where settings are stored
@@ -25,7 +27,7 @@ const SETTINGS_PATH: String = 'user://settings.cfg'
 const TRANSIENT_PROPERTIES: Array[String] = [ 'RefCounted', 'script', 'Settings.gd' ]
 # properties that have special handling when loaded
 # (not automatically getting their default value if absent)
-const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys' ]
+const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys', 'persistent' ]
 # available keyboard shortcuts and their default values
 # every shortcut is saved as a dict of:
 # – the keycode, a Key
@@ -181,6 +183,10 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	settings.keys = defaults['keys']
 	settings.keys.merge(dict.get('keys', {}))
 	
+	# same for persistent
+	settings.persistent = defaults['persistent']
+	settings.persistent.merge(dict.get('persistent', {}))
+	
 	return settings
 
 
@@ -203,6 +209,7 @@ static func default_settings():
 	defs.keys = KEYBOARD_SHORTCUTS.duplicate(true)
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	defs.dyslexic_font = false
+	defs.persistent = {}
 	
 	defs.unlocked = {} # include auto-unlocks by default
 	for id in TE.defs.unlocked_from_start:

@@ -52,11 +52,19 @@ func _ready():
 		# the file being from an older version of the game
 		TE.settings.save_to_file()
 		TE.settings.change_settings()
-		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
+		_next_screen()
 	else:
 		# setup default settings and show the user the language choice
 		TE.settings = Settings.default_settings()
 		display_language_choice()
+
+
+# changes to the splash screen if specified or else to the title screen
+func _next_screen():
+	if TE.opts.splash_screen != null:
+		TE.switch_scene(load(TE.opts.splash_screen).instantiate())
+	else:
+		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
 
 
 func display_language_choice():
@@ -73,7 +81,7 @@ func _language_selected(selected: Lang):
 	TE.load_language(selected)
 	TE.settings.lang_id = selected.id
 	TE.settings.save_to_file()
-	TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
+	_next_screen()
 
 
 # returns all defined languages
