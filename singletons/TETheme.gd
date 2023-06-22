@@ -15,6 +15,7 @@ var default_text_color: Color = Color.WHITE # the color of Label's font
 # animations
 # empty animation used if animations aren't specified
 var NO_ANIM: Callable = func(_target: Control) -> Tween: return null
+var _animations = null # reference to object that holds the animations
 var anim_overlay_in: Callable = NO_ANIM
 var anim_overlay_out: Callable = NO_ANIM
 var anim_shadow_in: Callable = NO_ANIM
@@ -38,18 +39,20 @@ func set_theme(theme_id: String):
 		# workaround for godot issue:
 		# Callable.is_valid() doesn't understand static methods properly
 		# using an instance as the object of Callable instead of the GDScript works
-		animations = animations.new()
+		if _animations != null:
+			_animations.queue_free()
+		_animations = animations.new()
 		
-		var overlay_in = Callable(animations, 'overlay_in')
+		var overlay_in = Callable(_animations, 'overlay_in')
 		anim_overlay_in = overlay_in if overlay_in.is_valid() else NO_ANIM
 		
-		var overlay_out = Callable(animations, 'overlay_out')
+		var overlay_out = Callable(_animations, 'overlay_out')
 		anim_overlay_out = overlay_out if overlay_out.is_valid() else NO_ANIM
 		
-		var shadow_in = Callable(animations, 'shadow_in')
+		var shadow_in = Callable(_animations, 'shadow_in')
 		anim_shadow_in = shadow_in if shadow_in.is_valid() else NO_ANIM
 		
-		var shadow_out = Callable(animations, 'shadow_out')
+		var shadow_out = Callable(_animations, 'shadow_out')
 		anim_shadow_out = shadow_out if shadow_out.is_valid() else NO_ANIM
 	else:
 		anim_overlay_in = NO_ANIM
