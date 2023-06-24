@@ -277,6 +277,8 @@ func _resolve_options(tree: Tag):
 				opts.splash_screen = node.get_string()
 			'version_callback':
 				opts.version_callback = Callable(load(node.get_string_at(0)), node.get_string_at(1))
+			'notify_on_unlock':
+				opts.notify_on_unlock.append_array(node.get_strings())
 			'register_view':
 				opts.custom_views[node.get_string_at(0)] = node.get_string_at(1)
 			'default_theme':

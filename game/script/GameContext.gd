@@ -52,3 +52,7 @@ func unlock(unlockable: String):
 
 func is_unlocked(unlockable: String) -> bool:
 	return TE.settings.is_unlocked(unlockable)
+
+
+func show_toast(title: String, description: String, icon = null):
+	TE.send_toast_notification(title, description, icon)

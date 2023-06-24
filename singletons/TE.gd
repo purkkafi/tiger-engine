@@ -22,6 +22,15 @@ const SCREEN_WIDTH = 1920
 const SCREEN_HEIGHT = 1080
 
 
+# signal when an unlockable is unlocked
+signal unlockable_unlocked(_namespace: String, id: String)
+# signal sent when a toast notification is spawned
+# a toast object has these entries:
+# – 'bbcode': the text in bbcode
+# – 'icon' (optional): path to icon
+signal toast_notification(toast: Dictionary)
+
+
 func _ready():
 	# load options, fall back to defaults if not successfull
 	opts = load('res://assets/options.tef')
@@ -127,3 +136,15 @@ func quit_game():
 	get_tree().get_root().propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 	await get_tree().process_frame
 	get_tree().quit()
+
+
+# sends a toast notification
+func send_toast_notification(title: String, description: String, icon = null):
+	var toast: Dictionary = {
+		'bbcode': '[b]%s[/b]\n%s' % [title, description]
+	}
+	
+	if icon != null:
+		toast['icon'] = icon
+	
+	emit_signal('toast_notification', toast)

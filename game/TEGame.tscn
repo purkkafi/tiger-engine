@@ -51,5 +51,48 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 text = "H"
 
+[node name="ToastContainer" type="MarginContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="ToastPanel" type="PanelContainer" parent="ToastContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ToastPanel"
+
+[node name="HBox" type="HBoxContainer" parent="ToastContainer/ToastPanel"]
+layout_mode = 2
+
+[node name="ToastIcon" type="TextureRect" parent="ToastContainer/ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 5
+
+[node name="ToastText" type="RichTextLabel" parent="ToastContainer/ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+fit_content = true
+
+[node name="ToastClose" type="Button" parent="ToastContainer/ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"ToastClose"
+flat = true
+
 [connection signal="button_down" from="MobileHideContainer/MobileHide" to="." method="toggle_user_hide"]
 [connection signal="button_up" from="MobileHideContainer/MobileHide" to="." method="toggle_user_hide"]

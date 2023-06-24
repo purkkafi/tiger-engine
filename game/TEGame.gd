@@ -15,6 +15,7 @@ var last_save: Variant = null # last save state (may be null if game has not bee
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
 var _custom_data: Dictionary = {} # persistent, game-specific custom save data
 var last_skip_mode: View.SkipMode # skip mode of previous frame
+var toast_queue: Array[Dictionary] # queue of toast notifications to show
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -39,6 +40,12 @@ func _ready():
 	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
 	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
 	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
+	
+	%ToastClose.icon = get_theme_icon('close', 'Toast')
+	%ToastClose.connect('mouse_entered', func(): %ToastClose.icon = get_theme_icon('close_hover', 'Toast'))
+	%ToastClose.connect('mouse_exited', func(): %ToastClose.icon = get_theme_icon('close', 'Toast'))
+	_adjust_toast_size()
+	TE.connect('toast_notification', func(toast): toast_queue.append(toast))
 	
 	# no hide button on desktop
 	if not TE.is_mobile():
@@ -213,9 +220,20 @@ func _replace_view(new_view: Node):
 
 
 func _theme_changed():
+	_adjust_toast_size()
 	# needs to happen in this order to ensure View sees the updated VNControls size
 	$VNControls.adjust_size()
 	$View.adjust_size($VNControls)
+
+
+func _adjust_toast_size():
+	%ToastIcon.custom_minimum_size.x = get_theme_constant('height', 'Toast')
+	# BUG: Godot doesn't recalc the sizes of the controls for whatever reason
+	# no idea how to fix, toggling visiblity etc didn't work :(
+	%ToastPanel.custom_minimum_size = Vector2(
+		get_theme_constant('width', 'Toast'),
+		get_theme_constant('height', 'Toast')
+	)
 
 
 # updates the state of the toggle button according to the current View's skip mode
@@ -252,6 +270,9 @@ func _process(delta):
 	
 	if overlay_active:
 		return
+	
+	if len(toast_queue) != 0 and not %ToastContainer.visible:
+		show_toast(toast_queue.pop_front())
 	
 	if Input.is_action_just_pressed('game_screenshot'):
 		take_user_screenshot()
@@ -508,3 +529,33 @@ func toggle_user_hide():
 				ctrl.visible = show
 		else:
 			TE.log_error("toggle_hide() given '%s', not Control or Array" % hidable_view_control)
+
+
+func show_toast(toast: Dictionary):
+	%ToastContainer.visible = true
+	%ToastContainer.modulate.a = 1.0
+	%ToastText.text = toast['bbcode']
+	%ToastClose.icon = get_theme_icon('close', 'Toast')
+	
+	if 'icon' in toast:
+		%ToastIcon.custom_minimum_size.x = get_theme_constant('height', 'Toast')
+		%ToastIcon.texture = load(toast['icon'])
+	else:
+		%ToastIcon.texture = null
+		%ToastIcon.custom_minimum_size.x = 0
+	
+	var tween: Tween = %ToastContainer.create_tween()
+	%ToastClose.connect('pressed', _toast_closed.bind(tween))
+	
+	# animate sliding in
+	%ToastContainer.position.y = -%ToastContainer.size.y
+	tween.tween_property(%ToastContainer, 'position:y', 0, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	
+	# animate fading out
+	tween.tween_property(%ToastContainer, 'modulate:a', 0.0, 1).set_delay(5)
+	tween.tween_callback(func(): %ToastContainer.visible = false)
+	tween.tween_callback(func(): %ToastClose.disconnect('pressed', _toast_closed))
+
+
+func _toast_closed(tween: Tween):
+	tween.set_speed_scale(INF)

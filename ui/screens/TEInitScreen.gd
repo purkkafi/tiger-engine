@@ -52,11 +52,15 @@ func _ready():
 		# the file being from an older version of the game
 		TE.settings.save_to_file()
 		TE.settings.change_settings()
-		_next_screen()
+		_next_screen.call_deferred()
 	else:
 		# setup default settings and show the user the language choice
 		TE.settings = Settings.default_settings()
-		display_language_choice()
+		display_language_choice.call_deferred()
+	
+	# unlock auto-unlocks possibly not unlocked
+	for id in TE.defs.unlocked_from_start:
+		TE.settings.unlock(id, true)
 
 
 # changes to the splash screen if specified or else to the title screen

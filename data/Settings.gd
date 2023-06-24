@@ -44,13 +44,30 @@ enum GUIScale { NORMAL = 0, LARGE = 1 }
 
 # unlocks the given unlockable and saves settings to the disk
 # does nothing if it was already unlocked
-func unlock(unlockable_id: String):
+func unlock(unlockable_id: String, no_toasts: bool = false):
 	if not unlockable_id in TE.defs.unlockables:
 		TE.log_error('unknown unlockable: %s' % unlockable_id)
 		return false
 	if not unlockable_id in unlocked:
 		unlocked[unlockable_id] = true
 		TE.log_info('unlocked %s' % unlockable_id)
+		
+		if ':' in unlockable_id:
+			var parts = unlockable_id.split(':', false, 2)
+			var _namespace: String = parts[0]
+			var id: String = parts[1]
+			
+			TE.emit_signal('unlockable_unlocked', _namespace, id)
+			
+			if _namespace in TE.opts.notify_on_unlock and not no_toasts:
+				var noun: String = TE.ui_strings['toast_unlocked_' + _namespace]
+				var toast_title: String = TE.ui_strings.toast_unlocked.replace('[]', noun)
+				var toast_description: String = TE.ui_strings['%s_%s' % [_namespace, id]]
+				
+				TE.send_toast_notification(toast_title, toast_description)
+		else:
+			TE.log_error('unlockable not namespaced: %s' % unlockable_id)
+		
 		save_to_file()
 
 
@@ -210,9 +227,6 @@ static func default_settings():
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	defs.dyslexic_font = false
 	defs.persistent = {}
-	
-	defs.unlocked = {} # include auto-unlocks by default
-	for id in TE.defs.unlocked_from_start:
-		defs.unlocked[id] = true
+	defs.unlocked = {}
 	
 	return defs

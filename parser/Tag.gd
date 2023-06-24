@@ -57,6 +57,18 @@ func get_string_at(index: int):
 	return args[index][0]
 
 
+# returns the arguments as a String array or null
+func get_strings():
+	var arr: Array[String] = []
+	for arg in args:
+		if len(arg) == 1 and arg[0] is String:
+			arr.append(arg[0])
+		else:
+			push_error('expected strings, got %s' % self)
+			return null
+	return arr
+
+
 # returns the single String or Tag at the given argument or null
 func get_value():
 	if len(args) != 1 or len(args[0]) != 1:

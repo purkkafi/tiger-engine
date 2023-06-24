@@ -9,6 +9,8 @@ var splash_screen: String
 # callback that returns the game version or an empty string for none
 # should take no arguments and return a String
 var version_callback: Callable = func() -> String: return ''
+# unlockable namespaces that show a toast notification when unlocked
+var notify_on_unlock: Array[String] = []
 # dict of custom view ids to paths of the View scenes
 var custom_views: Dictionary = {}
 # the id of the game's default theme; if null, the engine default theme is used
