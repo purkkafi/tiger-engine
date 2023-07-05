@@ -9,6 +9,8 @@ var imgs: Dictionary = {}
 var _transitions: Dictionary = {}
 # a map of song ids to paths relative to the 'assets/music' folder
 var songs: Dictionary = {}
+# a map of song ids to custom volumes, which are in range [0, 1]
+var song_custom_volumes: Dictionary = {}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
 # array of ids of unlockables
@@ -66,6 +68,14 @@ func unlockables_in_namespace(prefix: String) -> Array[String]:
 		if unlockable.begins_with(prefix):
 			found.append(unlockable)
 	return found
+
+
+# returns the volume at which the given song_id should be played
+# this is the value in song_custom_volumes or 1.0 if not set
+func song_volume(song_id: String) -> float:
+	if song_id in song_custom_volumes:
+		return song_custom_volumes[song_id]
+	return 1.0
 
 
 # returns the corresponding color or null if the given value does not represent one

@@ -146,9 +146,37 @@ func get_dict() -> Dictionary:
 	return dict
 
 
+# like get_dict() but for the given index
+func get_dict_at(index: int):
+	if index >= len(args):
+		push_error('expected dict at index %d, got %s' % [index, self])
+		return null
+	var dict: Dictionary = {}
+	for tag in get_tags_at(index):
+		dict[tag.name] = tag
+	return dict
+
+
 # returns the only argument as a taglist or null 
 func get_taglist():
 	if len(args) != 1:
 		push_error('expected single arg, got %s' % self)
 		return null
 	return args[0]
+
+
+# returns whether the given index is valud
+func has_index(index: int) -> bool:
+	return index >= 0 and index < len(args)
+
+
+# pushes an error unless the length is:
+# – if given one argument: the argument
+# – if given two aguments: inclusively between the first and the second argument
+func expect_length(a: int, b: int = -1):
+	if b == -1:
+		if len(args) != a:
+			push_error('expected %s args, got %s' % [a, self])
+	else:
+		if not (len(args) >= a and len(args) <= b):
+			push_error('expected from %s to %s args, got %s' % [a, b, self])

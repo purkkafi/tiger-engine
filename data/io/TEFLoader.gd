@@ -178,14 +178,10 @@ func _resolve_definitions(tree: Tag):
 				defs._transitions[id] = trans
 				
 			'song':
-				var id: String = node.get_string_at(0)
-				var path: String = node.get_string_at(1)
-				defs.songs[id] = path
+				_parse_song_definition(defs, node)
 				
 			'song_unlockable':
-				var id: String = node.get_string_at(0)
-				var path: String = node.get_string_at(1)
-				defs.songs[id] = path
+				var id: String = _parse_song_definition(defs, node)
 				
 				var unlockable_id = 'song:%s' % id
 				defs.unlockables.append(unlockable_id)
@@ -264,6 +260,23 @@ func _resolve_definitions(tree: Tag):
 				push_error('unknown definition: %s' % [node])
 
 	return defs
+
+
+func _parse_song_definition(defs: Definitions, node: Tag) -> String:
+	node.expect_length(2, 3)
+	var id: String = node.get_string_at(0)
+	var path: String = node.get_string_at(1)
+	
+	if node.has_index(2):
+		for option in node.get_dict_at(2).values():
+			match option.name:
+				'volume':
+					defs.song_custom_volumes[id] = float(option.get_string())
+				_:
+					push_error('unknown option in song definition: %s' % option)
+	
+	defs.songs[id] = path
+	return id
 
 
 func _resolve_options(tree: Tag):

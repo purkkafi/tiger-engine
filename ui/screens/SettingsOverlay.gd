@@ -65,6 +65,9 @@ func _initialize_overlay():
 	
 	# setup keyboard shortcut controls
 	for key in Settings.KEYBOARD_SHORTCUTS.keys():
+		if key.begins_with('debug') and not TE.is_debug():
+			continue
+		
 		var label: Label = Label.new()
 		label.text = '%key_' + key +'%'
 		keys_grid.add_child(label)

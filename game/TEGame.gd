@@ -16,6 +16,10 @@ var game_name: Variant = null # name of the game, can be set by the script and i
 var _custom_data: Dictionary = {} # persistent, game-specific custom save data
 var last_skip_mode: View.SkipMode # skip mode of previous frame
 var toast_queue: Array[Dictionary] # queue of toast notifications to show
+var debug_mode: DebugMode = DebugMode.NONE # active debug overlay
+
+
+enum DebugMode { NONE, AUDIO }
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -268,6 +272,9 @@ func _process(delta):
 	if mouse_advancing and !Input.is_action_pressed('game_advance_mouse'):
 		mouse_advancing = false
 	
+	if debug_mode != DebugMode.NONE:
+		update_debug_mode_text()
+	
 	if overlay_active:
 		return
 	
@@ -280,6 +287,10 @@ func _process(delta):
 	# hide is active while the key is being held down
 	if Input.is_action_just_pressed('game_hide') or Input.is_action_just_released('game_hide'):
 		toggle_user_hide()
+	
+	if Input.is_action_just_pressed('debug_toggle') and TE.is_debug():
+		toggle_debug_mode()
+		update_debug_mode_text()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	if skip_mode != last_skip_mode:
@@ -559,3 +570,17 @@ func show_toast(toast: Dictionary):
 
 func _toast_closed(tween: Tween):
 	tween.set_speed_scale(INF)
+
+
+func toggle_debug_mode():
+	debug_mode = debug_mode + 1
+	if debug_mode >= len(DebugMode.values()):
+		debug_mode = 0
+	
+
+func update_debug_mode_text():
+	match debug_mode:
+		DebugMode.NONE:
+			%DebugMsg.text = ''
+		DebugMode.AUDIO:
+			%DebugMsg.text = Audio.debug_text()

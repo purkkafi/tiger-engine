@@ -148,3 +148,8 @@ func send_toast_notification(title: String, description: String, icon = null):
 		toast['icon'] = icon
 	
 	emit_signal('toast_notification', toast)
+
+
+# returns whether in debug mode (currently as defined by Godot)
+func is_debug() -> bool:
+	return OS.is_debug_build()

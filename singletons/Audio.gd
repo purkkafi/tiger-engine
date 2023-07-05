@@ -19,10 +19,13 @@ signal song_paused
 # an empty string can be passed to stop playing a song
 func play_song(new_song_id: String, duration: float, warn_not_queued: bool = true):
 	song_id = new_song_id
-	var new_song
+	var new_song: AudioStream
 	if new_song_id != '':
 		var path = TE.defs.songs[song_id]
 		new_song = Assets.songs.get_resource(path, 'res://assets/music', warn_not_queued)
+		
+		if not _is_looping(new_song):
+			TE.log_warning("looping disabled for song '%s'" % new_song_id)
 	else:
 		new_song = null
 	
@@ -34,14 +37,14 @@ func play_song(new_song_id: String, duration: float, warn_not_queued: bool = tru
 	music_tween = create_tween()
 	
 	if $SongPlayer.get_stream() != null:
-		music_tween.parallel().tween_method(Callable(self, '_set_song_volume'), 1.0, 0.0, duration)
+		music_tween.parallel().tween_method(Callable(self, '_set_song_volume'), db_to_linear($SongPlayer.volume_db), 0.0, duration)
 	
-	music_tween.parallel().tween_method(Callable(self, '_set_next_song_volume'), 0.0, 1.0, duration)
+	music_tween.parallel().tween_method(Callable(self, '_set_next_song_volume'), 0.0, TE.defs.song_volume(song_id), duration)
 	$NextSongPlayer.set_stream(new_song)
 	
 	$NextSongPlayer.play()
 	
-	# wrong timing ? investigate?
+	# TODO wrong timing ? investigate?
 	music_tween.parallel().tween_callback(Callable(self, '_swap_song_trans_finished')).set_delay(duration)
 	
 	# unlock possible unlockable
@@ -51,6 +54,16 @@ func play_song(new_song_id: String, duration: float, warn_not_queued: bool = tru
 	
 	# emit signal
 	emit_signal('song_played', song_id)
+
+
+func _is_looping(stream: AudioStream):
+	if stream is AudioStreamOggVorbis:
+		return stream.loop
+	elif stream is AudioStreamMP3:
+		return stream.loop
+	elif stream is AudioStreamWAV:
+		return stream.loop_mode != AudioStreamWAV.LOOP_DISABLED
+	return false # unknown type
 
 
 func _set_song_volume(val: float):
@@ -89,8 +102,10 @@ func set_paused(paused: bool):
 # plays a sound effect with the given id
 func play_sound(id: String):
 	var path = TE.defs.sounds[id]
-	var sound = Assets.sounds.get_resource(path, 'res://assets/sound')
-	sound.set_loop(false)
+	var sound: AudioStream = Assets.sounds.get_resource(path, 'res://assets/sound')
+	
+	if _is_looping(sound):
+			TE.log_warning("looping enabled for sound '%s'" % id)
 	
 	$SoundPlayer.stream = sound
 	$SoundPlayer.play()
@@ -108,20 +123,21 @@ func song_player():
 func debug_text() -> String:
 	var msg: String = ''
 	
-	msg += 'Master: ' + str(AudioServer.get_bus_volume_db(AudioServer.get_bus_index('Master'))) + ' dB\n'
-	msg += 'Music: ' + str(AudioServer.get_bus_volume_db(AudioServer.get_bus_index('Music'))) + ' dB\n'
-	msg += 'SFX: ' + str(AudioServer.get_bus_volume_db(AudioServer.get_bus_index('SFX'))) + ' dB\n'
+	var buses: Array[String] = ['Master', 'Music', 'SFX']
 	
-	if $SongPlayer.get_stream() != null and $SongPlayer.playing:
-		msg += 'SongPlayer (' + $SongPlayer.bus + '): ' + str(db_to_linear($SongPlayer.volume_db)) + '\n'
-		msg += '  ' + $SongPlayer.get_stream().resource_path + '\n'
+	for bus in buses:
+		var vol: float = AudioServer.get_bus_volume_db(AudioServer.get_bus_index(bus))
+		msg += '%s: %.2f dB\n' % [bus, vol]
 	
-	if $NextSongPlayer.get_stream() != null and $NextSongPlayer.playing:
-		msg += 'NextSongPlayer (' + $NextSongPlayer.bus + '): ' + str(db_to_linear($NextSongPlayer.volume_db)) + '\n'
-		msg += '  ' + $NextSongPlayer.get_stream().resource_path + '\n'
+	msg += '\n'
 	
-	if $SoundPlayer.get_stream() != null and $SoundPlayer.playing:
-		msg += 'SoundPlayer (' + $SoundPlayer.bus + '): ' + str(db_to_linear($SoundPlayer.volume_db)) + '\n'
-		msg += '  ' + $SoundPlayer.get_stream().resource_path + '\n'
+	var players: Array = [$SongPlayer, $NextSongPlayer, $SoundPlayer]
+	
+	for player in players:
+		var active = player.playing and player.get_playback_position() != 1.0
+		var song: String = player.get_stream().resource_path.split('/')[-1] if active else ''
+		var vol: String = ': %.2f (%.2f dB)' % [db_to_linear(player.volume_db), player.volume_db] if active else ''
+		var time: String = '%.2f / %.2f s' % [player.get_playback_position(), player.stream.get_length()] if active else ''
+		msg += '%s (%s): %s %s %s\n' % [player.name, player.bus, song, vol, time]
 	
 	return msg
