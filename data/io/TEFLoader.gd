@@ -296,6 +296,8 @@ func _resolve_options(tree: Tag):
 				opts.custom_views[node.get_string_at(0)] = node.get_string_at(1)
 			'default_theme':
 				opts.default_theme = node.get_string()
+			'bug_report_url':
+				opts.bug_report_url = node.get_string()
 			_:
 				push_error('unknown option: %s' % [node])
 	

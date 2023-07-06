@@ -3,6 +3,14 @@ extends Node
 # of class resolution problems
 
 
+static var EMPTY_BLOCK = Block.new([])
+
+
+func _ready():
+	EMPTY_BLOCK.id = ''
+	EMPTY_BLOCK.blockfile_path = ''
+
+
 # looks up a Block object by its id, a String of form "<blockfile_id>:<block_id>"
 # for instance, given "a:b", the block b in the blockfile a.tef is returned
 # null is returned if the Block cannot be found
@@ -24,8 +32,8 @@ static func find(id: String, queue_only = false) -> Variant:
 	if blockfile != null and block_id in blockfile.blocks:
 		return blockfile.blocks[block_id]
 	else:
-		TE.log_error(TE.Error.ENGINE_ERROR, "block '%s' not found in '%s'" % [block_id, blockfile_id], true)
-		return null
+		TE.log_error(TE.Error.FILE_ERROR, "block '%s' not found in '%s'" % [block_id, blockfile_id], true)
+		return EMPTY_BLOCK
 
 
 # resolves this Block into a String, with paragraphs being separated with

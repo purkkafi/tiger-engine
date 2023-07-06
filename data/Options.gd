@@ -15,3 +15,6 @@ var notify_on_unlock: Array[String] = []
 var custom_views: Dictionary = {}
 # the id of the game's default theme; if null, the engine default theme is used
 var default_theme: String
+# url for reporting bugs from the error dialog
+# if null, the option to do so will not be shown to the user
+var bug_report_url: String

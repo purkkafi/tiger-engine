@@ -53,20 +53,26 @@ func _ready():
 	current_scene = root.get_child(root.get_child_count() - 1)
 
 
-# sets the scene to the given scene
-# the old one will be freed automatically
-func switch_scene(new_scene: Node, after: Callable = func(): pass):
-	call_deferred('_switch_scene_deferred', new_scene, after)
-	await new_scene.ready
+# sets the scene to the given scene and calls callback afterwards
+# the old one will be freed if 'free_old' is true, else it will be given as an argument to 'after'
+func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: bool = true):
+	await get_tree().process_frame
+	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
 
 
-func _switch_scene_deferred(new_scene: Node, after: Callable):
-	current_scene.queue_free()
+func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
+	var old_scene = current_scene
 	current_scene = new_scene
 	current_scene.theme = TETheme.current_theme
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
-	after.call()
+	
+	if free_old:
+		old_scene.queue_free()
+		after.call()
+	else:
+		get_tree().root.remove_child(old_scene)
+		after.call(old_scene)
 
 
 # switches the language by loading files associated with it and configures

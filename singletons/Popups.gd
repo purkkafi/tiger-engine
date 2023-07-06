@@ -83,11 +83,12 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 func error_dialog(game_error: TE.Error, extra_msg: String = ''):
 	TE.switch_scene(
 		preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate(),
-		_display_error_dialog.bind(game_error, extra_msg)
+		_display_error_dialog.bind(game_error, extra_msg),
+		false
 	)
 
 
-func _display_error_dialog(game_error: TE.Error, extra_msg: String = ''):
+func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: String = ''):
 	var label: RichTextLabel = RichTextLabel.new()
 	label.custom_minimum_size = Vector2(800, 50)
 	label.bbcode_enabled = true
@@ -117,13 +118,30 @@ func _display_error_dialog(game_error: TE.Error, extra_msg: String = ''):
 	label.text = '[b][center]%s[/center][/b]%s' % [error_type, '\n\n'+extra_msg if extra_msg != '' else '']
 	
 	var dialog: AcceptDialog = info_dialog(TE.ui_strings.general_error, label)
-	dialog.connect('canceled', Callable(self, '_to_titlescreen'))
-	dialog.connect('confirmed', Callable(self, '_to_titlescreen'))
+	dialog.connect('canceled', _to_titlescreen.bind(old_scene))
+	dialog.connect('confirmed', _to_titlescreen.bind(old_scene))
+	dialog.connect('custom_action', _custom_error_action.bind(old_scene))
+	
+	var ignore: Button = dialog.add_button(TE.ui_strings.general_ignore, false, 'ignore')
+	ignore.theme_type_variation = 'DangerButton'
+	if TE.opts.bug_report_url != null:
+		dialog.add_button(TE.ui_strings.general_report, false, 'report')
 
 
-func _to_titlescreen():
+func _to_titlescreen(old_scene: Node):
+	old_scene.queue_free()
 	var title_screen = load(TE.opts.title_screen).instantiate()
 	TE.switch_scene(title_screen)
+
+
+func _custom_error_action(action: String, old_scene: Node):
+	match action:
+		'ignore':
+			TE.switch_scene(old_scene)
+		'report':
+			OS.shell_open(TE.opts.bug_report_url)
+		_:
+			push_error('unknown custom action in error dialog: %s' % action)
 
 
 func add_shadow(to_node: Node):

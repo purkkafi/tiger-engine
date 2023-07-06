@@ -190,6 +190,8 @@ class Cache:
 			else:
 				TE.log_info('[Assets/%s] get not queued: %s' % [id, path])
 			var resource = ResourceLoader.load(path)
+			if resource == null:
+				return null
 			var entry = Entry.new(path)
 			entry.resource = resource
 			_add_to_cache(entry)
@@ -201,6 +203,8 @@ class Cache:
 			else:
 				TE.log_info('[Assets/%s] get queued, loading in progress: %s' % [id, path])
 			var resource = ResourceLoader.load_threaded_get(path)
+			if resource == null:
+				return null
 			var entry = Entry.new(path)
 			entry.resource = resource
 			_add_to_cache(entry)

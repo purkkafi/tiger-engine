@@ -443,7 +443,7 @@ func get_state() -> Dictionary:
 		savestate['previous_path'] = previous_path
 		savestate['previous_state'] = previous_state
 	
-	if block != null: # no block info for Views that do not show blocks
+	if block != null and block != Blocks.EMPTY_BLOCK: # no block info for Views that do not show blocks
 		savestate.merge({
 			'line_index' : line_index,
 			'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
