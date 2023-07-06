@@ -19,34 +19,34 @@ var path: String # path of the sprite folder
 
 # construct this sprite from its SpriteResource
 func _init(_resource: SpriteResource):
-	TE.log_error("VNSprite doesn't override constructor")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override constructor")
 
 
 # initializes the sprite, called after the sprite is added to the VNStage
 # initial_state is null or a String id describing the initial state
 func enter_stage(_initial_state: Variant = null):
-	TE.log_error("VNSprite doesn't override enter_stage()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override enter_stage()")
 
 
 # shows the sprite according to the given String describing its state
 func show_as(_as: String):
-	TE.log_error("VNSprite doesn't override show_as()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override show_as()")
 
 
 # returns the sprite state (any valid JSON object); used for saving the game
 func get_sprite_state() -> Variant:
-	TE.log_error("VNSprite doesn't override get_sprite_state()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override get_sprite_state()")
 	return ''
 
 
 # sets the sprite state (see get_sprite_state())
 func set_sprite_state(_state: Variant):
-	TE.log_error("VNSprite doesn't override set_sprite_state()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override set_sprite_state()")
 
 
 # returns the width of the sprite; used to calculate its position
 func _sprite_width() -> float:
-	TE.log_error("VNSprite doesn't override _sprite_width()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override _sprite_width()")
 	return 0
 
 

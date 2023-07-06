@@ -130,7 +130,7 @@ func _create_sprite(path: String) -> VNSprite:
 		# default id to being last part of sprite folder's path
 		sprite.id = path.split('/')[-1]
 	else:
-		TE.log_error('sprite provider for %s not implemented' % path)
+		TE.log_error(TE.Error.SCRIPT_ERROR, 'sprite provider for %s not implemented' % path)
 	
 	return sprite
 
@@ -234,7 +234,7 @@ func find_sprite(id: String) -> VNSprite:
 			sprite = child
 	
 	if sprite == null:
-		TE.log_error('sprite not found: %s' % id)
+		TE.log_error(TE.Error.ENGINE_ERROR, 'sprite not found: %s' % id)
 	
 	return sprite
 

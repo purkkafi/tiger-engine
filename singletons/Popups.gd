@@ -76,37 +76,49 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 	return popup
 
 
-# standard errors
-enum GameError {
-	BAD_SAVE, # save cannot be loaded
-	SCRIPT_ERROR, # developer made a fucky wucky while writing the game script
-	TEST_ERROR # error for debug purposes
-}
-
-
 # popup for showing the user an unrecoverable error
+# the error consists of a GameError type and an optional extra message
 # switches away from the current scene and shows the popup
 # the user is given the option to return to the title screen by pressing OK
-func error_dialog(game_error: GameError) -> AcceptDialog:
-	TE.switch_scene(preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate())
-	await get_tree().process_frame
-	var label: Label = Label.new()
+func error_dialog(game_error: TE.Error, extra_msg: String = ''):
+	TE.switch_scene(
+		preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate(),
+		_display_error_dialog.bind(game_error, extra_msg)
+	)
+
+
+func _display_error_dialog(game_error: TE.Error, extra_msg: String = ''):
+	var label: RichTextLabel = RichTextLabel.new()
+	label.custom_minimum_size = Vector2(800, 50)
+	label.bbcode_enabled = true
+	label.fit_content = true
+	
+	var error_type: String
+	if extra_msg != '':
+		extra_msg = '%s: %s' % [TE.ui_strings.general_error, extra_msg]
 	
 	match game_error:
-		GameError.BAD_SAVE:
-			label.text = TE.ui_strings.error_bad_save
-		GameError.SCRIPT_ERROR:
-			label.text += TE.ui_strings.error_script
-		GameError.TEST_ERROR:
-			label.text = 'This is a test error. It should only be displayed for debug purposes.'
+		TE.Error.BAD_SAVE:
+			error_type = TE.ui_strings.error_bad_save
+		TE.Error.SCRIPT_ERROR:
+			error_type = TE.ui_strings.error_script
+		TE.Error.FILE_ERROR:
+			error_type = TE.ui_strings.error_file
+		TE.Error.ENGINE_ERROR:
+			error_type = TE.ui_strings.error_engine
+		TE.Error.TEST_FAILED:
+			error_type = 'TEST_FAILED'
+		TE.Error.TEST_ERROR:
+			error_type = 'TEST_ERROR'
 		_:
-			TE.log_error('unknown game error shown: %s' % [game_error])
-			label.text = str(game_error)
+			TE.log_warning('unknown game error shown: %s' % [game_error])
+			error_type = 'ERROR ' + str(game_error)
+	
+	label.text = '[b][center]%s[/center][/b]%s' % [error_type, '\n\n'+extra_msg if extra_msg != '' else '']
 	
 	var dialog: AcceptDialog = info_dialog(TE.ui_strings.general_error, label)
+	dialog.connect('canceled', Callable(self, '_to_titlescreen'))
 	dialog.connect('confirmed', Callable(self, '_to_titlescreen'))
-	
-	return dialog
 
 
 func _to_titlescreen():

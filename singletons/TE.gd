@@ -31,6 +31,17 @@ signal unlockable_unlocked(_namespace: String, id: String)
 signal toast_notification(toast: Dictionary)
 
 
+# standard errors
+enum Error {
+	BAD_SAVE, # save cannot be loaded
+	SCRIPT_ERROR, # developer made a fucky wucky while writing the game script
+	FILE_ERROR, # something is wrong with the game files in general
+	ENGINE_ERROR, # error from the engine's inernal mechanisms
+	TEST_FAILED, # used when a unit test fails
+	TEST_ERROR # error for debug purposes
+}
+
+
 func _ready():
 	# load options, fall back to defaults if not successfull
 	opts = load('res://assets/options.tef')
@@ -42,10 +53,11 @@ func _ready():
 	current_scene = root.get_child(root.get_child_count() - 1)
 
 
-# sets the scene to the gien scene
+# sets the scene to the given scene
 # the old one will be freed automatically
 func switch_scene(new_scene: Node, after: Callable = func(): pass):
 	call_deferred('_switch_scene_deferred', new_scene, after)
+	await new_scene.ready
 
 
 func _switch_scene_deferred(new_scene: Node, after: Callable):
@@ -105,17 +117,22 @@ func _log_time() -> String:
 
 # logs info if in debug mode
 func log_info(msg: String):
-	if OS.is_debug_build():
+	if is_debug():
 		print(_log_time() + msg)
 
 
-# logs error message
-func log_error(msg: String):
-	push_error(_log_time() + msg)
-
-
+# logs a warning if in debug mode
 func log_warning(msg: String):
-	push_warning(_log_time() + msg)
+	if is_debug():
+		push_warning(_log_time() + msg)
+
+
+# logs error message and crashes (if not in debug mode)
+# if there is no sensible way to proceed, a crash can be forced with the force_crash parameter
+func log_error(type: TE.Error, msg: String, force_crash: bool = false):
+	push_error(_log_time() + msg)
+	if (not is_debug()) or force_crash:
+		Popups.error_dialog(type, msg)
 
 
 # returns whether game should act as if running on a mobile platform

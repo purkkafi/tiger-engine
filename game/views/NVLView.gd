@@ -30,7 +30,7 @@ func parse_options(tags: Array[Tag]):
 			'text_color':
 				text_color = TE.defs.color(opt.get_string())
 			_:
-				TE.log_error('unknown option for NVLView: %s' % opt)			
+				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown option for NVLView: %s' % opt)			
 
 
 func _ready():

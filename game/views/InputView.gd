@@ -23,7 +23,7 @@ func parse_options(options: Array[Tag]):
 			'default':
 				default_val = opt.get_string()
 			_:
-				TE.log_error('unknown option for input: %s' % opt)
+				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown option for input: %s' % opt)
 
 
 func adjust_size(_controls: VNControls):

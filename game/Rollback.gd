@@ -35,7 +35,7 @@ func is_empty() -> bool:
 # removes and returns the latest entry
 func pop() -> Dictionary:
 	if entries.is_empty():
-		TE.log_error('rollback is empty')
+		TE.log_error(TE.Error.ENGINE_ERROR, 'rollback is empty')
 	
 	var entry = entries.pop_back()
 	back_button.disabled = is_empty()

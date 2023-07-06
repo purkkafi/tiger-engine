@@ -62,7 +62,7 @@ func _initialize_overlay():
 	elif mode == SavingMode.LOAD:
 		header.text = TE.ui_strings.saving_load
 	else:
-		TE.log_error('SavingOverlay must be in mode SAVE or LOAD')
+		TE.log_error(TE.Error.ENGINE_ERROR, 'SavingOverlay must be in mode SAVE or LOAD')
 		return
 	
 	back.connect('pressed', Callable(self, '_back'))
@@ -195,7 +195,7 @@ func _do_save(bank: SaveBank, index: int):
 	bank.thumbnails.blit_rect(screenshot, Rect2(0, 0, THUMB_WIDTH, THUMB_HEIGHT), Vector2(0, THUMB_HEIGHT * index))
 	var error = bank.thumbnails.save_png(TE.savefile.thumbs_path(bank.index))
 	if error != OK:
-		TE.log_error("can't write thumbnails: " + TE.savefile.thumbs_path(bank.index))
+		TE.log_error(TE.Error.ENGINE_ERROR, "can't write thumbnails: " + TE.savefile.thumbs_path(bank.index))
 	
 	TE.savefile.set_save(save.duplicate(true), screenshot, bank.index, index)
 	warn_about_progress = false

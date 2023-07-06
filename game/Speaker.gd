@@ -13,7 +13,7 @@ var log_color: Color # color in the log
 static func resolve(def: Definitions.SpeakerDef, ctxt: ControlExpr.BaseContext):
 	var resolved_name: Array[String] = Blocks._resolve_parts(def.name, ctxt)
 	if len(resolved_name) != 1:
-		TE.log_error("expected name '%s' of speaker '%s' to resolve into a single line, got '%s'" % [def.name, def.id, resolved_name])
+		TE.log_error(TE.Error.FILE_ERROR, "expected name '%s' of speaker '%s' to resolve into a single line, got '%s'" % [def.name, def.id, resolved_name])
 	
 	return Speaker.new(
 		resolved_name[0],

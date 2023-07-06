@@ -19,7 +19,7 @@ func _init(_resource: SpriteResource):
 	
 	for framedef in resource.tag.get_tags():
 		if framedef.name != 'frame':
-			TE.log_error('unknown tag in SimpleSprite: %s' % framedef)
+			TE.log_error(TE.Error.FILE_ERROR, 'unknown tag in SimpleSprite: %s' % framedef)
 		var frame_id: String = framedef.get_string_at(0)
 		var texture_path: String = framedef.get_string_at(1)
 		paths[frame_id] = texture_path

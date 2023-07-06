@@ -47,7 +47,7 @@ enum GUIScale { NORMAL = 0, LARGE = 1 }
 # does nothing if it was already unlocked
 func unlock(unlockable_id: String, no_toasts: bool = false):
 	if not unlockable_id in TE.defs.unlockables:
-		TE.log_error('unknown unlockable: %s' % unlockable_id)
+		TE.log_error(TE.Error.ENGINE_ERROR, 'unknown unlockable: %s' % unlockable_id)
 		return false
 	if not unlockable_id in unlocked:
 		unlocked[unlockable_id] = true
@@ -67,7 +67,7 @@ func unlock(unlockable_id: String, no_toasts: bool = false):
 				
 				TE.send_toast_notification(toast_title, toast_description)
 		else:
-			TE.log_error('unlockable not namespaced: %s' % unlockable_id)
+			TE.log_error(TE.Error.ENGINE_ERROR, 'unlockable not namespaced: %s' % unlockable_id)
 		
 		save_to_file()
 
@@ -75,7 +75,7 @@ func unlock(unlockable_id: String, no_toasts: bool = false):
 # returns whether the given unlockable is unlocked
 func is_unlocked(unlockable_id: String) -> bool:
 	if not unlockable_id in TE.defs.unlockables:
-		TE.log_error('unknown unlockable: %s' % unlockable_id)
+		TE.log_error(TE.Error.ENGINE_ERROR, 'unknown unlockable: %s' % unlockable_id)
 		return false
 	return unlockable_id in unlocked and unlocked[unlockable_id]
 
@@ -136,7 +136,7 @@ func save_to_file():
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
 	
 	if file == null:
-		TE.log_error('cannot write settings: %d' % file.get_error())
+		TE.log_error(TE.Error.ENGINE_ERROR, 'cannot write settings: %d' % file.get_error())
 		return file.get_error()
 	
 	file.store_line(JSON.stringify(_to_dict(), '  '))

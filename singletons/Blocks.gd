@@ -10,7 +10,7 @@ extends Node
 static func find(id: String, queue_only = false) -> Variant:
 	var parts = id.split(':')
 	if len(parts) != 2:
-		TE.log_error('block id should be of form <file>:<block>, got %s' % id)
+		TE.log_error(TE.Error.ENGINE_ERROR, 'block id should be of form <file>:<block>, got %s' % id)
 	
 	var blockfile_id: String = parts[0]
 	var block_id: String = parts[1]
@@ -21,10 +21,10 @@ static func find(id: String, queue_only = false) -> Variant:
 	
 	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:text/' + blockfile_id + '.tef')
 	
-	if block_id in blockfile.blocks:
+	if blockfile != null and block_id in blockfile.blocks:
 		return blockfile.blocks[block_id]
 	else:
-		TE.log_error('block not found: %s:%s' % [ blockfile_id, block_id ])
+		TE.log_error(TE.Error.ENGINE_ERROR, "block '%s' not found in '%s'" % [block_id, blockfile_id], true)
 		return null
 
 
@@ -87,7 +87,7 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 				if value != null:
 					parts.push_back(parts.pop_back() + str(value))
 			else: # unknown tag
-				TE.log_error('cannot stringify tag: %s' % [node])
+				TE.log_error(TE.Error.ENGINE_ERROR, 'cannot stringify tag: %s' % [node])
 				parts.push_back(str(node))
 	
 	return parts

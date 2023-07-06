@@ -17,7 +17,7 @@ func _init(_scriptfile: ScriptFile, script: String):
 
 func jump_to(script: String):
 	if not script in scriptfile.scripts:
-		TE.log_error('tried to jump to unknown script: %s' % script)
+		TE.log_error(TE.Error.SCRIPT_ERROR, 'tried to jump to unknown script: %s' % script)
 	self.current_script = scriptfile.scripts[script]
 	index = 0   
 	lookahead_index = 0
@@ -155,16 +155,14 @@ func get_state() -> Dictionary:
 # returns a VM instance that has the given state (as obtained from get_state())
 static func from_state(state: Dictionary) -> TEScriptVM:
 	if !FileAccess.file_exists(state['scriptfile']):
-		TE.log_error('scriptfile not found: %s' % state['scriptfile'])
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "scriptfile not found: '%s'" % state['scriptfile'], true)
 		return
 	
 	var _scriptfile: ScriptFile = Assets.scripts.get_resource(state['scriptfile'])
 	var script: String = state['current_script']
 	
 	if script not in _scriptfile.scripts:
-		TE.log_error('script %s not found in scriptfile %s' % [script, _scriptfile.id])
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "script '%s' not found in '%s'" % [script, _scriptfile.id], true)
 		return
 	
 	var vm: TEScriptVM = TEScriptVM.new(_scriptfile, script)
@@ -172,8 +170,7 @@ static func from_state(state: Dictionary) -> TEScriptVM:
 	vm.lookahead_index = state['index']
 	
 	if vm.index > len(vm.current_script.instructions):
-		TE.log_error('instruction index out of range')
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "instruction index out of range in script '%s' in '%s'" % [script, _scriptfile.id], true)
 		return
 	
 	return vm

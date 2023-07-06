@@ -26,7 +26,7 @@ enum DebugMode { NONE, AUDIO }
 # call this before switching to the scene
 func run_script(script_file: ScriptFile):
 	if not 'main' in script_file.scripts:
-		TE.log_error("no 'main' script in %s, scriptfile probably doesn't support being run directly" % script_file.resource_path)
+		TE.log_error(TE.Error.SCRIPT_ERROR, "no 'main' script in %s, scriptfile probably doesn't support being run directly" % script_file.resource_path)
 	vm = TEScriptVM.new(script_file, 'main')
 
 
@@ -149,9 +149,6 @@ func next_blocking():
 		
 		'Block':
 			var block: Block = Blocks.find(blocking.block_id)
-			if block == null:
-				TE.log_error('block not found: %s' % [blocking.block_id])
-				return
 			$View.show_block(block)
 			_unhide_ui()
 		
@@ -160,7 +157,7 @@ func next_blocking():
 		
 		'View':
 			if blocking.view_id not in TE.defs.view_registry:
-				TE.log_error('unknown view or instruction: %s' % blocking.view_id)
+				TE.log_error(TE.Error.SCRIPT_ERROR, "unknown view or instruction: '%s'" % blocking.view_id)
 				return
 			var new_view: View = TE.defs.view_registry[blocking.view_id].instantiate()
 			if len(blocking.options) != 0:
@@ -182,10 +179,10 @@ func next_blocking():
 				if comp:
 					vm.jump_to(blocking.to)
 			else:
-				TE.log_error("condition {{ %s }} didn't resolve to bool, got %s" % [blocking.condition, comp])
+				TE.log_error(TE.Error.SCRIPT_ERROR, "condition {{ %s }} didn't resolve to bool, got %s" % [blocking.condition, comp])
 			
 		_:
-			TE.log_error('cannot handle blocking instruction: %s' % [blocking])
+			TE.log_error(TE.Error.SCRIPT_ERROR, 'cannot handle blocking instruction: %s' % [blocking])
 
 
 # replaces the current View with a new one, copying state over
@@ -453,8 +450,7 @@ func load_save(save: Dictionary):
 	# replace View with the correct scene first
 	var view_scene = load(save['view']['scene'])
 	if view_scene == null:
-		TE.log_error('cannot load View: %s' % save['view']['scene'])
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.ENGINE_ERROR, 'cannot load View: %s' % save['view']['scene'], true)
 		return
 	
 	# custom save data
@@ -539,7 +535,7 @@ func toggle_user_hide():
 			for ctrl in hidable_view_control:
 				ctrl.visible = show
 		else:
-			TE.log_error("toggle_hide() given '%s', not Control or Array" % hidable_view_control)
+			TE.log_error(TE.Error.ENGINE_ERROR, "toggle_hide() given '%s', not Control or Array" % hidable_view_control)
 
 
 func show_toast(toast: Dictionary):

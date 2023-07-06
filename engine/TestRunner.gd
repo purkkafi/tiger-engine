@@ -22,7 +22,7 @@ static func run_tests() -> int:
 					var string = 'Test failed: ' + cls['class'] + '/' + test + ': '
 					for err in result:
 						string += '\n – ' + err
-					TE.log_error(string)
+					TE.log_error(TE.Error.TEST_FAILED, string)
 				else:
 					succ += 1
 					failed = true

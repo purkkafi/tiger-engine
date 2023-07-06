@@ -34,17 +34,17 @@ static func _resolve(path: String, relative_to: Variant = null) -> String:
 		result = TE.language.path + '/' + path.lstrip('lang:')
 	elif relative_to != null:
 		result = relative_to + '/' + path
-	elif FileAccess.file_exists(path):
+	elif ResourceLoader.exists(path):
 		result = path
 	else:
-		TE.log_error('cannot resolve nonexistent path: %s (no prefix or relative path given)' % [path])
+		TE.log_error(TE.Error.ENGINE_ERROR, "cannot resolve nonexistent path: '%s' (no prefix or relative path given)" % [path], true)
 		result = path
 	
 	# warn against double slashes for now
 	# it matters because we're comparing paths later and Godot doesn't appear to have
 	# a function for normalizing paths (?)
 	if '//' in result.lstrip('res://'):
-		TE.log_warning("bad path (double slashes lead to problems with caching): %s (resolved to %s)" % [path, result])
+		TE.log_warning("bad path (double slashes are not allowed): '%s' (resolved to '%s')" % [path, result])
 	
 	return result
 

@@ -14,7 +14,7 @@ func parse_options(tags: Array[Tag]):
 			'path':
 				path = tag.get_string()
 			_:
-				TE.log_error('unknown argument for CutsceneView: %s' % tag)
+				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown argument for CutsceneView: %s' % tag)
 
 
 func initialize(_ctxt: InitContext):
@@ -22,7 +22,7 @@ func initialize(_ctxt: InitContext):
 	var anim_player = cutscene.get_node('AnimationPlayer')
 	
 	if anim_player == null:
-		TE.log_error('root of cutscene "%s" does not have an AnimationPlayer as child' % path)
+		TE.log_error(TE.Error.FILE_ERROR, 'root of cutscene "%s" does not have an AnimationPlayer as child' % path)
 	
 	anim_player.connect('animation_finished', func(_unused): check_finished())
 	

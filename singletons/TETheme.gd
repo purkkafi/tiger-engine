@@ -137,7 +137,7 @@ static func _resolve_base_theme(id: String) -> Theme:
 	var path = 'res://assets/themes/%s/theme.tres' % id
 	var theme: Theme = load(path)
 	if theme == null:
-		TE.log_error('theme resource not found: %s' % path)
+		TE.log_error(TE.Error.FILE_ERROR, 'theme resource not found: %s' % path)
 	return theme
 
 
@@ -145,7 +145,7 @@ static func _resolve_large_theme(id: String) -> Theme:
 	var path = 'res://assets/themes/%s/theme_large.tres' % id
 	var theme: Theme = load(path)
 	if theme == null:
-		TE.log_error('theme resource not found: %s' % path)
+		TE.log_error(TE.Error.FILE_ERROR, 'theme resource not found: %s' % path)
 	return theme
 
 

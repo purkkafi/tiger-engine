@@ -151,7 +151,7 @@ func next_line(ignore_log: bool = false) -> void:
 			
 			lines[line_index] = TE.ui_strings.autoquote(lines[line_index].substr(search.get_end()))
 		else:
-			TE.log_error('speaker not rezognized: %s' % id)
+			TE.log_error(TE.Error.ENGINE_ERROR, 'speaker not rezognized: %s' % id)
 	
 	if not ignore_log:
 		game.gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
@@ -359,13 +359,13 @@ func skip_toggled(on: bool):
 
 
 func skip_pressed():
-	TE.log_error("view doesn't implement skip_pressed()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement skip_pressed()")
 
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
 func _next_line(_line: String, _speaker: Speaker = null):
-	TE.log_error("view doesn't implement _next_line()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _next_line()")
 
 
 # subclasses can override to respond to the game being paused with the \pause instruction
@@ -387,12 +387,12 @@ func _block_ended():
 
 # should return the RichTextLabel containing the current line
 func _current_label():
-	TE.log_error("view doesn't implement _current_label()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _current_label()")
 
 
 # should return the path of the scene this View is attached to
 func _get_scene_path():
-	TE.log_error("view doesn't implement _get_scene_path()")
+	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _get_scene_path()")
 
 
 # returns the control that should be hidden when the hide keyboard shortcut
@@ -423,7 +423,7 @@ func initialize(_ctxt: InitContext):
 # overriding is not mandatory if the view doesn't want to handle options
 func parse_options(_options: Array[Tag]):
 	if len(_options) != 0:
-		TE.log_error("view doesn't implement parse_options(), given %s" % [_options])
+		TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement parse_options(), given %s" % [_options])
 
 
 # if true, the View will be automatically replaced with the previous one
@@ -469,15 +469,13 @@ func from_state(savestate: Dictionary):
 		return
 	
 	if not FileAccess.file_exists(savestate['blockfile']):
-		TE.log_error('blockfile %s not found' % savestate['blockfile'])
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "blockfile '%s' not found" % savestate['blockfile'], true)
 		return
 	
 	var blockfile: BlockFile = Assets.blockfiles.get_resource(savestate['blockfile'])
 	
 	if not savestate['block'] in blockfile.blocks:
-		TE.log_error('block %s not found in blockfile %s' % [savestate['block'], savestate['blockfile']])
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "block '%s' not found in blockfile '%s'" % [savestate['block'], savestate['blockfile']], true)
 		return
 	
 	var _block: Block = blockfile.blocks[savestate['block']]
@@ -485,8 +483,7 @@ func from_state(savestate: Dictionary):
 	show_block(_block)
 	
 	if savestate['line_index']-1 > len(lines):
-		TE.log_error('line index out of range')
-		Popups.error_dialog(Popups.GameError.BAD_SAVE)
+		TE.log_error(TE.Error.BAD_SAVE, "block line index out of range in block '%s' in '%s'" % [savestate['block'], savestate['blockfile']], true)
 		return
 	
 	# skip to the correct line
