@@ -15,6 +15,10 @@ var opts: Options = null
 var current_scene: Node = null
 # array of all recognized languages, set by TEInitScreen
 var all_languages: Array[Lang] = []
+# if set, force enables or disables debug mode
+var _force_debug: bool
+# if set, force enables or disables mobile mode
+var _force_mobile: bool
 
 
 # screen size constants
@@ -145,18 +149,21 @@ func log_error(type: TE.Error, msg: String, force_crash: bool = false):
 # in addition to running on mobile normally, this is true if the hidden secret
 # pretend_mobile has been set to true
 func is_mobile():
-	return OS.get_name() == 'Android' or (settings != null and settings.pretend_mobile)
+	if _force_mobile == null:
+		return OS.get_name() == 'Android'
+	return _force_mobile
 
 
 # returns whether the game should use large GUI mode
-# this is true on mobile and on desktop if the setting is on
+# this is true if set in settings or if is_mobile() is true when settings aren't available
 func is_large_gui():
-	return is_mobile() or (settings != null and settings.gui_scale == Settings.GUIScale.LARGE)
+	if settings != null:
+		return settings.gui_scale == Settings.GUIScale.LARGE
+	return is_mobile()
 
 
 # exits the game
 func quit_game():
-	get_tree().get_root().propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 	await get_tree().process_frame
 	get_tree().quit()
 
@@ -173,6 +180,9 @@ func send_toast_notification(title: String, description: String, icon = null):
 	emit_signal('toast_notification', toast)
 
 
-# returns whether in debug mode (currently as defined by Godot)
+# returns whether in debug mode, which is based on OS.is_debug_build()
+# unless overridden with _force_debug
 func is_debug() -> bool:
-	return OS.is_debug_build()
+	if _force_debug == null:
+		return OS.is_debug_build()
+	return _force_debug

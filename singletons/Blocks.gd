@@ -3,9 +3,11 @@ extends Node
 # of class resolution problems
 
 
+# a null object representing an empty block
 static var EMPTY_BLOCK = Block.new([])
 
 
+# initializes properties of EMPTY_BLOCK
 func _ready():
 	EMPTY_BLOCK.id = ''
 	EMPTY_BLOCK.blockfile_path = ''
@@ -13,12 +15,12 @@ func _ready():
 
 # looks up a Block object by its id, a String of form "<blockfile_id>:<block_id>"
 # for instance, given "a:b", the block b in the blockfile a.tef is returned
-# null is returned if the Block cannot be found
+# EMPTY_BLOCK is returned if the Block cannot be found
 # if queue_only is true, the blockfile is queued for loading and null is returned
 static func find(id: String, queue_only = false) -> Variant:
 	var parts = id.split(':')
 	if len(parts) != 2:
-		TE.log_error(TE.Error.ENGINE_ERROR, 'block id should be of form <file>:<block>, got %s' % id)
+		TE.log_error(TE.Error.FILE_ERROR, 'block id should be of form <file>:<block>, got %s' % id)
 	
 	var blockfile_id: String = parts[0]
 	var block_id: String = parts[1]
@@ -47,7 +49,7 @@ func resolve_string(block: Block, paragraph_separator: String = '\n\n', ctxt: Co
 	return text.strip_edges(true, true)
 
 
-# resolves this Block into an array of its parts, separated by Break objects
+# resolves a Block into an array of its parts, which are separated by Break objects
 # in the original taglist
 # a context from which variables are resolved can optionally be provided
 func resolve_parts(block: Block, ctxt: ControlExpr.BaseContext=null) -> Array[String]:
@@ -95,7 +97,7 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 				if value != null:
 					parts.push_back(parts.pop_back() + str(value))
 			else: # unknown tag
-				TE.log_error(TE.Error.ENGINE_ERROR, 'cannot stringify tag: %s' % [node])
+				TE.log_error(TE.Error.FILE_ERROR, 'cannot stringify tag: %s' % [node])
 				parts.push_back(str(node))
 	
 	return parts

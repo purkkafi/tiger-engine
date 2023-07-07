@@ -569,9 +569,9 @@ func _toast_closed(tween: Tween):
 
 
 func toggle_debug_mode():
-	debug_mode = debug_mode + 1
+	debug_mode = (debug_mode + 1 as DebugMode)
 	if debug_mode >= len(DebugMode.values()):
-		debug_mode = 0
+		debug_mode = (0 as DebugMode)
 	
 
 func update_debug_mode_text():

@@ -14,7 +14,6 @@ var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
 
 # hidden settings
-var pretend_mobile: bool # act as mobile even on desktop
 # dict of ids of unlockables to bool (whether unlockeds)
 var unlocked: Dictionary
 # persistent data saved with settings for use by games
@@ -106,9 +105,9 @@ static func change_fullscreen(to_fullscreen: bool):
 		DisplayServer.window_set_mode(mode)
 
 
-static func change_keyboard_shortcuts(keys: Dictionary):
-	for key in keys.keys():
-		_setup_keyboard_shortcut(key, keys[key]['keycode'])
+static func change_keyboard_shortcuts(_keys: Dictionary):
+	for key in _keys.keys():
+		_setup_keyboard_shortcut(key, _keys[key]['keycode'])
 
 
 static func _setup_keyboard_shortcut(eventName: String, keycode: Key):
@@ -222,7 +221,6 @@ static func default_settings():
 	defs.text_speed = 0.5
 	defs.dynamic_text_speed = true
 	defs.fullscreen = false
-	defs.pretend_mobile = false
 	defs.lang_id = null # cannot provide sensible default
 	defs.keys = KEYBOARD_SHORTCUTS.duplicate(true)
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL

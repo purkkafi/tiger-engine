@@ -6,9 +6,7 @@ class_name TEInitScreen extends ColorRect
 
 
 func _ready():
-	# run tests instead of launching game if cmd line arg is passed
-	if OS.get_cmdline_user_args() == PackedStringArray(['--run-tests']):
-		get_tree().quit(TestRunner.run_tests())
+	check_cmd_args()
 	
 	# queue title screen for loading
 	Assets.noncached.queue(TE.opts.title_screen)
@@ -61,6 +59,45 @@ func _ready():
 	# unlock auto-unlocks possibly not unlocked
 	for id in TE.defs.unlocked_from_start:
 		TE.settings.unlock(id, true)
+
+
+# checks cmd args
+func check_cmd_args():
+	var args: Array = Array(OS.get_cmdline_user_args())
+	
+	for i in range(len(args)):
+		match args[i]:
+			'--run-tests':
+				get_tree().quit(TestRunner.run_tests())
+			'--debug':
+				TE._force_debug = true
+			'--no-debug':
+				TE._force_debug = false
+			'--mobile':
+				TE._force_mobile = true
+			'--no-mobile':
+				TE._force_mobile = false
+			'--help':
+				print("""
+					supported arguments:
+					--run-tests
+						run the engine's unit & integration tests and quit
+					--debug
+						force enable the engine's debug mode (by default enabled if Godot's is)
+					--no-debug
+						force disable the engine's debug mode
+					--mobile
+						force enable mobile mode, i.e. pretend game is run on android
+					--no-mobile
+						force disable mobile mode, i.e. pretend game is run on desktop
+					--help
+						print this message and quit
+				""".dedent().trim_prefix('\n').trim_suffix('\n')) # this is so ugly lol
+				TE.quit_game()
+			_:
+				print("error: unknown command line argument: '%s'" % args[i])
+				print("run with '-- --help' for help")
+				TE.quit_game()
 
 
 # changes to the splash screen if specified or else to the title screen
