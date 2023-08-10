@@ -151,7 +151,9 @@ static func _resolve_large_theme(id: String) -> Theme:
 
 static func _resolve_animations(id: String) -> Variant:
 	var path = 'res://assets/themes/%s/animations.gd' % id
-	return load(path)
+	if FileAccess.file_exists(path):
+		return load(path)
+	return null
 
 
 # applies the given settings to the theme
