@@ -15,10 +15,10 @@ var opts: Options = null
 var current_scene: Node = null
 # array of all recognized languages, set by TEInitScreen
 var all_languages: Array[Lang] = []
-# if set, force enables or disables debug mode
-var _force_debug: bool
-# if set, force enables or disables mobile mode
-var _force_mobile: bool
+# if set to a bool, force enables or disables debug mode
+var _force_debug = null
+# if set to a bool, force enables or disables mobile mode
+var _force_mobile = null
 
 
 # screen size constants
@@ -163,9 +163,9 @@ func is_large_gui():
 
 
 # exits the game
-func quit_game():
+func quit_game(exit_code=0):
 	await get_tree().process_frame
-	get_tree().quit()
+	get_tree().quit(exit_code)
 
 
 # sends a toast notification

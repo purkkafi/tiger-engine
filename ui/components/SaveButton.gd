@@ -147,7 +147,7 @@ func _input(event: InputEvent):
 
 
 func _draw():
-	if has_focus():
-		draw_style_box(get_theme_stylebox('focus', 'SaveBox'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))
 	if is_hovered:
 		draw_style_box(get_theme_stylebox('hover', 'SaveBox'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))
+	if has_focus():
+		draw_style_box(get_theme_stylebox('focus', 'SaveBox'), Rect2(Vector2(-5, -5), self.size + Vector2(10, 10)))

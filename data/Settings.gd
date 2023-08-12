@@ -35,7 +35,7 @@ const KEYBOARD_SHORTCUTS: Dictionary = {
 	'game_screenshot': { 'keycode': KEY_S, 'unicode': 83 },
 	'game_hide': { 'keycode': KEY_H, 'unicode': 72 },
 	'game_skip': { 'keycode': KEY_CTRL, 'unicode': 0 },
-	'debug_toggle' : { 'keycode': KEY_D, 'unicode': 68 }
+	'debug_toggle' : { 'keycode': KEY_F1, 'unicode': 0 }
 }
 
 

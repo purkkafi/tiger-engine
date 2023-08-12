@@ -352,6 +352,7 @@ func get_skip_mode() -> SkipMode:
 func skip_toggled(on: bool):
 	if on:
 		speedup = Speedup.SKIP
+		_to_end_of_line()
 	else:
 		speedup = Speedup.NORMAL
 		if _current_label() != null:
