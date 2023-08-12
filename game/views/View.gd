@@ -161,6 +161,7 @@ func next_line(ignore_log: bool = false) -> void:
 	
 	var label: RichTextLabel = _current_label()
 	label.visible_characters = 0
+	next_letter_delta = 0 # reset to avoid bugs with infinite text speed
 	
 	match speedup:
 		Speedup.NORMAL, Speedup.FAST:
@@ -228,7 +229,7 @@ func update_state(delta: float):
 		line_switch_delta = 0
 	
 	var label: RichTextLabel = _current_label()
-	var text_speed: float = 20 + 50*TE.settings.text_speed
+	var text_speed: float = 30 + 80*TE.settings.text_speed
 	
 	if label == null:
 		return   
@@ -280,7 +281,8 @@ func game_advanced(delta: float):
 		# call callback if this is the end of the current block
 		if line_index == len(lines):
 			_block_ended()
-		state = State.READY_TO_PROCEED
+		line_switch_delta = LINE_SWITCH_COOLDOWN
+		state = State.WAITING_LINE_SWITCH_COOLDOWN
 	
 	if speedup == Speedup.FAST and advance_held >= SPEEDUP_THRESHOLD_FASTER:
 		speedup = Speedup.FASTER
