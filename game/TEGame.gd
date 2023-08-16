@@ -159,12 +159,16 @@ func next_blocking():
 			if blocking.view_id not in TE.defs.view_registry:
 				TE.log_error(TE.Error.SCRIPT_ERROR, "unknown view or instruction: '%s'" % blocking.view_id)
 				return
+			
 			var new_view: View = TE.defs.view_registry[blocking.view_id].instantiate()
+			new_view.game = self
+			
 			if len(blocking.options) != 0:
-				new_view.game = self
 				new_view.parse_options(blocking.options)
-			_replace_view(new_view)
-			new_view.initialize(View.InitContext.NEW_VIEW)
+			
+			if not new_view.cancel_replacement():
+				_replace_view(new_view)
+				new_view.initialize(View.InitContext.NEW_VIEW)
 		
 		'Jmp':
 			if blocking.in_file == null:
@@ -413,9 +417,6 @@ func create_save() -> Dictionary:
 			var_dict[context.var_names[i]] = context.var_values[i]
 	
 	var save = {
-		'vm' : vm.get_state(),
-		'view' : $View.get_state(),
-		'stage' : $VNStage.get_state(),
 		'variables' : var_dict,
 		'view_result' : context.view_result,
 		'game_name' : game_name,
@@ -426,9 +427,23 @@ func create_save() -> Dictionary:
 		'save_utime' : null,
 	}
 	
+	# save VM, View, and Stage state if the save does not refer to a continue point
+	if $View.continue_point() == null:
+		save['vm'] = vm.get_state()
+		save['view'] = $View.get_state()
+		save['stage'] = $VNStage.get_state()
+	else: # otherwise, save just the continue point
+		save['continue_point'] = $View.continue_point()
+	
 	# do last to allow Views to write custom data during the get_state() call
 	save['custom_data'] = _custom_data.duplicate(true)
 	return save
+
+
+# jumps to a continue point, also clearing the stage
+func jump_to_continue_point(continue_point: String):
+	vm = TEScriptVM.from_continue_point(continue_point)
+	$VNStage.clear()
 
 
 # loads the game from the given save
@@ -437,9 +452,6 @@ func load_save(save: Dictionary):
 	last_save = save
 	game_name = save['game_name']
 	
-	$VNStage.set_state(save['stage'])
-	
-	vm = TEScriptVM.from_state(save['vm'])
 	context.view_result = save['view_result']
 	
 	# set variables
@@ -447,23 +459,32 @@ func load_save(save: Dictionary):
 	for var_name in vars.keys():
 		context._assign(var_name, vars[var_name])
 	
+	# custom save data
+	_custom_data = save['custom_data'].duplicate(true)
+	
+	# keep song playing if it is currently playing
+	if Audio.song_id != save['song_id']:
+		Audio.play_song(save['song_id'], 0)
+	
+	# if starting from a continue point, skip rest of the initialization
+	if 'continue_point' in save:
+		jump_to_continue_point(save['continue_point'])
+		return
+	
+	# otherwise, initialize state normally
+	vm = TEScriptVM.from_state(save['vm'])
+	$VNStage.set_state(save['stage'])
+	
 	# replace View with the correct scene first
 	var view_scene = load(save['view']['scene'])
 	if view_scene == null:
 		TE.log_error(TE.Error.ENGINE_ERROR, 'cannot load View: %s' % save['view']['scene'], true)
 		return
 	
-	# custom save data
-	_custom_data = save['custom_data'].duplicate(true)
-	
 	var view = view_scene.instantiate()
 	_replace_view(view)
 	view.from_state(save['view'])
 	view.initialize(View.InitContext.SAVESTATE)
-	
-	# keep song playing if it is currently playing
-	if Audio.song_id != save['song_id']:
-		Audio.play_song(save['song_id'], 0)
 	
 	# remember this save state in rollback
 	next_rollback = save

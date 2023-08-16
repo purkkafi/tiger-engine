@@ -70,10 +70,8 @@ static func is_progress_made(save1, save2):
 	
 	# remove irrelevant fields
 	for field in TRANSIENT_FIELDS:
-		if !save1.erase(field):
-			push_error("save didn't have field %s" % [field])
-		if !save2.erase(field):
-			push_error("save didn't have field %s" % [field])
+		save1.erase(field)
+		save2.erase(field)
 	
 	var result: bool = !Savefile._deep_equals(save1, save2)
 	return result

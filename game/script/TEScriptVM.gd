@@ -174,3 +174,28 @@ static func from_state(state: Dictionary) -> TEScriptVM:
 		return
 	
 	return vm
+
+
+# returns whether a continue point of form '<scriptfile id>:<script id>'
+# points to a valid location
+# if yes, a TEScriptVM can be created with from_continue_point()
+static func is_continue_point_valid(point: String):
+	var parts: PackedStringArray = point.split(':', false, 2)
+	var scriptfile_path: String = Assets._resolve('%s.tef' % parts[0], 'res://assets/scripts')
+	if not FileAccess.file_exists(scriptfile_path):
+		return false
+	
+	var _scriptfile: ScriptFile = Assets.scripts.get_unqueued(scriptfile_path)
+	
+	var script: String = parts[1]
+	if not script in _scriptfile.scripts.keys():
+		return false
+	
+	return true
+
+
+static func from_continue_point(point: String):
+	var parts: PackedStringArray = point.split(':', false, 2)
+	var _scriptfile: ScriptFile = Assets.scripts.get_resource('%s.tef' % parts[0], 'res://assets/scripts')
+	var script: String = parts[1]
+	return TEScriptVM.new(_scriptfile, script)

@@ -142,10 +142,10 @@ func _new_save_button(bank: SaveBank, index: int):
 	var texture: ImageTexture = ImageTexture.create_from_image(icon)
 	
 	var button = SaveButton.new(bank, index, texture,
-				Callable(self, '_reload_save_button'),
-				Callable(self, '_save_icon_clicked'))
+				_reload_save_button,
+				_save_icon_clicked)
 	
-	if mode == SavingMode.LOAD and TE.savefile.get_save(bank.index, index) == null:
+	if mode == SavingMode.LOAD and not button.is_loadable():
 		button.focus_mode = FOCUS_NONE
 	else:
 		button.focus_mode = FOCUS_ALL
@@ -165,21 +165,26 @@ func _reload_save_button(bank: SaveBank, index: int):
 	new.grab_focus()
 
 
-func _save_icon_clicked(bank: SaveBank, index: int):
+func _save_icon_clicked(btn: SaveButton):
 	if mode == SavingMode.LOAD:
-		if TE.savefile.get_save(bank.index, index) != null:
+		if btn.is_loadable():
 			if warn_about_progress:
 				var popup = Popups.warning_dialog(TE.ui_strings.saving_progress_lost)
-				popup.get_ok_button().connect('pressed', Callable(self, '_do_load').bind(bank, index))
+				popup.get_ok_button().connect('pressed', _do_load.bind(btn.bank, btn.index))
 			else:
-				_do_load(bank, index)
+				_do_load(btn.bank, btn.index)
+		else:
+			if btn.continue_point == SaveButton.ContinuePoint.UNCONTINUABLE:
+				var label: Label = Label.new()
+				label.text = TE.ui_strings.saving_uncontinuable
+				var popup = Popups.info_dialog(TE.ui_strings.saving_future_continue_point, label)
 		
 	elif mode == SavingMode.SAVE:
-		if TE.savefile.get_save(bank.index, index) != null:
+		if not btn.is_empty:
 			var popup = Popups.warning_dialog(TE.ui_strings.saving_overwrite)
-			popup.get_ok_button().connect('pressed', Callable(self, '_do_save').bind(bank, index))
+			popup.get_ok_button().connect('pressed', _do_save.bind(btn.bank, btn.index))
 		else:
-			_do_save(bank, index)
+			_do_save(btn.bank, btn.index)
 
 
 func _do_load(bank: SaveBank, index: int):

@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://8c63myy0pvv0"]
+
+[ext_resource type="Script" path="res://tiger-engine/game/views/ContinuePointView.gd" id="1_hatty"]
+
+[node name="ContinuePointView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hatty")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="BG"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -40.5
+offset_right = 400.0
+offset_bottom = 40.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Text" type="RichTextLabel" parent="BG/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+bbcode_enabled = true
+text = "%continue_point_label%"
+fit_content = true
+
+[node name="OK" type="Button" parent="BG/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%continue_point_button%"

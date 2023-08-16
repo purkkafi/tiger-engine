@@ -124,7 +124,7 @@ func is_next_block_requested() -> bool:
 # returns whether parent should ask for next line by calling next_line()
 func is_next_line_requested():
 	# true if there are lines left and not waiting for anything and state is READY_TO_PROCEED
-	if line_index < len(lines) and !_is_waiting():
+	if len(lines) != 0 and line_index < len(lines) and !_is_waiting():
 		return state == State.READY_TO_PROCEED
 	return false
 
@@ -398,6 +398,12 @@ func _get_scene_path():
 	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _get_scene_path()")
 
 
+# if saving from View creates a continue point, it is returned; otherwise
+# returns null
+func continue_point() -> Variant:
+	return null
+
+
 # returns the control that should be hidden when the hide keyboard shortcut
 # the return value can be:
 # – null to hide nothing
@@ -420,6 +426,13 @@ func _waiting_custom_condition() -> bool:
 # the View should have any state it maintains available for use
 func initialize(_ctxt: InitContext):
 	pass
+
+
+# if returns true after parse_options() is called, View will not replace
+# the current View or be initialized
+# useful for Views that do not want to display anything
+func cancel_replacement():
+	return false
 
 
 # handles options passed to the view

@@ -37,6 +37,7 @@ func _ready():
 	TE.defs.view_registry['input'] = preload('res://tiger-engine/game/views/InputView.tscn')
 	TE.defs.view_registry['choice'] = preload('res://tiger-engine/game/views/ChoiceView.tscn')
 	TE.defs.view_registry['cutscene'] = preload('res://tiger-engine/game/views/CutsceneView.tscn')
+	TE.defs.view_registry['continue_point'] = preload('res://tiger-engine/game/views/ContinuePointView.tscn')
 	
 	# install custom views
 	for custom_view in TE.opts.custom_views:

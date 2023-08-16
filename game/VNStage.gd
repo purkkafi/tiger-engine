@@ -268,3 +268,12 @@ func set_state(state: Dictionary):
 		sprite.id = sprite_data.id
 		sprite.set_sprite_state(sprite_data['state'])
 		sprite.move_to(sprite_data['x'], TE.defs.instant())
+
+
+# clears the stage, returning it to the empty initial state
+func clear():
+	set_background('', Definitions.instant(), null)
+	set_foreground('', Definitions.instant(), null)
+	
+	for sprite in $Sprites.get_children():
+		_remove_sprite(sprite)
