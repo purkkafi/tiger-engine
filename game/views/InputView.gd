@@ -32,7 +32,7 @@ func adjust_size(_controls: VNControls):
 
 
 func _ready():
-	TE.ui_strings.translate(self)
+	TE.localize.translate(self)
 
 
 func initialize(ctxt: InitContext):

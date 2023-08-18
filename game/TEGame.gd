@@ -31,7 +31,7 @@ func run_script(script_file: ScriptFile):
 
 
 func _ready():
-	TE.ui_strings.translate(self)
+	TE.localize.translate(self)
 	TETheme.connect('theme_changed', Callable(self, '_theme_changed'))
 	
 	rollback = Rollback.new($VNControls.btn_back)
@@ -107,7 +107,7 @@ func next_blocking():
 				Audio.play_sound(ins.sound_id)
 			
 			'Meta':
-				game_name = TE.ui_strings[ins.game_name_uistring]
+				game_name = TE.localize[ins.game_name_uistring]
 			
 			'BG':
 				tween = $VNStage.set_background(ins.bg_id, TE.defs.transition(ins.transition_id), tween)
@@ -362,7 +362,7 @@ func after_overlay():
 
 
 func _quit():
-	var popup = Popups.warning_dialog(TE.ui_strings['game_quit_game'])
+	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
 	popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
 
 

@@ -53,7 +53,7 @@ func _ready():
 	name_label.theme_type_variation = 'SaveLabel'
 	
 	if is_empty:
-		name_label.text = TE.ui_strings.saving_empty
+		name_label.text = TE.localize.saving_empty
 		self.modulate = Color(1, 1, 1, 0.5)
 	else:
 		if save['save_name'] == null:
@@ -66,7 +66,7 @@ func _ready():
 		
 		name_label.connect('gui_input', Callable(self, '_label_clicked'))
 		name_label.mouse_filter = Control.MOUSE_FILTER_STOP
-		name_label.tooltip_text = TE.ui_strings.saving_rename_tooltip
+		name_label.tooltip_text = TE.localize.saving_rename_tooltip
 		
 		var icon_tooltip = ''
 		if save['save_name'] != null:
@@ -81,11 +81,11 @@ func _ready():
 		if continue_point == ContinuePoint.NO_CONTINUE_POINT:
 			check_hashes.call_deferred(save)
 		elif continue_point == ContinuePoint.CONTINUABLE:
-			icon.tooltip_text = '%s\n\n%s' % [TE.ui_strings.saving_continuable, icon_tooltip]
+			icon.tooltip_text = '%s\n\n%s' % [TE.localize.saving_continuable, icon_tooltip]
 			name_label.add_theme_color_override('font_color', get_theme_color('continuable', 'SaveBox'))
 			self.icon.texture = get_theme_icon('continuable_icon', 'SaveBox')
 		elif continue_point == ContinuePoint.UNCONTINUABLE:
-			icon.tooltip_text = '%s\n\n%s' % [TE.ui_strings.saving_uncontinuable, icon_tooltip]
+			icon.tooltip_text = '%s\n\n%s' % [TE.localize.saving_uncontinuable, icon_tooltip]
 			name_label.add_theme_color_override('font_color', get_theme_color('uncontinuable', 'SaveBox'))
 			self.icon.texture = get_theme_icon('uncontinuable_icon', 'SaveBox')
 	
@@ -139,7 +139,7 @@ func check_hashes(save: Dictionary):
 	if not (script_hashes_match and block_hashes_match): # place warning icon
 		icon_warn = TextureRect.new()
 		icon_warn.texture = get_theme_icon('image', 'SaveWarningIcon')
-		icon_warn.tooltip_text = TE.ui_strings.saving_bad_hash
+		icon_warn.tooltip_text = TE.localize.saving_bad_hash
 		icon_warn.anchor_top = 0.5
 		icon_warn.anchor_bottom = 0.5
 		icon_warn.anchor_left = 0.75
@@ -156,7 +156,7 @@ func _label_clicked(event):
 		if previous_name != null:
 			edit.text = previous_name
 		
-		var popup: AcceptDialog = Popups.text_entry_dialog(TE.ui_strings.saving_rename, edit)
+		var popup: AcceptDialog = Popups.text_entry_dialog(TE.localize.saving_rename, edit)
 		popup.connect('confirmed', Callable(self, '_renamed').bind(edit))
 
 

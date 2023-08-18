@@ -25,7 +25,7 @@ func parse_options(tags: Array[Tag]):
 
 func _ready():
 	$BG.color = TETheme.background_color
-	TE.ui_strings.translate(self)
+	TE.localize.translate(self)
 	%OK.connect('pressed', func(): ok_pressed = true)
 
 

@@ -60,9 +60,9 @@ func unlock(unlockable_id: String, no_toasts: bool = false):
 			TE.emit_signal('unlockable_unlocked', _namespace, id)
 			
 			if _namespace in TE.opts.notify_on_unlock and not no_toasts:
-				var noun: String = TE.ui_strings['toast_unlocked_' + _namespace]
-				var toast_title: String = TE.ui_strings.toast_unlocked.replace('[]', noun)
-				var toast_description: String = TE.ui_strings['%s_%s' % [_namespace, id]]
+				var noun: String = TE.localize['toast_unlocked_' + _namespace]
+				var toast_title: String = TE.localize.toast_unlocked.replace('[]', noun)
+				var toast_description: String = TE.localize['%s_%s' % [_namespace, id]]
 				
 				TE.send_toast_notification(toast_title, toast_description)
 		else:

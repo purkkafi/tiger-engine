@@ -19,7 +19,7 @@ func _ready():
 	_initialize_overlay()
 	
 	# then translate it (in this order in case new nodes are added in initialization)
-	TE.ui_strings.translate(self)
+	TE.localize.translate(self)
 	
 	# setup animations
 	await get_tree().process_frame

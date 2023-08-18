@@ -58,9 +58,9 @@ func _initialize_overlay():
 	animated_in_callback = Callable(self, '_prepare_initial_tab').bind(selected_bank)
 	
 	if mode == SavingMode.SAVE:
-		header.text = TE.ui_strings.saving_save
+		header.text = TE.localize.saving_save
 	elif mode == SavingMode.LOAD:
-		header.text = TE.ui_strings.saving_load
+		header.text = TE.localize.saving_load
 	else:
 		TE.log_error(TE.Error.ENGINE_ERROR, 'SavingOverlay must be in mode SAVE or LOAD')
 		return
@@ -95,7 +95,7 @@ func _rename_tab(index: int):
 	if last_clicked_tab == index:
 		var edit: LineEdit = LineEdit.new()
 		edit.text = TE.savefile.banks[index]['name']
-		var popup: AcceptDialog = Popups.text_entry_dialog(TE.ui_strings.saving_rename_bank, edit)
+		var popup: AcceptDialog = Popups.text_entry_dialog(TE.localize.saving_rename_bank, edit)
 		popup.connect('confirmed', Callable(self, '_do_tab_rename').bind(index, edit))
 	last_clicked_tab = index
 
@@ -169,19 +169,19 @@ func _save_icon_clicked(btn: SaveButton):
 	if mode == SavingMode.LOAD:
 		if btn.is_loadable():
 			if warn_about_progress:
-				var popup = Popups.warning_dialog(TE.ui_strings.saving_progress_lost)
+				var popup = Popups.warning_dialog(TE.localize.saving_progress_lost)
 				popup.get_ok_button().connect('pressed', _do_load.bind(btn.bank, btn.index))
 			else:
 				_do_load(btn.bank, btn.index)
 		else:
 			if btn.continue_point == SaveButton.ContinuePoint.UNCONTINUABLE:
 				var label: Label = Label.new()
-				label.text = TE.ui_strings.saving_uncontinuable
-				var popup = Popups.info_dialog(TE.ui_strings.saving_future_continue_point, label)
+				label.text = TE.localize.saving_uncontinuable
+				var popup = Popups.info_dialog(TE.localize.saving_future_continue_point, label)
 		
 	elif mode == SavingMode.SAVE:
 		if not btn.is_empty:
-			var popup = Popups.warning_dialog(TE.ui_strings.saving_overwrite)
+			var popup = Popups.warning_dialog(TE.localize.saving_overwrite)
 			popup.get_ok_button().connect('pressed', _do_save.bind(btn.bank, btn.index))
 		else:
 			_do_save(btn.bank, btn.index)
@@ -218,7 +218,7 @@ func _back():
 
 func _quit_game():
 	if warn_about_progress:
-		var popup = Popups.warning_dialog(TE.ui_strings.saving_progress_lost)
+		var popup = Popups.warning_dialog(TE.localize.saving_progress_lost)
 		popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
 	else:
 		_do_quit()
@@ -230,7 +230,7 @@ func _do_quit():
 
 func _to_title():
 	if warn_about_progress:
-		var popup = Popups.warning_dialog(TE.ui_strings.saving_progress_lost)
+		var popup = Popups.warning_dialog(TE.localize.saving_progress_lost)
 		popup.get_ok_button().connect('pressed', Callable(self, '_do_title'))
 	else:
 		_do_title()

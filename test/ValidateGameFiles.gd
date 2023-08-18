@@ -42,9 +42,9 @@ func test_uistrings_translations():
 	var languages = TEInitScreen.get_languages()
 	
 	for lang in languages:
-		var ui_strings: UIStrings = load('res://assets/lang/' + lang.id + '/ui_strings.tef')
+		var localize: Localize = Localize.of_lang(lang.id)
 		
-		var this_keys = Array(ui_strings.strings.keys())
+		var this_keys = Array(localize.strings.keys())
 		keys[lang.id] = this_keys
 		
 		for key in this_keys:

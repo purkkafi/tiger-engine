@@ -1,4 +1,4 @@
-class_name UIStrings extends Resource
+class_name Localize extends RefCounted
 # stores localized strings used in the UI
 # _get is overriden, enabling them to be accessed via field reference
 
@@ -18,7 +18,28 @@ var TRANSLATORS: Dictionary = {
 }
 
 
-const meta_missing: String = '!!!<UISTRING_METADATA_NOT_SET>!!!'
+const meta_missing: String = '!!!<LOCALIZE_STRING_METADATA_NOT_SET>!!!'
+
+
+# returns the Localize object for a certain language id
+# it is constructed from reading and merging all files in the folder
+# assets/lang/<lang id>/localize/
+static func of_lang(lang: String):
+	var strings: Dictionary = {}
+	
+	var dir_path: String = 'res://assets/lang/%s/localize' % lang
+	var dir: DirAccess = DirAccess.open(dir_path)
+	
+	dir.list_dir_begin()
+	while true:
+		var file: String = dir.get_next()
+		if file == '':
+			break
+		# TODO: this just indiscriminantly merges files, should there be
+		# checks for duplicate localize ids?
+		strings.merge((load(dir_path + '/' + file) as LocalizeResource).content)
+	
+	return Localize.new(strings)
 
 
 # translates any Control that has a 'text' property
@@ -57,7 +78,7 @@ func _get(string):
 
 
 # translates every applicable node in the tree
-# if the translation id is set in the metadata, it's read from there;
+# if the localize id is set in the metadata, it's read from there;
 # else, it's read from the node text/tooltip/etc and inserted into the metadata
 # this allows retranslation if the language changes
 func translate(node: Control):
@@ -77,7 +98,7 @@ func translate(node: Control):
 			translate(child)
 
 
-# returns translation of the given string if it is of the form %uistring%
+# returns translation of the given string if it is of the form %localize_id%
 # otherwise returns the string
 func translate_text(text: String):
 	if text.begins_with('%') and text.ends_with('%'):
@@ -85,7 +106,7 @@ func translate_text(text: String):
 	return text
 
 
-# if ui_strings autoquote_left and autoquote_right are defined, surrounds the
+# if strings autoquote_left and autoquote_right are defined, surrounds the
 # given text with them; otherwise, returns it as-is
 func autoquote(text: String):
 	if 'autoquote_left' in self.strings and 'autoquote_right' in self.strings:

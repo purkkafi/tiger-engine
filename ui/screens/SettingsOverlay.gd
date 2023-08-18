@@ -92,7 +92,7 @@ func disable_language():
 
 func _language_selected(index):
 	Settings.change_language(TE.all_languages[index].id)
-	TE.ui_strings.translate(TE.current_scene)
+	TE.localize.translate(TE.current_scene)
 
 
 func _window_mode_selected(selection):
@@ -175,7 +175,7 @@ func _save_exit():
 func _discard():
 	# switch language back in case it was changed
 	if TE.settings.change_language(TE.settings.lang_id):
-		TE.ui_strings.translate(TE.current_scene)
+		TE.localize.translate(TE.current_scene)
 	# reset changes by implementing saved settings
 	TE.settings.change_settings()
 	_exit()

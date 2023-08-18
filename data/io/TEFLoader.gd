@@ -96,8 +96,8 @@ func _resolve_top_level(node: Tag):
 	match node.name:
 		'lang':
 			return _resolve_lang(node)
-		'ui_strings':
-			return _resolve_ui_strings(node)
+		'localize':
+			return _resolve_localize(node)
 		'block':
 			return _resolve_block(node)
 		'definitions':
@@ -125,14 +125,14 @@ func _resolve_lang(tree: Tag):
 		return Lang.new(name, translation_by)
 
 
-func _resolve_ui_strings(node: Tag):
+func _resolve_localize(node: Tag):
 	var tags = node.get_tags()
 	var dict = {}
 	
 	for tag in tags:
 		dict[tag.name] = tag.get_text()
 	
-	return UIStrings.new(dict)
+	return LocalizeResource.new(dict)
 
 
 # resolves a singular block definition

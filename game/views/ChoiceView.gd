@@ -32,7 +32,7 @@ func initialize(ctxt: InitContext):
 		btn.connect('pressed', Callable(self, '_finish').bind(i))
 		vbox.add_child(btn)
 	
-	TE.ui_strings.translate(self)
+	TE.localize.translate(self)
 	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
 	game.save_rollback()
 

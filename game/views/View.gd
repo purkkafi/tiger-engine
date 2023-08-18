@@ -149,7 +149,7 @@ func next_line(ignore_log: bool = false) -> void:
 		if id in TE.defs.speakers:
 			speaker = Speaker.resolve(TE.defs.speakers[id], game.context)
 			
-			lines[line_index] = TE.ui_strings.autoquote(lines[line_index].substr(search.get_end()))
+			lines[line_index] = TE.localize.autoquote(lines[line_index].substr(search.get_end()))
 		else:
 			TE.log_error(TE.Error.ENGINE_ERROR, 'speaker not rezognized: %s' % id)
 	

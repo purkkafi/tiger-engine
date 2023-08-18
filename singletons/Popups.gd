@@ -13,7 +13,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
-	popup.get_ok_button().text = TE.ui_strings.general_ok
+	popup.get_ok_button().text = TE.localize.general_ok
 	
 	var margins: MarginContainer = MarginContainer.new()
 	margins.custom_minimum_size = Vector2(600, 0)
@@ -34,10 +34,10 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 func warning_dialog(msg: String) -> ConfirmationDialog:
 	var popup: ConfirmationDialog = ConfirmationDialog.new()
 	popup.unresizable = true
-	popup.title = TE.ui_strings['general_warning']
+	popup.title = TE.localize['general_warning']
 	popup.exclusive = true
-	popup.get_ok_button().text = TE.ui_strings['general_ok']
-	popup.get_cancel_button().text = TE.ui_strings['general_cancel']
+	popup.get_ok_button().text = TE.localize['general_ok']
+	popup.get_cancel_button().text = TE.localize['general_cancel']
 	
 	var margins: MarginContainer = MarginContainer.new()
 	var label: Label = Label.new()
@@ -62,7 +62,7 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
-	popup.get_ok_button().text = TE.ui_strings['general_ok']
+	popup.get_ok_button().text = TE.localize['general_ok']
 	
 	var margins = MarginContainer.new()
 	margins.add_child(content)
@@ -96,17 +96,17 @@ func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: Str
 	
 	var error_type: String
 	if extra_msg != '':
-		extra_msg = '%s: %s' % [TE.ui_strings.general_error, extra_msg]
+		extra_msg = '%s: %s' % [TE.localize.general_error, extra_msg]
 	
 	match game_error:
 		TE.Error.BAD_SAVE:
-			error_type = TE.ui_strings.error_bad_save
+			error_type = TE.localize.error_bad_save
 		TE.Error.SCRIPT_ERROR:
-			error_type = TE.ui_strings.error_script
+			error_type = TE.localize.error_script
 		TE.Error.FILE_ERROR:
-			error_type = TE.ui_strings.error_file
+			error_type = TE.localize.error_file
 		TE.Error.ENGINE_ERROR:
-			error_type = TE.ui_strings.error_engine
+			error_type = TE.localize.error_engine
 		TE.Error.TEST_FAILED:
 			error_type = 'TEST_FAILED'
 		TE.Error.TEST_ERROR:
@@ -117,15 +117,15 @@ func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: Str
 	
 	label.text = '[b][center]%s[/center][/b]%s' % [error_type, '\n\n'+extra_msg if extra_msg != '' else '']
 	
-	var dialog: AcceptDialog = info_dialog(TE.ui_strings.general_error, label)
+	var dialog: AcceptDialog = info_dialog(TE.localize.general_error, label)
 	dialog.connect('canceled', _to_titlescreen.bind(old_scene))
 	dialog.connect('confirmed', _to_titlescreen.bind(old_scene))
 	dialog.connect('custom_action', _custom_error_action.bind(old_scene))
 	
-	var ignore: Button = dialog.add_button(TE.ui_strings.general_ignore, false, 'ignore')
+	var ignore: Button = dialog.add_button(TE.localize.general_ignore, false, 'ignore')
 	ignore.theme_type_variation = 'DangerButton'
 	if TE.opts.bug_report_url != null:
-		dialog.add_button(TE.ui_strings.general_report, false, 'report')
+		dialog.add_button(TE.localize.general_report, false, 'report')
 
 
 func _to_titlescreen(old_scene: Node):

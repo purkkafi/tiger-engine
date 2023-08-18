@@ -5,7 +5,7 @@ extends Node
 
 # global objects, set by THEInitScreen
 var language: Lang = null # don't set directly, use load_language()
-var ui_strings: UIStrings = null
+var localize: Localize = null
 var savefile: Savefile = null
 var settings: Settings = null
 # game config files, set by this object
@@ -83,9 +83,9 @@ func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 # language-dependent game state, such as the window title
 func load_language(new_lang: Lang):
 	language = new_lang
-	ui_strings = load(language.path + '/ui_strings.tef')
+	localize = Localize.of_lang(new_lang.id)
 	var version: String = opts.version_callback.call()
-	get_window().set_title(ui_strings.game_title + ('' if version == '' else ' ' + version))
+	get_window().set_title(localize.game_title + ('' if version == '' else ' ' + version))
 	
 	# create language saved data directory if it doesn't exist
 	var user_dir: DirAccess = DirAccess.open('user://')
