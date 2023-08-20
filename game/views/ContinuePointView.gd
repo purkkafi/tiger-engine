@@ -37,10 +37,6 @@ func _current_label():
 	return null
 
 
-func _get_scene_path():
-	return 'res://tiger-engine/game/views/ContinuePointView.tscn'
-
-
 func get_skip_mode():
 	return View.SkipMode.DISABLED
 

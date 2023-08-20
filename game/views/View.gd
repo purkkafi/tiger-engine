@@ -393,11 +393,6 @@ func _current_label():
 	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _current_label()")
 
 
-# should return the path of the scene this View is attached to
-func _get_scene_path():
-	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _get_scene_path()")
-
-
 # if saving from View creates a continue point, it is returned; otherwise
 # returns null
 func continue_point() -> Variant:
@@ -452,7 +447,7 @@ func is_temporary() -> bool:
 # returns the current state of this View as a dict
 func get_state() -> Dictionary:
 	var savestate = {
-			'scene' : _get_scene_path(),
+		'scene' : self.scene_file_path
 	}
 	
 	if is_temporary():
@@ -464,8 +459,7 @@ func get_state() -> Dictionary:
 			'line_index' : line_index,
 			'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
 			'blockfile' : block.blockfile_path,
-			'block' : block.id,
-			'scene' : _get_scene_path()
+			'block' : block.id
 		})
 	
 	return savestate

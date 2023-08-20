@@ -77,7 +77,3 @@ func _next_line(line: String, speaker: Speaker = null):
 
 func _current_label() -> RichTextLabel:
 	return label
-
-
-func _get_scene_path():
-	return 'res://tiger-engine/game/views/ADVView.tscn'

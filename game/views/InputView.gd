@@ -60,10 +60,6 @@ func _current_label() -> RichTextLabel:
 	return null
 
 
-func _get_scene_path() -> String:
-	return 'res://tiger-engine/game/views/InputView.tscn'
-
-
 func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
 	savestate['prompt_text'] = prompt_text

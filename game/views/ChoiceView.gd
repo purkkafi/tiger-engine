@@ -51,10 +51,6 @@ func _current_label() -> RichTextLabel:
 	return null
 
 
-func _get_scene_path() -> String:
-	return 'res://tiger-engine/game/views/ChoiceView.tscn'
-
-
 func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
 	savestate['strings'] = choice_strings

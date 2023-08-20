@@ -102,10 +102,6 @@ func _current_label() -> RichTextLabel:
 	return paragraphs.get_child(-1)
 
 
-func _get_scene_path():
-	return 'res://tiger-engine/game/views/NVLView.tscn'
-
-
 func _scroll_to_bottom():
 	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
 

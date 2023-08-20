@@ -213,7 +213,7 @@ func _replace_view(new_view: Node):
 			new_view.previous_path = old_view.previous_path
 			new_view.previous_state = old_view.previous_state
 		else:
-			new_view.previous_path = old_view._get_scene_path()
+			new_view.previous_path = old_view.scene_file_path
 			new_view.previous_state = old_view.get_state()
 	
 	new_view.adjust_size($VNControls)
