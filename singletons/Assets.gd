@@ -29,9 +29,9 @@ static func _resolve(path: String, relative_to: Variant = null) -> String:
 	var result: String = ''
 	
 	if path.begins_with('assets:'):
-		result = 'res://assets/' + path.lstrip('assets:')
+		result = 'res://assets/' + path.trim_prefix('assets:')
 	elif path.begins_with('lang:'):
-		result = TE.language.path + '/' + path.lstrip('lang:')
+		result = TE.language.path + '/' + path.trim_prefix('lang:')
 	elif relative_to != null:
 		result = relative_to + '/' + path
 	elif ResourceLoader.exists(path):

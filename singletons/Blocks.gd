@@ -81,6 +81,11 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 			elif node.name == 'erase':
 				var string: String = node.get_string()
 				parts.push_back(parts.pop_back() + string + View.DEL.repeat(len(string)))
+			elif node.name == 'include':
+				var blockfile: BlockFile = Assets.blockfiles.get_unqueued(node.get_string_at(0))
+				var included: String = Blocks.resolve_string(blockfile.blocks[node.get_string_at(1)])
+				parts.push_back(parts.pop_back() + included)
+				
 			elif node.name in TE.defs.speakers: # is a speaker declaration?
 				# TODO implement arguments, such as using another name
 				
