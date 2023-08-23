@@ -20,6 +20,14 @@ func _ready():
 		default_speaker_panel_bg_color = speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker').bg_color
 
 
+func initialize(ctxt: View.InitContext):
+	# hide self automatically
+	# this fixes the UI flashing with empty ADVViews that are only
+	# used to display a transition
+	if ctxt == View.InitContext.NEW_VIEW:
+		self.modulate.a = 0
+
+
 func adjust_size(controls: VNControls):
 	var controls_height: float = controls.size.y if controls != null else 0.0
 	var w: float = get_theme_constant('width', 'ADVView')

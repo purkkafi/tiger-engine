@@ -91,6 +91,9 @@ func next_blocking():
 		saved_view.from_state($View.previous_state)
 		saved_view.initialize(View.InitContext.NEW_VIEW)
 	
+	# whether ui is being hidden with HideUI instruction
+	var hiding_ui: bool = false
+	
 	for ins in instructions:
 		# check that same instruction isn't already active
 		# (the user probably doesn't want to do this)
@@ -116,6 +119,8 @@ func next_blocking():
 				tween = $VNStage.set_foreground(ins.fg_id, TE.defs.transition(ins.transition_id), tween)
 			
 			'HideUI':
+				hiding_ui = true
+				# TODO: use other transition data than just the duration?
 				tween = _hide_ui(TE.defs.transition(ins.transition_id).duration, tween)
 			
 			'Enter':
@@ -139,6 +144,11 @@ func next_blocking():
 	# if any instruction activated the tween, handle it
 	if tween != null:
 		$View.wait_tween(tween)
+		
+		# make sure to hide ui even if HideUI instruction was not present
+		if not hiding_ui:
+			_hide_ui(0, null)
+		
 		return
 	
 	# else: handle the next blocking instruction
@@ -315,10 +325,13 @@ func _process(delta):
 	else:
 		$View.game_not_advanced(delta)
 	
-	# move to next block, move to next line, or just update state if neither is requested
-	
+	# move to next block and/or move to next line, or just update state if neither is requested
 	if $View.is_next_block_requested() and not vm.is_end_of_script():
 		next_blocking()
+		# also do the initial line
+		if $View.is_next_line_requested():
+			$View.next_line()
+			save_rollback()
 		return
 		
 	if $View.is_next_line_requested():
