@@ -18,6 +18,8 @@ var last_skip_mode: View.SkipMode # skip mode of previous frame
 var toast_queue: Array[Dictionary] # queue of toast notifications to show
 var debug_mode: DebugMode = DebugMode.NONE # active debug overlay
 var focus_now: WeakRef # control that last had focus
+var tabbing: bool = false # whether user is navigating buttons by tabbing
+var focus_before_overlay: Control # the Control that had focus before an overlay was spawned
 
 
 enum DebugMode { NONE, AUDIO }
@@ -35,7 +37,7 @@ func _ready():
 	TE.localize.translate(self)
 	TETheme.connect('theme_changed', _theme_changed)
 	
-	get_viewport().connect('gui_focus_changed', func(c): focus_now = weakref(c))
+	get_viewport().connect('gui_focus_changed', _gui_focus_changed)
 	grab_focus()
 	
 	rollback = Rollback.new($VNControls.btn_back)
@@ -77,6 +79,18 @@ func _ready():
 		var_values.append(TE.defs.variables[_var])
 	
 	context = GameContext.new(var_names, var_values)
+
+
+func _gui_focus_changed(ctrl: Control):
+	focus_now = weakref(ctrl);
+	
+	# clear tabbing state when focus moves back to game
+	if ctrl == self:
+		tabbing = false
+	
+	# don't allow disabled buttons to gain focus unless explicitly tabbing
+	if not tabbing and ctrl is Button and ctrl.disabled:
+		self.grab_focus()
 
 
 # advances to the next instruction that blocks the game, handling everything inbetween
@@ -369,31 +383,38 @@ func _gui_input(event):
 		advancing = true
 	if event.is_action_released('game_advance_mouse') or event.is_action_released('game_advance_keys'):
 		advancing = false
+	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+		tabbing = true
 
 
 func before_overlay():
 	overlay_active = true
 	$VNControls.set_buttons_disabled(true)
+	focus_before_overlay = focus_now.get_ref()
 
 
 func after_overlay():
 	overlay_active = false
 	$VNControls.set_buttons_disabled(false)
+	if tabbing:
+		focus_before_overlay.grab_focus()
 
 
 func _quit():
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
 	popup.get_ok_button().connect('pressed', func(): TE.quit_game())
-	popup.get_cancel_button().connect('pressed', func(): self.grab_focus())
+	
+	if not tabbing:
+		popup.get_cancel_button().connect('pressed', func(): self.grab_focus())
 
 
 func _skip():
 	if $View.get_skip_mode() == View.SkipMode.TOGGLE:
 		$View.skip_toggled($VNControls.btn_skip.button_pressed)
-		if not $VNControls.btn_skip.button_pressed:
-			self.grab_focus()
 	else:
 		$View.skip_pressed()
+	
+	if not tabbing:
 		self.grab_focus()
 
 
@@ -531,7 +552,7 @@ func take_user_screenshot():
 	path = path + timestamp + '.png'
 	
 	screenshot.save_png(path)
-	print('Saved screenshot %s' % path)
+	TE.log_info("Saved screenshot: '%s'" % path)
 
 
 func _back():
