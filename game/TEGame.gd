@@ -9,7 +9,7 @@ var rollback: Rollback # stores save states for Back button
 var gamelog: Log # the game log
 var context: GameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
-var mouse_advancing: bool = false # whether game is being advanced by holding the mouse
+var advancing: bool = false # whether game is being advanced by mouse or keys
 var overlay_active: bool = false # whether there is an overlay and game should be paused
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
@@ -17,6 +17,7 @@ var _custom_data: Dictionary = {} # persistent, game-specific custom save data
 var last_skip_mode: View.SkipMode # skip mode of previous frame
 var toast_queue: Array[Dictionary] # queue of toast notifications to show
 var debug_mode: DebugMode = DebugMode.NONE # active debug overlay
+var focus_now: WeakRef # control that last had focus
 
 
 enum DebugMode { NONE, AUDIO }
@@ -32,18 +33,21 @@ func run_script(script_file: ScriptFile):
 
 func _ready():
 	TE.localize.translate(self)
-	TETheme.connect('theme_changed', Callable(self, '_theme_changed'))
+	TETheme.connect('theme_changed', _theme_changed)
+	
+	get_viewport().connect('gui_focus_changed', func(c): focus_now = weakref(c))
+	grab_focus()
 	
 	rollback = Rollback.new($VNControls.btn_back)
 	gamelog = Log.new()
 	
-	$VNControls.btn_quit.connect('pressed', Callable(self, '_quit'))
-	$VNControls.btn_skip.connect('pressed', Callable(self, '_skip'))
-	$VNControls.btn_settings.connect('pressed', Callable(self, '_settings'))
-	$VNControls.btn_save.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.SAVE))
-	$VNControls.btn_load.connect('pressed', Callable(self, '_save_load').bind(SavingOverlay.SavingMode.LOAD))
-	$VNControls.btn_back.connect('pressed', Callable(self, '_back'))
-	$VNControls.btn_log.connect('pressed', Callable(self, '_log'))
+	$VNControls.btn_back.connect('pressed', _back)
+	$VNControls.btn_save.connect('pressed', _save_load.bind(SavingOverlay.SavingMode.SAVE))
+	$VNControls.btn_load.connect('pressed', _save_load.bind(SavingOverlay.SavingMode.LOAD))
+	$VNControls.btn_log.connect('pressed', _log)
+	$VNControls.btn_skip.connect('pressed', _skip)
+	$VNControls.btn_settings.connect('pressed', _settings)
+	$VNControls.btn_quit.connect('pressed', _quit)
 	
 	%ToastClose.icon = get_theme_icon('close', 'Toast')
 	%ToastClose.connect('mouse_entered', func(): %ToastClose.icon = get_theme_icon('close_hover', 'Toast'))
@@ -280,14 +284,17 @@ func _process(delta):
 	# sometimes end of 'game_advance_mouse' is not detected properly
 	# this should help
 	# TODO: was from old Godot 3 version, might be fixed now?
-	if mouse_advancing and !Input.is_action_pressed('game_advance_mouse'):
-		mouse_advancing = false
+	if advancing and !(Input.is_action_pressed('game_advance_mouse') or Input.is_action_pressed('game_advance_keys')):
+		advancing = false
 	
 	if debug_mode != DebugMode.NONE:
 		update_debug_mode_text()
 	
 	if overlay_active:
 		return
+	
+	if focus_now.get_ref() == null: # return focus to TEGame if it was lost
+		grab_focus()
 	
 	if len(toast_queue) != 0 and not %ToastContainer.visible:
 		show_toast(toast_queue.pop_front())
@@ -320,7 +327,7 @@ func _process(delta):
 			$View.skip_toggled(false)
 	
 	# notify View of user input by calling either game_advanced or game_not_advanced
-	if Input.is_action_pressed('game_advance_keys') or mouse_advancing:
+	if advancing:
 		$View.game_advanced(delta)
 	else:
 		$View.game_not_advanced(delta)
@@ -358,10 +365,10 @@ func save_rollback():
 
 # detect if mouse is held to advance the game
 func _gui_input(event):
-	if event.is_action_pressed('game_advance_mouse'):
-		mouse_advancing = true
-	if event.is_action_released('game_advance_mouse'):
-		mouse_advancing = false
+	if event.is_action_pressed('game_advance_mouse') or event.is_action_pressed('game_advance_keys'):
+		advancing = true
+	if event.is_action_released('game_advance_mouse') or event.is_action_released('game_advance_keys'):
+		advancing = false
 
 
 func before_overlay():
@@ -376,18 +383,18 @@ func after_overlay():
 
 func _quit():
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
-	popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
-
-
-func _do_quit():
-	TE.quit_game()
+	popup.get_ok_button().connect('pressed', func(): TE.quit_game())
+	popup.get_cancel_button().connect('pressed', func(): self.grab_focus())
 
 
 func _skip():
 	if $View.get_skip_mode() == View.SkipMode.TOGGLE:
 		$View.skip_toggled($VNControls.btn_skip.button_pressed)
+		if not $VNControls.btn_skip.button_pressed:
+			self.grab_focus()
 	else:
 		$View.skip_pressed()
+		self.grab_focus()
 
 
 func _settings():

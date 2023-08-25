@@ -21,6 +21,8 @@ func _initialize_overlay():
 	%Text.text = text.strip_edges()
 	# scroll to the end
 	%Text.scroll_to_line(%Text.get_line_count())
+	
+	%Exit.grab_focus()
 
 
 func _exit():

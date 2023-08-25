@@ -48,6 +48,7 @@ layout_mode = 2
 alignment = 2
 
 [node name="Exit" type="Button" parent="Margins/VBox/BottomRow"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "%log_exit%"
 
