@@ -25,6 +25,7 @@ const meta_missing: String = '!!!<LOCALIZE_STRING_METADATA_NOT_SET>!!!'
 # it is constructed from reading and merging all files in the folder
 # assets/lang/<lang id>/localize/
 static func of_lang(lang: String):
+	@warning_ignore("shadowed_variable")
 	var strings: Dictionary = {}
 	
 	var dir_path: String = 'res://assets/lang/%s/localize' % lang

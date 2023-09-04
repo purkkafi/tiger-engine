@@ -79,7 +79,7 @@ func _ready():
 		icon.tooltip_text = icon_tooltip
 		
 		if continue_point == ContinuePoint.NO_CONTINUE_POINT:
-			check_hashes.call_deferred(save)
+			check_hashes.call_deferred()
 		elif continue_point == ContinuePoint.CONTINUABLE:
 			icon.tooltip_text = '%s\n\n%s' % [TE.localize.saving_continuable, icon_tooltip]
 			name_label.add_theme_color_override('font_color', get_theme_color('continuable', 'SaveBox'))
@@ -108,9 +108,9 @@ func is_loadable():
 	return (not is_empty) and continue_point != ContinuePoint.UNCONTINUABLE
 
 
-# checks if save file's hashes match with game files and adds a warning icon
+# checks if the save file's hashes match with game files and adds a warning icon
 # if they do not
-func check_hashes(save: Dictionary):
+func check_hashes():
 	var script_hashes_match: bool = false
 	var block_hashes_match: bool = false
 	var vm: Dictionary = save['vm']

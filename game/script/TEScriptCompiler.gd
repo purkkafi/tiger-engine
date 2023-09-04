@@ -53,13 +53,23 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 			'playsound':
 				ins.append(TEScript.IPlaySound.new(tag.get_string()))
 			'playsong':
-				var value = tag.get_value_at(0)
-				if value is String:
-					ins.append(TEScript.IPlaySong.new(value, tag.get_string_at(1)))
-				elif value is Tag and value.name == 'clear':
-					ins.append(TEScript.IPlaySong.new('', tag.get_string_at(1)))
+				var song_tag = tag.get_value_at(0)
+				var song_id: String
+				if song_tag is String:
+					song_id = tag.get_value_at(0)
+				elif song_tag is Tag and song_tag.name == 'clear':
+					song_id = ''
 				else:
-					push_error('unknown argument for \\playsong: %s' % value)
+					push_error('unknown song id for \\playsong: %s' % song_tag)
+				
+				var trans_id: String = tag.get_string_at(1)
+				
+				var local_volume: float = 1.0
+				if tag.has_index(2):
+					local_volume = float(tag.get_string_at(2))
+				
+				ins.append(TEScript.IPlaySong.new(song_id, trans_id, local_volume))
+				
 			'bg':
 				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))  
 			'fg':

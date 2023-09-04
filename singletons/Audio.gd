@@ -6,6 +6,9 @@ extends Node
 var music_tween: Tween = null
 # id of currently playing song; will be the empty string if no song is playing
 var song_id: String = ''
+# volume at which the currently playing song is played
+# (not the final value; further affected by audio settings etc)
+var local_volume: float = 1.0
 
 
 # emitted with the song id when a song is played
@@ -17,12 +20,14 @@ signal song_paused
 # plays a song with the given id, fading in with the given duration in seconds
 # if another song is playing, it is faded out simultaneously
 # an empty string can be passed to stop playing a song
-func play_song(new_song_id: String, duration: float, warn_not_queued: bool = true):
+func play_song(new_song_id: String, duration: float, local_volume: float = 1.0):
 	song_id = new_song_id
+	self.local_volume = local_volume
 	var new_song: AudioStream
+	
 	if new_song_id != '':
 		var path = TE.defs.songs[song_id]
-		new_song = Assets.songs.get_resource(path, 'res://assets/music', warn_not_queued)
+		new_song = Assets.songs.get_resource(path, 'res://assets/music', false)
 		
 		if not _is_looping(new_song):
 			TE.log_warning("looping disabled for song '%s'" % new_song_id)
@@ -37,15 +42,22 @@ func play_song(new_song_id: String, duration: float, warn_not_queued: bool = tru
 	music_tween = create_tween()
 	
 	if $SongPlayer.get_stream() != null:
-		music_tween.parallel().tween_method(Callable(self, '_set_song_volume'), db_to_linear($SongPlayer.volume_db), 0.0, duration)
+		# fade out currently playing song
+		music_tween.parallel().tween_method(_set_song_volume, db_to_linear($SongPlayer.volume_db), 0.0, duration)
 	
-	music_tween.parallel().tween_method(Callable(self, '_set_next_song_volume'), 0.0, TE.defs.song_volume(song_id), duration)
+	music_tween.parallel().tween_method(_set_next_song_volume, 0.0, TE.defs.song_volume(song_id) * local_volume, duration)
 	$NextSongPlayer.set_stream(new_song)
 	
-	$NextSongPlayer.play()
+	# if switching to the same song, continue from playback position
+	# (for situations where we are transitioning to the same song at a different volume)
+	var from_position: float = 0
+	if $NextSongPlayer.get_stream() == $SongPlayer.get_stream():
+		from_position = $SongPlayer.get_playback_position()
+	
+	$NextSongPlayer.play(from_position)
 	
 	# TODO wrong timing ? investigate?
-	music_tween.parallel().tween_callback(Callable(self, '_swap_song_trans_finished')).set_delay(duration)
+	music_tween.parallel().tween_callback(_swap_song_trans_finished).set_delay(duration)
 	
 	# unlock possible unlockable
 	if song_id in TE.defs.unlocked_by_song:
@@ -118,6 +130,18 @@ func song_player():
 	return null
 
 
+# returns current state related to audio
+func get_state() -> Dictionary:
+	return {
+		'song_id': song_id,
+		'local_volume': local_volume
+	}
+
+# restores audio state from a dict returned by get_state()
+func set_state(state: Dictionary):
+	play_song(state['song_id'], 0, state['local_volume'])
+
+
 # returns debug text that displays volumes of audio buses
 # and all playing sounds 
 func debug_text() -> String:
@@ -133,6 +157,7 @@ func debug_text() -> String:
 	
 	var players: Array = [$SongPlayer, $NextSongPlayer, $SoundPlayer]
 	
+	msg += 'Song volume: %s / Local volume: %s\n' % [TE.defs.song_volume(song_id), local_volume]
 	for player in players:
 		var active = player.playing and player.get_playback_position() != 1.0
 		var song: String = player.get_stream().resource_path.split('/')[-1] if active else ''

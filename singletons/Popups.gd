@@ -53,7 +53,15 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	# make the less destructive option the default
 	Callable(popup.get_cancel_button(), 'grab_focus').call_deferred()
 	
+	popup.connect('canceled', _remove_popup.bind(popup))
+	popup.connect('confirmed', _remove_popup.bind(popup))
+	
 	return popup
+
+
+static func _remove_popup(popup: AcceptDialog):
+	popup.get_parent().remove_child(popup)
+	popup.queue_free()
 
 
 # standard popup for presenting the user arbitrary content
@@ -72,6 +80,9 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 	
 	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
+	
+	popup.connect('canceled', _remove_popup.bind(popup))
+	popup.connect('confirmed', _remove_popup.bind(popup))
 	
 	return popup
 
@@ -153,8 +164,7 @@ func add_shadow(to_node: Node):
 	shadow.z_index += 99
 	
 	TE.current_scene.add_child(shadow)
-	to_node.connect('canceled', Callable(self, '_remove_shadow').bind(shadow))
-	to_node.connect('confirmed', Callable(self, '_remove_shadow').bind(shadow))
+	to_node.connect('tree_exited', _remove_shadow.bind(shadow))
 
 
 func _remove_shadow(shadow: ColorRect):

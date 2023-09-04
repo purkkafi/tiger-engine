@@ -109,15 +109,17 @@ class IPlaySong extends BaseInstruction:
 	const name: String = 'PlaySong'
 	var song_id: String
 	var transition_id: String
+	var local_volume: float
 	
 	
-	func _init(_song_id: String, _transition_id: String):
+	func _init(_song_id: String, _transition_id: String, _local_volume):
 		self.song_id = _song_id
 		self.transition_id = _transition_id
+		self.local_volume = _local_volume
 	
 	
 	func _to_string() -> String:
-		return 'playsong %s, %s' % [song_id, transition_id]
+		return 'playsong %s, %s, %s' % [song_id, transition_id, local_volume]
 
 
 class IBG extends BaseInstruction:

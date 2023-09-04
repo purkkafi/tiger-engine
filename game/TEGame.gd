@@ -122,7 +122,7 @@ func next_blocking():
 		
 		match ins.name:
 			'PlaySong':
-				Audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration)
+				Audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
 			
 			'PlaySound':
 				Audio.play_sound(ins.sound_id)
@@ -462,7 +462,7 @@ func create_save() -> Dictionary:
 		'view_result' : context.view_result,
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
-		'song_id' : Audio.song_id,
+		'audio' : Audio.get_state(),
 		'save_name' : null,
 		'save_datetime' : null, # these 2 should be handled by saving screen
 		'save_utime' : null,
@@ -503,9 +503,7 @@ func load_save(save: Dictionary):
 	# custom save data
 	_custom_data = save['custom_data'].duplicate(true)
 	
-	# keep song playing if it is currently playing
-	if Audio.song_id != save['song_id']:
-		Audio.play_song(save['song_id'], 0)
+	Audio.set_state(save['audio'])
 	
 	# if starting from a continue point, skip rest of the initialization
 	if 'continue_point' in save:

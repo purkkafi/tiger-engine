@@ -17,7 +17,7 @@ const empty_bank: Array = [ null, null, null, null,
 # fields to ignore when comparing saves for game progress
 const TRANSIENT_FIELDS: Array = [
 	'save_datetime', 'save_utime', 'save_name', 'game_name', 'game_version', # not in-game data
-	'stage', 'song_id', 'variables' # depend strictly on other values
+	'stage', 'audio', 'variables' # depend strictly on other values
 ]
 
 
