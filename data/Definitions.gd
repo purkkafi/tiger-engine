@@ -144,7 +144,8 @@ class Transition extends RefCounted:
 
 class SpeakerDef extends RefCounted:
 	var id: String
-	var name: Array[Variant]
+	# either String (used directly) or Tag.ControlTag
+	var name: Variant
 	# default to TRANSPARENT, which should be treated as unset
 	var bg_color: Color = Color.TRANSPARENT
 	var name_color: Color = Color.TRANSPARENT

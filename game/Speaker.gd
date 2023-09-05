@@ -9,14 +9,33 @@ var variation: String # theme type variation of the speaker box
 var log_color: Color # color in the log
 
 
+static var EXTRACT_ID: RegEx = RegEx.create_from_string('(\\w+)')
+static var EXTRACT_ARG: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<content>.+?)\\[\\/(?P=tag)\\]')
+
+
 # resolves a Speaker instance from a definition and a context
-static func resolve(def: Definitions.SpeakerDef, ctxt: ControlExpr.BaseContext):
-	var resolved_name: Array[String] = Blocks._resolve_parts(def.name, ctxt)
-	if len(resolved_name) != 1:
-		TE.log_error(TE.Error.FILE_ERROR, "expected name '%s' of speaker '%s' to resolve into a single line, got '%s'" % [def.name, def.id, resolved_name])
+static func resolve(declaration: String, ctxt: ControlExpr.BaseContext) -> Speaker:
+	var id: String = EXTRACT_ID.search(declaration).get_string(0)
+	var def: Definitions.SpeakerDef = TE.defs.speakers[id]
+	var name: Variant = def.name
+	
+	for arg in EXTRACT_ARG.search_all(declaration):
+		match arg.get_string('tag'):
+			'as_name':
+				name = arg.get_string('content')
+			'as_ctrltag':
+				name = Tag.ControlTag.new(arg.get_string('content'))
+			_:
+				print('illegal speaker declaration: %s (unknown argument %s)' % [declaration, arg.get_string('tag')])
+	
+	var resolved_name: String = ''
+	if name is String:
+		resolved_name = name.strip_edges()
+	else:
+		resolved_name = ControlExpr.exec((name as Tag.ControlTag).string, ctxt).strip_edges()
 	
 	return Speaker.new(
-		resolved_name[0],
+		resolved_name,
 		def.name_color,
 		def.bg_color,
 		def.variation,

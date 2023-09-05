@@ -145,13 +145,9 @@ func next_line(ignore_log: bool = false) -> void:
 	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
 	
 	if search != null:
-		var id: String = search.strings[1]
-		if id in TE.defs.speakers:
-			speaker = Speaker.resolve(TE.defs.speakers[id], game.context)
-			
-			lines[line_index] = TE.localize.autoquote(lines[line_index].substr(search.get_end()))
-		else:
-			TE.log_error(TE.Error.ENGINE_ERROR, 'speaker not rezognized: %s' % id)
+		var speaker_declaration: String = search.strings[1]
+		speaker = Speaker.resolve(speaker_declaration, game.context)
+		lines[line_index] = TE.localize.autoquote(lines[line_index].substr(search.get_end()))
 	
 	if not ignore_log:
 		game.gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet

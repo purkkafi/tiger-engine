@@ -226,7 +226,11 @@ func _resolve_definitions(tree: Tag):
 						'id':
 							speaker.id = tag.get_string()
 						'name':
-							speaker.name = tag.get_taglist()
+							var name = tag.get_value()
+							if name is String or name is Tag.ControlTag:
+								speaker.name = name
+							else:
+								push_error('illegal name in speaker definition (expected string or control tag): %s' % tag)
 						'bg_color':
 							speaker.bg_color = Color(tag.get_string())
 						'name_color':

@@ -99,10 +99,13 @@ func _replace_with(layer: Node, new_layer: Node):
 # with is a transition descriptor or null
 # by is an alternative id to give to the sprite or null
 # tween is the tween to use or null, in case it will be created; returned for chaining
-func enter_sprite(path: String, at: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
-	var sprite: VNSprite = _create_sprite(Assets._resolve(path, 'res://assets/sprites'))
+func enter_sprite(id: String, at: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
+	var sprite: VNSprite = _create_sprite(Assets._resolve(TE.defs.sprites[id], 'res://assets/sprites'))
 	if by != null:
 		sprite.id = by as String
+	else:
+		sprite.id = id
+	
 	$Sprites.add_child(sprite)
 	sprite.enter_stage(null)
 	sprite.move_to(_parse_position_descriptor(at), Definitions.instant(), null)

@@ -56,3 +56,7 @@ func is_unlocked(unlockable: String) -> bool:
 
 func show_toast(title: String, description: String, icon = null):
 	TE.send_toast_notification(title, description, icon)
+
+
+func localize(id: String):
+	return TE.localize[id]

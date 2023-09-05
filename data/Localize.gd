@@ -73,7 +73,7 @@ func _init(dict):
 
 func _get(string):
 	if not string in strings:
-		push_error('unknown ui string: %s' % [string])
+		push_error('unknown localize string: %s' % [string])
 		return '%' + string + '%'
 	return strings[string]
 

@@ -87,16 +87,31 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 				parts.push_back(parts.pop_back() + included)
 				
 			elif node.name in TE.defs.speakers: # is a speaker declaration?
-				# TODO implement arguments, such as using another name
 				
 				# erase previous empty string, if any
 				var prev = parts.pop_back()
 				if prev != null and prev != '':
 					parts.push_back(prev)
 				
+				# parse arguments
+				var _as: String = ''
+				
+				if node.has_index(1):
+					var args: Dictionary = node.get_dict_at(1)
+					for arg in args.keys():
+						match arg:
+							'as':
+								var as_value = args[arg].get_value()
+								if as_value is String:
+									_as = ' [as_name]%s[/as_name]' % as_value
+								else:
+									_as = ' [as_ctrltag]%s[/as_ctrltag]' % (as_value as Tag.ControlTag).string
+							_:
+								TE.log_error(TE.Error.FILE_ERROR, 'unknown argument for speaker use: %s' % arg)
+				
 				var contents: Array[String] = _resolve_parts(node.args[0], ctxt)
 				for line in contents:
-					parts.push_back('[speaker]%s[/speaker]%s' % [node.name, line])
+					parts.push_back('[speaker]%s%s[/speaker]%s' % [node.name, _as, line])
 			elif ctxt != null: # try resolving from context
 				var value = ctxt._get_var(node.name)
 				if value != null:
