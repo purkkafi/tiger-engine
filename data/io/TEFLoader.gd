@@ -316,10 +316,17 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	
 	sprite.tag = sprite_tef
 	
+	print()
 	for file in dir.get_files():
-		if file.ends_with('.import') or file == 'sprite.tef':
+		# ignore the sprite.tef file
+		if file == 'sprite.tef':
 			continue
-		sprite.files[file] = load(dir_path + '/' + file)
+		
+		# TODO: this is a hack
+		# assume '.import' files correspond with a resource we want to load
+		if file.ends_with('import'):
+			var resource: String = file.rstrip('.import')
+			sprite.files[resource] = load(dir_path + '/' + resource)
 	
 	return sprite
 	
