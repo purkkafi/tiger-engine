@@ -227,10 +227,18 @@ func _resolve_definitions(tree: Tag):
 							speaker.id = tag.get_string()
 						'name':
 							var name = tag.get_value()
-							if name is String or name is Tag.ControlTag:
+							if name is String:
+								# implement shortcut that %id% --> {{ localize("id") }}
+								if name.begins_with('%') and name.ends_with('%'):
+									speaker.name = Tag.ControlTag.new('localize("%s")' % name.substr(1, len(name)-2))
+								else:
+									speaker.name = name
+							elif name is Tag.ControlTag:
 								speaker.name = name
+							elif name is Tag: # implement shortcut that \VAR --> {{ VAR }}
+								speaker.name = Tag.ControlTag.new(name.name)
 							else:
-								push_error('illegal name in speaker definition (expected string or control tag): %s' % tag)
+								push_error('illegal name in speaker definition (expected string or variable tag or control tag): %s' % tag)
 						'bg_color':
 							speaker.bg_color = Color(tag.get_string())
 						'name_color':
@@ -316,7 +324,6 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	
 	sprite.tag = sprite_tef
 	
-	print()
 	for file in dir.get_files():
 		# ignore the sprite.tef file
 		if file == 'sprite.tef':
