@@ -3,7 +3,10 @@ class_name View extends Control
 # and managing game text scrolling and other game state
 
 
-var lines: Array[String] # lines in the current Block
+# lines in the current Block
+# note that since they are parsed before being shown to account for formatting,
+# values may not be in a usable form, but length can be releid on
+var _lines: Array[String]
 var block: Block # the current Block
 var line_index: int = -1 # index of lines
 var next_effect = RichTextNext.new() # effect that implements the ▶ effect
@@ -34,7 +37,8 @@ const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	',' : 8,
 	DEL : 5
 }
-var GET_SPEAKER_REGEX = RegEx.create_from_string('\\[speaker\\](.+)\\[\\/speaker\\]')
+
+static var GET_BBCODE: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<content>.+?)\\[\\/(?P=tag)\\]')
 
 
 # current speedup state; will move continuously to faster speedup as input is held down
@@ -116,7 +120,7 @@ func is_next_block_requested() -> bool:
 	if line_index == -1: # true if no block has been shown yet
 		return true
 	# otherwise, true if there are no lines left, game isn't waiting for anything, and state is READY_TO_PROCEED 
-	if line_index >= len(lines):
+	if line_index >= len(_lines):
 		return state == State.READY_TO_PROCEED
 	return false
 
@@ -124,7 +128,7 @@ func is_next_block_requested() -> bool:
 # returns whether parent should ask for next line by calling next_line()
 func is_next_line_requested():
 	# true if there are lines left and not waiting for anything and state is READY_TO_PROCEED
-	if len(lines) != 0 and line_index < len(lines) and !_is_waiting():
+	if len(_lines) != 0 and line_index < len(_lines) and !_is_waiting():
 		return state == State.READY_TO_PROCEED
 	return false
 
@@ -133,25 +137,23 @@ func is_next_line_requested():
 # displays the given block next
 func show_block(_block: Block) -> void:
 	block = _block
-	lines = Blocks.resolve_parts(block, game.context)
+	_lines = Blocks.resolve_parts(block, game.context)
 	line_index = 0
 	_block_started()
 
 
 # proceeds to the next line
-func next_line(ignore_log: bool = false) -> void:
-	# parse speaker specification
-	var speaker: Speaker
-	var search: RegExMatch = GET_SPEAKER_REGEX.search(lines[line_index])
+func next_line(loading_from_save: bool = false) -> void:
+	var line: String = _lines[line_index]
 	
-	if search != null:
-		var speaker_declaration: String = search.strings[1]
-		speaker = Speaker.resolve(speaker_declaration, game.context)
-		lines[line_index] = TE.localize.autoquote(lines[line_index].substr(search.get_end()))
+	var bbcode: RegExMatch = GET_BBCODE.search(line)
 	
-	if not ignore_log:
-		game.gamelog.add_line(process_line(lines[line_index]), speaker) # TODO speaker is not handled yet
-	_next_line(lines[line_index] + LINE_END, speaker)
+	# TODO refactor speakers to how full imgs work
+	if bbcode != null and bbcode.get_string('tag') == 'fullimg':
+		_parse_full_image_line(bbcode.get_string('content'), loading_from_save)
+	else:
+		_parse_normal_line(line, loading_from_save)
+	
 	line_index += 1
 	next_effect.reset()
 	
@@ -169,6 +171,28 @@ func next_line(ignore_log: bool = false) -> void:
 			
 			line_switch_delta = LINE_SWITCH_COOLDOWN
 			state = State.WAITING_LINE_SWITCH_COOLDOWN
+
+
+func _parse_normal_line(line: String, loading_from_save: bool):
+	# parse speaker specification
+	var speaker: Speaker
+	var speaker_search: RegExMatch = GET_BBCODE.search(line)
+	
+	if speaker_search != null and speaker_search.get_string('tag') == 'speaker':
+		var speaker_declaration: String = speaker_search.get_string('content')
+		speaker = Speaker.resolve(speaker_declaration, game.context)
+		line = TE.localize.autoquote(line.substr(speaker_search.get_end(0)).strip_edges())
+	
+	if not loading_from_save:
+		game.gamelog.add_line(process_line(line), speaker)
+	
+	_next_line(line + LINE_END, speaker)
+
+
+# Views can override this to support full images however they wish
+func _parse_full_image_line(contents: String, loading_from_save: bool):
+	TE.log_error(TE.Error.FILE_ERROR, "View doesn't support full images")
+	_next_line(contents + LINE_END)
 
 
 func _is_end_of_line() -> bool:
@@ -217,7 +241,7 @@ func update_state(delta: float):
 	if state == State.WAITING_LINE_SWITCH_COOLDOWN or speedup == Speedup.SKIP:
 		line_switch_delta -= delta
 		if line_switch_delta < 0:
-			if line_index == len(lines):
+			if line_index == len(_lines):
 				_block_ended()
 			state = State.READY_TO_PROCEED
 		return
@@ -275,7 +299,7 @@ func game_advanced(delta: float):
 	
 	if state == State.WAITING_ADVANCE:
 		# call callback if this is the end of the current block
-		if line_index == len(lines):
+		if line_index == len(_lines):
 			_block_ended()
 		line_switch_delta = LINE_SWITCH_COOLDOWN
 		state = State.WAITING_LINE_SWITCH_COOLDOWN
@@ -286,7 +310,7 @@ func game_advanced(delta: float):
 		line_switch_delta = LINE_SWITCH_COOLDOWN
 		state = State.WAITING_LINE_SWITCH_COOLDOWN
 		
-		if line_index == len(lines):
+		if line_index == len(_lines):
 			_block_ended()
 		
 	elif speedup == Speedup.NORMAL and advance_held >= SPEEDUP_THRESHOLD_FAST:
@@ -488,7 +512,7 @@ func from_state(savestate: Dictionary):
 	
 	show_block(_block)
 	
-	if savestate['line_index']-1 > len(lines):
+	if savestate['line_index']-1 > len(_lines):
 		TE.log_error(TE.Error.BAD_SAVE, "block line index out of range in block '%s' in '%s'" % [savestate['block'], savestate['blockfile']], true)
 		return
 	

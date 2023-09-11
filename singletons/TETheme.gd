@@ -20,6 +20,7 @@ var anim_overlay_in: Callable = NO_ANIM
 var anim_overlay_out: Callable = NO_ANIM
 var anim_shadow_in: Callable = NO_ANIM
 var anim_shadow_out: Callable = NO_ANIM
+var anim_full_image_in: Callable = NO_ANIM
 
 
 # signal emitted when the variable current_theme is changed
@@ -54,11 +55,15 @@ func set_theme(theme_id: String):
 		
 		var shadow_out = Callable(_animations, 'shadow_out')
 		anim_shadow_out = shadow_out if shadow_out.is_valid() else NO_ANIM
+		
+		var full_image_in = Callable(_animations, 'full_image_in')
+		anim_full_image_in = full_image_in if full_image_in.is_valid() else NO_ANIM
 	else:
 		anim_overlay_in = NO_ANIM
 		anim_overlay_out = NO_ANIM
 		anim_shadow_in = NO_ANIM
 		anim_shadow_out = NO_ANIM
+		anim_full_image_in = NO_ANIM
 	
 	background_color = _base_theme.get_color('background_color', 'Global')
 	shadow_color = _base_theme.get_color('shadow_color', 'Global')

@@ -85,6 +85,22 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 				var blockfile: BlockFile = Assets.blockfiles.get_unqueued(node.get_string_at(0))
 				var included: String = Blocks.resolve_string(blockfile.blocks[node.get_string_at(1)])
 				parts.push_back(parts.pop_back() + included)
+			
+			# escape characters
+			elif node.name == 'n' and len(node.args) == 0:
+				parts.push_back(parts.pop_back() + '\n')
+			
+			# full image image declaration
+			elif node.name == 'fullimg':
+				var id: String = (node.args[0][0] as String).strip_edges()
+				var width: float = 1.0
+				for opt in node.get_tags():
+					match opt.name:
+						'width':
+							width = float(opt.get_string())
+						_:
+							TE.log_error(TE.Error.FILE_ERROR, 'unknown argument for fullimg: %s' % opt.name)
+				parts.push_back(parts.pop_back() + '[fullimg][id]%s[/id][width]%s[/width][/fullimg]' % [id, width])
 				
 			elif node.name in TE.defs.speakers: # is a speaker declaration?
 				
@@ -103,15 +119,15 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 							'as':
 								var as_value = args[arg].get_value()
 								if as_value is String:
-									_as = ' [as_name]%s[/as_name]' % as_value
+									_as = '[as_name]%s[/as_name]' % as_value
 								else:
-									_as = ' [as_ctrltag]%s[/as_ctrltag]' % (as_value as Tag.ControlTag).string
+									_as = '[as_ctrltag]%s[/as_ctrltag]' % (as_value as Tag.ControlTag).string
 							_:
 								TE.log_error(TE.Error.FILE_ERROR, 'unknown argument for speaker use: %s' % arg)
 				
 				var contents: Array[String] = _resolve_parts(node.args[0], ctxt)
 				for line in contents:
-					parts.push_back('[speaker]%s%s[/speaker]%s' % [node.name, _as, line])
+					parts.push_back('[speaker]%s%s[/speaker] %s' % [node.name, _as, line])
 			elif ctxt != null: # try resolving from context
 				var value = ctxt._get_var(node.name)
 				if value != null:

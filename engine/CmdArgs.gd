@@ -51,14 +51,13 @@ static func handle_args():
 		i += 1
 
 
-# keys are words that are ignored when calculating word count
-static var NON_WORDS: Dictionary = {
-	'–' :null,
-	'-': null
-}
+# regex that matches if a word has any alphanumeric charcters and
+# should therefore be counted as a word
+static var IS_WORD: RegEx = RegEx.create_from_string('\\w+')
 
 
 # implements the --word-count cmd option, printing block word counts and quitting
+# TODO: deal with bbcode tags in a more graceful way
 static func _word_count(lang: String):
 	var folder_path: String = 'assets/lang/%s/text/' % lang
 	var folder: DirAccess = DirAccess.open(folder_path)
@@ -81,7 +80,7 @@ static func _word_count(lang: String):
 				var words = par.split(' ', false)
 				
 				for word in words:
-					if word not in NON_WORDS:
+					if IS_WORD.search(word) != null:
 						count += 1
 		
 		counts[file] = count

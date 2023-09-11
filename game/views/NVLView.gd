@@ -54,6 +54,10 @@ func adjust_size(controls: VNControls):
 	var w = width
 	$Scroll.size.x = w
 	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2
+	
+	for child in paragraphs.get_children():
+		if child is TextureRect:
+			_set_full_img_size(child)
 
 
 func _block_started():
@@ -67,6 +71,7 @@ func _block_started():
 func _next_line(line: String, _speaker: Speaker = null):
 	var label: RichTextLabel = create_label()
 	label.fit_content = true
+	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	
 	if outline_size != 0:
 		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color.to_html(), line]
@@ -76,24 +81,32 @@ func _next_line(line: String, _speaker: Speaker = null):
 	
 	if hcenter: # if centered: no indent and lines are farther apart
 		line = '[center]%s[/center]' % line
-		label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 		INDENT = ''
 	else:
 		# if not centered, there will be an indent & lines will be closer
 		paragraphs.add_theme_constant_override('separation', 4)
 	
-	# if not first paragraph
-	if paragraphs.get_child_count() == 0:
-		# first paragraph is normal
-		label.text = line
-	else:
-		# add indent
-		label.text = INDENT + line
+	# remove the '[next] ▶[/next]' from previous paragraph
+	if paragraphs.get_child_count() > 0 and paragraphs.get_child(-1) is RichTextLabel:
 		var old_par: RichTextLabel = paragraphs.get_child(-1)
-		# remove the '[next] ▶[/next]' from previous paragraph
 		old_par.text = old_par.text.replace(View.LINE_END, '')
+		# it may have been centered so remove leftover tags
+		old_par.text = old_par.text.replace('[center][/center]', '')
+	
+	# indent lines that come after non-empty lines
+	if paragraphs.get_child_count() > 0 and not _is_previous_line_empty():
+		label.text = INDENT + line
+	else:
+		label.text = line
 	
 	paragraphs.add_child(label)
+
+
+func _is_previous_line_empty():
+	var prev = paragraphs.get_child(-1)
+	if prev is RichTextLabel:
+		return len(prev.text.strip_edges()) == 0
+	return false
 
 
 func _current_label() -> RichTextLabel:
@@ -104,6 +117,40 @@ func _current_label() -> RichTextLabel:
 
 func _scroll_to_bottom():
 	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
+
+
+func _parse_full_image_line(contents: String, loading_from_save: bool):
+	_next_line('')
+	
+	var path: String
+	var width: float
+	
+	for tag in GET_BBCODE.search_all(contents):
+		match tag.get_string('tag'):
+			'id':
+				path = Assets._resolve(TE.defs.imgs[tag.get_string('content')], 'res://assets/img')
+			'width':
+				width = float(tag.get_string('content'))
+	
+	var rect: TextureRect = TextureRect.new()
+	rect.texture = load(path)
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.set_meta('width_ratio', width)
+	_set_full_img_size(rect)
+	
+	paragraphs.add_child(rect)
+	
+	if not loading_from_save:
+		TETheme.anim_full_image_in.call(rect)
+	
+	_next_line('[center]%s[/center]' % LINE_END)
+
+
+func _set_full_img_size(img: TextureRect):
+	var width: float = get_theme_constant('width', 'NVLView') * img.get_meta('width_ratio')
+	var height = width / img.texture.get_width() * img.texture.get_height()
+	img.custom_minimum_size = Vector2(width, height)
 
 
 func get_state() -> Dictionary:
