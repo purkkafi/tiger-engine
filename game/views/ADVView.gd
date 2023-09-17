@@ -46,10 +46,12 @@ func adjust_size(controls: VNControls):
 
 func _game_paused():
 	box.visible = false
+	speaker_panel.visible = false
 
 
 func _next_line(line: String, speaker: Speaker = null):
 	box.visible = true
+	speaker_panel.visible = true
 	label.text = line
 	
 	if speaker != null:
