@@ -61,15 +61,6 @@ func _ready():
 	if not TE.is_mobile():
 		%MobileHideContainer.visible = false
 	
-	# initial View
-	_replace_view(TE.defs.view_registry['adv'].instantiate())
-	$View.initialize(View.InitContext.NEW_VIEW)
-	
-	# vm is null if game is being loaded from the save
-	# and in that case, the call is not needed
-	if vm != null:
-		next_blocking()
-	
 	# fill default values of variables
 	var var_names: Array[String] = []
 	var var_values: Array[Variant] = []
@@ -79,6 +70,15 @@ func _ready():
 		var_values.append(TE.defs.variables[_var])
 	
 	context = GameContext.new(var_names, var_values)
+	
+	# initial View
+	_replace_view(TE.defs.view_registry['adv'].instantiate())
+	$View.initialize(View.InitContext.NEW_VIEW)
+	
+	# vm is null if game is being loaded from the save
+	# and in that case, the call is not needed
+	if vm != null:
+		next_blocking()
 
 
 func _gui_focus_changed(ctrl: Control):
