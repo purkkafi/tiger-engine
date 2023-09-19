@@ -103,10 +103,12 @@ func next_blocking():
 		context.view_result = $View.result
 	
 	# autoreplace the view with previous one if it was temporary
-	if $View.is_temporary() and $View.previous_path != '':
-		var saved_view = load($View.previous_path).instantiate()
+	if $View.is_temporary() and $View.previous_state != null:
+		# save this here before View is replaced
+		var previous_state: Dictionary = $View.previous_state
+		var saved_view = load(previous_state['scene']).instantiate()
 		_replace_view(saved_view)
-		saved_view.from_state($View.previous_state)
+		saved_view.from_state(previous_state)
 		saved_view.initialize(View.InitContext.NEW_VIEW)
 	
 	# whether ui is being hidden with HideUI instruction
@@ -234,15 +236,19 @@ func _replace_view(new_view: Node):
 	new_view.name = old_view.name
 	new_view.game = self
 	
-	# store previous_path and previous_state for temporary views
+	# store  previous_state for temporary views
 	if new_view.is_temporary():
-		# retain the original if multiple temporary Views are used in succession
+		# retain the original state if multiple temporary Views are used in succession
 		if old_view.is_temporary():
-			new_view.previous_path = old_view.previous_path
 			new_view.previous_state = old_view.previous_state
 		else:
-			new_view.previous_path = old_view.scene_file_path
-			new_view.previous_state = old_view.get_state()
+			var state: Dictionary = old_view.get_state()
+			# TODO: this is a temporary hack
+			# need to rearchitecture the thing to be able to produce states
+			# that do not store block information
+			state.erase('block')
+			state.erase('blockfile')
+			new_view.previous_state = state
 	
 	new_view.adjust_size($VNControls)
 	

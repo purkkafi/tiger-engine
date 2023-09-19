@@ -62,7 +62,7 @@ func adjust_size(controls: VNControls):
 			_set_full_img_size(child)
 
 
-func _block_started(old: Variant, new: Block):
+func _block_started(old: Variant, _new: Block):
 	# record id of non-null previous Block
 	if old != null:
 		previous_blocks.append([ old.blockfile_path, old.id ])

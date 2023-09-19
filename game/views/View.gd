@@ -19,8 +19,8 @@ var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
 var game: TEGame = null # TEGame object used to access various game data
 var result: Variant = null # the optional value this View resulted in
-var previous_path: String = '' # the resource path of the previous View (for temporary Views)
-var previous_state: Dictionary = {} # the state of the previous View (for temporary Views)
+# the state of the previous View (for temporary Views); Dictionary or null for none
+var previous_state: Variant = null
 
 
 # TODO implement setting for skip speed?
@@ -191,7 +191,7 @@ func _parse_normal_line(line: String, loading_from_save: bool):
 
 
 # Views can override this to support full images however they wish
-func _parse_full_image_line(contents: String, loading_from_save: bool):
+func _parse_full_image_line(contents: String, _loading_from_save: bool):
 	TE.log_error(TE.Error.FILE_ERROR, "View doesn't support full images")
 	_next_line(contents + LINE_END)
 
@@ -276,6 +276,7 @@ func update_state(delta: float):
 				var index = label.text.find(DEL)
 				var text = label.text
 				label.text = text.substr(0, index-1) + text.substr(index+1)
+				print('goin back')
 				label.visible_characters -= 1 # need to go back since the current char is deleted
 			else: # else, proceed normally
 				label.visible_characters += 1
@@ -473,7 +474,6 @@ func get_state() -> Dictionary:
 	}
 	
 	if is_temporary():
-		savestate['previous_path'] = previous_path
 		savestate['previous_state'] = previous_state
 	
 	if block != null and block != Blocks.EMPTY_BLOCK: # no block info for Views that do not show blocks
@@ -493,7 +493,6 @@ func get_state() -> Dictionary:
 # you can load and instantiate it and then call this object
 func from_state(savestate: Dictionary):
 	if is_temporary():
-		previous_path = savestate['previous_path']
 		previous_state = savestate['previous_state']
 	
 	# NOP if View didn't save block information
