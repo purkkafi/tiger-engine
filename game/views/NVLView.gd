@@ -11,6 +11,8 @@ var vcenter: bool = false
 var outline_size: float = 0
 var outline_color: Variant = null # Color or null
 var text_color: Variant = null # Color or null
+# contains previous blocks in form [ <blockfile id>, <block id> ]
+var previous_blocks: Array = []
 
 
 # indent that appears at the start of lines after the first
@@ -60,11 +62,10 @@ func adjust_size(controls: VNControls):
 			_set_full_img_size(child)
 
 
-func _block_started():
-	# erase current paragraphs
-	for par in paragraphs.get_children():
-		paragraphs.remove_child(par)
-		par.queue_free()
+func _block_started(old: Variant, new: Block):
+	# record id of non-null previous Block
+	if old != null:
+		previous_blocks.append([ old.blockfile_path, old.id ])
 
 
 # Speakers are not handled right now
@@ -155,6 +156,7 @@ func _set_full_img_size(img: TextureRect):
 
 func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
+	savestate['previous_blocks'] = previous_blocks
 	if hcenter:
 		savestate['hcenter'] = hcenter
 	if vcenter:
@@ -169,6 +171,7 @@ func get_state() -> Dictionary:
 
 
 func from_state(savestate: Dictionary):
+	previous_blocks = (savestate['previous_blocks'] as Array).duplicate(true)
 	if 'hcenter' in savestate:
 		hcenter = savestate['hcenter']
 	if 'vcenter' in savestate:
@@ -179,4 +182,15 @@ func from_state(savestate: Dictionary):
 		outline_size = savestate['outline_size']
 	if 'text_color' in savestate:
 		text_color = Color.html(savestate['text_color'])
+	
+	# restore previously displayed Blocks
+	for old_block in previous_blocks:
+		var blockfile_id: String = old_block[0]
+		var block_id: String = old_block[1]
+		
+		var lines = Blocks.resolve_parts(Assets.blockfiles.get_unqueued(blockfile_id).blocks[block_id], game.context)
+		
+		for line in lines:
+			_next_line(line, null)
+	
 	super.from_state(savestate)

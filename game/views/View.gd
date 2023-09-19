@@ -136,10 +136,11 @@ func is_next_line_requested():
 
 # displays the given block next
 func show_block(_block: Block) -> void:
+	var old_block: Variant = block
 	block = _block
 	_lines = Blocks.resolve_parts(block, game.context)
 	line_index = 0
-	_block_started()
+	_block_started(old_block, block)
 
 
 # proceeds to the next line
@@ -399,7 +400,8 @@ func _game_paused():
 
 
 # optionally, subclasses may respond to a new block starting
-func _block_started():
+# old is the previously displayed Block (may be null) and new is the new one
+func _block_started(old: Variant, new: Block):
 	pass
 
 

@@ -5,7 +5,7 @@ class_name Block extends RefCounted
 
 var taglist: Array[Variant]
 var blockfile_path: String # the blockfile this Block is from
-var id: String # the id of this block in its blockfile
+var id: String # the id of this Block in its blockfile
 
 
 func _init(_taglist: Array[Variant]):
