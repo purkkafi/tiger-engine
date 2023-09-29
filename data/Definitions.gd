@@ -58,6 +58,10 @@ const ease_types = {
 }
 
 
+# hardcoded instant transition
+static var INSTANT = Transition.new('QUAD EASE_IN 0s')
+
+
 # returns unlockables that belong in the given namespace
 # (i.e. their name starts with the given prefix)
 # idiomatically, unlockables are given ids of form namespace:unlockable_id
@@ -91,17 +95,15 @@ func color(color_id: String) -> Variant:
 
 
 # returns the corresponding Transition object, which can be:
+# – the instant transition, if an empty String is given
 # – the transition matching the definition, if an id is given
 # – the result of parsing the given string as a Transition
 func transition(trans_id: String) -> Transition:
+	if trans_id == '':
+		return INSTANT
 	if trans_id in _transitions:
 		return _transitions[trans_id]
 	return Transition.new(trans_id)
-
-
-# returns an instant transition
-static func instant() -> Transition:
-	return Transition.new('QUAD EASE_IN 0s')
 
 
 class Transition extends RefCounted:

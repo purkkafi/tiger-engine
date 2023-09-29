@@ -68,15 +68,15 @@ class IView extends BaseInstruction:
 
 class IPause extends BaseInstruction:
 	const name: String = 'Pause'
-	var duration: float
+	var transition: String # transition id used for duration
 	
 	
-	func _init(_duration: float):
-		self.duration = _duration
+	func _init(_transition: String):
+		self.transition = _transition
 	
 	
 	func _to_string() -> String:
-		return 'pause %f' % [duration]
+		return 'pause %s' % [transition]
 
 
 class IHideUI extends BaseInstruction:
@@ -92,8 +92,8 @@ class IHideUI extends BaseInstruction:
 		return 'hideui %s' % [transition_id]
 
 
-class IPlaySound extends BaseInstruction:
-	const name: String = 'PlaySound'
+class ISound extends BaseInstruction:
+	const name: String = 'Sound'
 	var sound_id: String
 	
 	
@@ -102,14 +102,14 @@ class IPlaySound extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'playsound %s' % [sound_id]
+		return 'sound %s' % [sound_id]
 
 
-class IPlaySong extends BaseInstruction:
-	const name: String = 'PlaySong'
-	var song_id: String
+class IMusic extends BaseInstruction:
+	const name: String = 'Music'
+	var song_id: String # song id or the empty string to clear
 	var transition_id: String
-	var local_volume: float
+	var local_volume: float # local volume to play song with in range [0, 1]
 	
 	
 	func _init(_song_id: String, _transition_id: String, _local_volume):
@@ -124,8 +124,8 @@ class IPlaySong extends BaseInstruction:
 
 class IBG extends BaseInstruction:
 	const name: String = 'BG'
-	var bg_id: String
-	var transition_id: String
+	var bg_id: String # id of background; "" for clear
+	var transition_id: String # id of transition; "" for none (instant transition)
 	
 	
 	func _init(_bg_id: String, _transition_id: String):
@@ -139,15 +139,12 @@ class IBG extends BaseInstruction:
 
 class IFG extends BaseInstruction:
 	const name: String = 'FG'
-	var fg_id: String
-	var transition_id: String
+	var fg_id: String # id of foreground; "" for clear
+	var transition_id: String # id of transition; "" for none (instant transition)
 	
 	
 	func _init(_fg_id: String, _transition_id: String):
-		if _fg_id == 'clear':
-			self.fg_id = ''
-		else:
-			self.fg_id = _fg_id
+		self.fg_id = _fg_id
 		self.transition_id = _transition_id
 	
 	

@@ -5,6 +5,10 @@ var scripts: Dictionary
 # number of branches generated for each script; dict of script name -> int
 # used by generate_label()
 var branch_count: Dictionary
+# error messages caused during compilation
+var errors: Array[String] = []
+# if set to false, errors won't be reported via push_error()
+var silent: bool = false
 
 
 func compile_script(script_tag: Tag):
@@ -13,6 +17,17 @@ func compile_script(script_tag: Tag):
 	
 	var ins = to_instructions(tags, script_id)
 	scripts[script_id] = TEScript.new(script_id, ins)
+
+
+func has_errors():
+	return len(errors) != 0
+
+
+# registers an error message encountered during compilation
+func error(msg: String):
+	if not silent:
+		push_error(msg)
+	errors.append(msg)
 
 
 # returns a suitable, unused name for a subscript
@@ -31,6 +46,103 @@ func generate_label(base: String):
 	return '%s$1' % base
 
 
+# parses a \bg or \fg tag. tag_name must be "bg" or "fg"
+func parse_bg_or_fg(tag: Tag, tag_name: String) -> Variant:
+	var id: String = ''
+	var trans: String = ''
+	
+	match tag.length():
+		1:
+			pass
+		2:
+			var args: Array = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\%s, got %s' % [tag_name, tag])
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							trans = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					_:
+						error("unknown argument '%s' for \\%s: %s" % [arg.name, tag_name, tag])
+						return null
+		_:
+			error('expected 1 or 2 arguments for \\%s, got %s' % [tag_name, tag])
+			return null
+	
+	var value0 = tag.get_value_at(0)
+	if value0 is String:
+		id = value0
+	elif value0 is Tag and value0.name == 'clear' and value0.length() == 0:
+		id = ''
+	else:
+		error('expected id or \\clear in index 0 of \\%s, got %s' % [tag_name, tag])
+		return null
+	
+	match tag_name:
+		'bg':
+			return TEScript.IBG.new(id, trans)
+		'fg':
+			return TEScript.IFG.new(id, trans)
+		_:
+			push_error('parse_fg_or_bg called with illegal tag_name: %s' % tag_name)
+			return null
+
+
+# parses \music tag
+func parse_music(tag: Tag) -> Variant:
+	var song_id: String = ''
+	var transition: String = ''
+	var local_volume: float = 1.0
+	
+	match tag.length():
+		1:
+			pass
+		2:
+			var args = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\music, got %s' % [tag])
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							transition = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					'volume':
+						if not arg.get_string().is_valid_float():
+							error('expected float for \\volume, got %s' % tag)
+							return null
+						local_volume = float(arg.get_string())
+					_:
+						error("unknown argument '%s' for \\music: %s" % [arg.name, tag])
+						return null
+		_:
+			error('expected 1 or 2 arguments for \\music, got %s' % tag)
+			return null
+	
+	var value0 = tag.get_value_at(0)
+	if value0 is String:
+		song_id = value0
+	elif value0 is Tag and value0.name == 'clear' and value0.length() == 0:
+		song_id = ''
+	else:
+		error('expected id or \\clear in index 0 of \\music, got %s' % tag)
+		return null
+	
+	return TEScript.IMusic.new(song_id, transition, local_volume)
+
+
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
 	var ins: Array[TEScript.BaseInstruction] = []
 	
@@ -43,41 +155,53 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 			continue
 		
 		# is Tag
+		tag = tag as Tag
 		match tag.name:
 			'block':
-				ins.append(TEScript.IBlock.new(tag.get_string()))
-			'pause':
-				ins.append(TEScript.IPause.new(float(tag.get_string().trim_suffix('s'))))
-			'hideui':
-				ins.append(TEScript.IHideUI.new(tag.get_string()))
-			'playsound':
-				ins.append(TEScript.IPlaySound.new(tag.get_string()))
-			'playsong':
-				var song_tag = tag.get_value_at(0)
-				var song_id: String
-				if song_tag is String:
-					song_id = tag.get_value_at(0)
-				elif song_tag is Tag and song_tag.name == 'clear':
-					song_id = ''
+				if tag.length() != 1 or not tag.get_string() is String:
+					error('expected block id for \\block, got %s' % tag)
 				else:
-					push_error('unknown song id for \\playsong: %s' % song_tag)
+					ins.append(TEScript.IBlock.new(tag.get_string()))
 				
-				var trans_id: String = tag.get_string_at(1)
+			'pause':
+				if tag.length() != 1 or not tag.get_string() is String:
+					error('expected transition for \\pause, got %s' % tag)
+				else:
+					ins.append(TEScript.IPause.new(tag.get_string()))
 				
-				var local_volume: float = 1.0
-				if tag.has_index(2):
-					local_volume = float(tag.get_string_at(2))
+			'hideui':
+				if tag.length() != 1 or not tag.get_string() is String:
+					error('expected transition for \\hideui, got %s' % tag)
+				else:
+					ins.append(TEScript.IHideUI.new(tag.get_string()))
 				
-				ins.append(TEScript.IPlaySong.new(song_id, trans_id, local_volume))
+			'sound':
+				if tag.length() != 1 or not tag.get_string() is String:
+					error('expected sound id for \\sound, got %s' % tag)
+				else:
+					ins.append(TEScript.ISound.new(tag.get_string()))
+			
+			'music':
+				var parsed = parse_music(tag)
+				if parsed != null:
+					ins.append(parsed)
 				
 			'bg':
-				ins.append(TEScript.IBG.new(tag.get_string_at(0), tag.get_string_at(1)))  
+				var parsed = parse_bg_or_fg(tag, 'bg')
+				if parsed != null:
+					ins.append(parsed)
 			'fg':
-				ins.append(TEScript.IFG.new(tag.get_string_at(0), tag.get_string_at(1)))
+				var parsed = parse_bg_or_fg(tag, 'fg')
+				if parsed != null:
+					ins.append(parsed)
 			'meta':
+				# TODO should maybe validate this or rework it in general
 				ins.append(TEScript.IMeta.new(tag.get_dict()))
 			'break':
-				ins.append(TEScript.IBreak.new())
+				if tag.length() != 0:
+					error('expected \\break to have no arguments, got %s' % tag)
+				else:
+					ins.append(TEScript.IBreak.new())
 			'enter':
 				for command in tag.args:
 					var sprite: String = ''

@@ -70,6 +70,10 @@ func _fix_tree(nodes: Array[Variant]) -> Array[Variant]:
 		last = new_nodes[len(new_nodes)-1]
 		_index += 1
 	
+	# prevent trailing empty String
+	if last is String and last == '':
+		new_nodes.pop_back()
+	
 	return new_nodes
 
 

@@ -8,18 +8,18 @@ var fg_id: String = ''
 var TRANSPARENT: Color = Color(0, 0, 0, 0)
 
 
-# transitions to a new background with the given Transition
+# transitions to a new background with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_background(new_id: String, transition: Definitions.Transition, tween: Tween) -> Tween:
+func set_background(new_id: String, transition: String, tween: Tween) -> Tween:
 	bg_id = new_id
-	return _set_layer($BG, _get_layer_node(new_id), transition, tween, false)
+	return _set_layer($BG, _get_layer_node(new_id), TE.defs.transition(transition), tween, false)
 
 
-# transitions to a new foreground with the given Transition
+# transitions to a new foreground with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_foreground(new_id: String, transition: Definitions.Transition, tween: Tween) -> Tween:
+func set_foreground(new_id: String, transition: String, tween: Tween) -> Tween:
 	fg_id = new_id
-	return _set_layer($FG, _get_layer_node(new_id), transition, tween, true)
+	return _set_layer($FG, _get_layer_node(new_id), TE.defs.transition(transition), tween, true)
 
 
 # loads a suitable back/foreground Node based on the given id
@@ -39,7 +39,7 @@ func _get_layer_node(id: String) -> Node:
 		if id in TE.defs.unlocked_by_img:
 			for unlockable in TE.defs.unlocked_by_img[id]:
 				TE.settings.unlock(unlockable)
-				
+		
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene
 			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/img')
@@ -261,8 +261,8 @@ func get_state() -> Dictionary:
 
 # sets state from a Dict
 func set_state(state: Dictionary):
-	set_background(state['bg'], Definitions.instant(), null)
-	set_foreground(state['fg'], Definitions.instant(), null)
+	set_background(state['bg'], '', null)
+	set_foreground(state['fg'], '', null)
 	
 	for sprite_data in state['sprites']:
 		var sprite = _create_sprite(sprite_data['path'])
@@ -275,8 +275,8 @@ func set_state(state: Dictionary):
 
 # clears the stage, returning it to the empty initial state
 func clear():
-	set_background('', Definitions.instant(), null)
-	set_foreground('', Definitions.instant(), null)
+	set_background('', '', null)
+	set_foreground('', '', null)
 	
 	for sprite in $Sprites.get_children():
 		_remove_sprite(sprite)

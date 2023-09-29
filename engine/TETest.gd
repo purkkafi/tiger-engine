@@ -27,11 +27,25 @@ func fail_test(msg: String):
 	emit_signal('test_failed', msg)
 
 
+# stringifies its contents, allowing comparison
+func stringify(val: Variant):
+	if val is Array:
+		var target: Array = []
+		for e in val:
+			target.append(stringify(e))
+		return target
+	
+	elif val is Object:
+		return str(val)
+	
+	return val
+
+
 func assert_equals(a: Variant, b: Variant):
-	if a != b:
+	if stringify(a) != stringify(b):
 		fail_test('Assertion failed: \n   ' + str(a) + '\n  ==\n   '  + str(b))
 
 
 func assert_not_equals(a: Variant, b: Variant):
-	if a == b:
+	if stringify(a) == stringify(b):
 		fail_test('Assertion failed: \n   ' + str(a) + '\n  !=\n   '  + str(b))

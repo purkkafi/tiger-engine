@@ -123,20 +123,20 @@ func next_blocking():
 			repeat_ids[ins.repeat_id()] = true
 		
 		match ins.name:
-			'PlaySong':
+			'Music':
 				Audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
 			
-			'PlaySound':
+			'Sound':
 				Audio.play_sound(ins.sound_id)
 			
 			'Meta':
 				game_name = TE.localize[ins.game_name_uistring]
 			
 			'BG':
-				tween = $VNStage.set_background(ins.bg_id, TE.defs.transition(ins.transition_id), tween)
+				tween = $VNStage.set_background(ins.bg_id, ins.transition_id, tween)
 			
 			'FG':
-				tween = $VNStage.set_foreground(ins.fg_id, TE.defs.transition(ins.transition_id), tween)
+				tween = $VNStage.set_foreground(ins.fg_id, ins.transition_id, tween)
 			
 			'HideUI':
 				hiding_ui = true
@@ -175,7 +175,8 @@ func next_blocking():
 	var blocking = vm.next_blocking()
 	match blocking.name:
 		'Pause':
-			$View.pause(blocking.duration)
+			var duration: float = TE.defs.transition((blocking as TEScript.IPause).transition).duration
+			$View.pause(duration)
 		
 		'Block':
 			var block: Block = Blocks.find(blocking.block_id)

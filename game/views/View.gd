@@ -276,7 +276,6 @@ func update_state(delta: float):
 				var index = label.text.find(DEL)
 				var text = label.text
 				label.text = text.substr(0, index-1) + text.substr(index+1)
-				print('goin back')
 				label.visible_characters -= 1 # need to go back since the current char is deleted
 			else: # else, proceed normally
 				label.visible_characters += 1

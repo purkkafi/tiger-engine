@@ -37,7 +37,7 @@ func enter_stage(initial_state: Variant = null):
 		show_as(initial_state)
 	else:
 		show_as(default_frame)
-	move_to(sprite_position, Definitions.instant(), null)
+	move_to(sprite_position, Definitions.INSTANT, null)
 
 
 func _sprite_width() -> float:

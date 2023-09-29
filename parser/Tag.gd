@@ -41,10 +41,14 @@ func _to_string() -> String:
 	return "\\%s%s" % [name, args]
 
 
+# returns the amount of arguments in this Tag
+func length() -> int:
+	return len(args)
+
+
 # returns the single String this Tag contains or null
 func get_string():
 	if len(args) != 1 or len(args[0]) != 1 or !(args[0][0] is String):
-		push_error('expected single string, got %s' % self)
 		return null
 	return args[0][0]
 
@@ -52,7 +56,6 @@ func get_string():
 # returns the single String at the given argument or null
 func get_string_at(index: int):
 	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String):
-		push_error('expected string at index %d, got %s' % [index, self])
 		return null
 	return args[index][0]
 
@@ -64,7 +67,6 @@ func get_strings():
 		if len(arg) == 1 and arg[0] is String:
 			arr.append(arg[0])
 		else:
-			push_error('expected strings, got %s' % self)
 			return null
 	return arr
 
@@ -72,7 +74,6 @@ func get_strings():
 # returns the single String or Tag at the given argument or null
 func get_value():
 	if len(args) != 1 or len(args[0]) != 1:
-		push_error('expected single string or tag, got %s' % self)
 		return null
 	var value = args[0][0]
 	return value
@@ -81,7 +82,6 @@ func get_value():
 # returns the single String or Tag at the given argument or null
 func get_value_at(index: int):
 	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String and !args[index][0] is Tag):
-		push_error('expected string or tag at index %d, got %s' % [index, self])
 		return null
 	return args[index][0]
 
@@ -89,7 +89,6 @@ func get_value_at(index: int):
 # returns the single Tag at the given argument or null
 func get_tag_at(index: int):
 	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is Tag):
-		push_error('expected tag at index %d, got %s' % [index, self])
 		return null
 	return args[index][0]
 
@@ -97,7 +96,6 @@ func get_tag_at(index: int):
 # returns the string of the ControlTag at the given argument or null
 func get_control_at(index: int):
 	if index >= len(args) or (!args[index][0] is ControlTag):
-		push_error('expected control tag at index %s, got %s' % [index, self])
 		return null
 	return (args[index][0] as ControlTag).string
 
@@ -115,7 +113,6 @@ func get_text():
 		elif node is Break:
 			text += '\n'
 		else:
-			push_error('expected text, got %s' % self)
 			return null
 	
 	return text
@@ -124,17 +121,19 @@ func get_text():
 # returns an Array of Tags contained in the first argument or null
 func get_tags():
 	if len(args) != 1:
-		push_error('expected tags, got %s' % self)
 		return null
-	return args[0].filter(func(n): return n is Tag or n is ControlTag)
+	
+	var tags: Array = args[0].filter(func(n): return n is Tag or n is ControlTag)
+	return tags
 
 
 # returns the Array of Tags contained at the given argument or null
 func get_tags_at(index: int):
 	if index >= len(args):
-		push_error('expected tags at index %d, got %s' % [index, self])
 		return null
-	return args[index].filter(func(n): return n is Tag or n is ControlTag)
+	
+	var tags: Array = args[index].filter(func(n): return n is Tag or n is ControlTag)
+	return tags
 
 
 # returns a Dictionary where keys are the names of tags the
@@ -149,18 +148,18 @@ func get_dict() -> Dictionary:
 # like get_dict() but for the given index
 func get_dict_at(index: int):
 	if index >= len(args):
-		push_error('expected dict at index %d, got %s' % [index, self])
 		return null
+	
 	var dict: Dictionary = {}
 	for tag in get_tags_at(index):
 		dict[tag.name] = tag
+	
 	return dict
 
 
 # returns the only argument as a taglist or null 
 func get_taglist():
 	if len(args) != 1:
-		push_error('expected single arg, got %s' % self)
 		return null
 	return args[0]
 

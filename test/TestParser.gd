@@ -186,3 +186,12 @@ func test_inline_control_tag_in_tag():
 			'3'
 		]] } ]
 	)
+
+
+func test_empty_strings_removed_from_nested_tags():
+	assert_equals(
+		parse('\\outer{ \\inner{} }'),
+		[ { 'name' : 'outer', 'args' : [[
+			{ 'name' : 'inner', 'args' : [[]] }
+		]] }]
+	)
