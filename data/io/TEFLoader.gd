@@ -78,7 +78,7 @@ func _load(path, _original_path, _use_sub_threads, _cache_mode):
 		var id: String = path.substr(path.rfind('/')+1)
 		id = id.substr(0, len(id)-4)
 		
-		return ScriptFile.new(id, compiler.scripts)
+		return ScriptFile.new(id, compiler.scripts, compiler.errors)
 	
 	if len(tree) != 1:
 		push_error('single top-level tag required for %s in %s' % [type, path])

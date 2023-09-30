@@ -157,7 +157,7 @@ func move_sprite(id: String, to: String, with: Variant, tween: Tween) -> Tween:
 # shows the sprite with the specified sprite state
 # if with (a transition descriptor) is given, the new state will fade in on
 # top of the sprite (animated with the tween, if given)
-func show_sprite(id: String, _as: String, with: Variant, tween: Tween) -> Tween:
+func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = find_sprite(id)
 	
 	if with == null:

@@ -28,8 +28,6 @@ enum DebugMode { NONE, AUDIO }
 # sets the 'main' script in the given ScriptFile to be run
 # call this before switching to the scene
 func run_script(script_file: ScriptFile):
-	if not 'main' in script_file.scripts:
-		TE.log_error(TE.Error.SCRIPT_ERROR, "no 'main' script in %s, scriptfile probably doesn't support being run directly" % script_file.resource_path)
 	vm = TEScriptVM.new(script_file, 'main')
 
 
@@ -77,7 +75,7 @@ func _ready():
 	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
-	if vm != null:
+	if vm != null and vm.current_script != null:
 		next_blocking()
 
 
@@ -301,6 +299,11 @@ func _unhide_ui():
 
 
 func _process(delta):
+	# alert on script errors
+	while len(vm.errors) != 0:
+		TE.log_error(TE.Error.SCRIPT_ERROR, vm.errors.pop_front())
+		return
+	
 	# hack for some weird bullshit!	
 	# sometimes end of 'game_advance_mouse' is not detected properly
 	# this should help

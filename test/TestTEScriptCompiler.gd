@@ -12,16 +12,30 @@ func compile(script: String) -> TEScriptCompiler:
 		}
 		""" % script
 	
-	var tag: Tag = parser.parse(lexer.tokenize_string(script_to_compile, '<test>'))[0] as Tag
+	var result = parser.parse(lexer.tokenize_string(script_to_compile, '<test>'))
+	
+	if result == null:
+		push_error('syntax error in script: %s' % script)
+		return
+	
+	var tag: Tag = result[0] as Tag
 	
 	var compiler = TEScriptCompiler.new()
-	compiler.silent = true
 	compiler.compile_script(tag)
 	return compiler
 
 
+func compiled_scripts(script: String) -> Dictionary:
+	var compiler = compile(script)
+	if compiler.has_errors():
+		push_error('errors in script: %s' % compiler.errors)
+	return compiler.scripts
+
+
 func instructions(script: String) -> Array[Variant]:
 	var compiler = compile(script)
+	if compiler.has_errors():
+		push_error('errors in script: %s' % compiler.errors)
 	return compiler.scripts['test'].instructions
 
 
@@ -237,4 +251,309 @@ func test_break_should_be_empty():
 	assert_equals(
 		errors('\\break{anything}'),
 		[ 'expected \\break to have no arguments, got \\break[["anything"]]' ]
+	)
+
+
+func test_enter_default_values():
+	assert_equals(
+		instructions('\\enter{the_sprite}'),
+		[ TEScript.IEnter.new('the_sprite', null, null, null) ]
+	)
+
+
+func test_enter_with_arguments():
+	assert_equals(
+		instructions('\\enter{the_sprite}{ \\at{1 of 1} \\with{trans} \\by{alt_id} }'),
+		[ TEScript.IEnter.new('the_sprite', '1 of 1', 'trans', 'alt_id') ]
+	)
+
+
+func test_enter_should_have_max_2_args():
+	assert_equals(
+		errors('\\enter{1}{2}{3}'),
+		[ 'expected 1 or 2 arguments for \\enter, got \\enter[["1"], ["2"], ["3"]]' ]
+	)
+
+
+func test_enter_first_arg_should_be_sprite_id():
+	assert_equals(
+		errors('\\enter{\\no}'),
+		[ 'expected sprite id in index 0 of \\enter, got \\enter[[\\no[]]]' ]
+	)
+
+
+func test_enter_at_should_take_location_descriptor():
+	assert_equals(
+		errors('\\enter{spr}{ \\at{\\bad} }'),
+		[ 'expected location descriptor for \\at, got \\enter[["spr"], [\\at[[\\bad[]]]]]' ]
+	)
+
+
+func test_enter_with_should_take_transition():
+	assert_equals(
+		errors('\\enter{spr}{ \\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\enter[["spr"], [\\with[[\\bad[]]]]]' ]
+	)
+
+
+func test_enter_by_should_take_sprite_id():
+	assert_equals(
+		errors('\\enter{spr}{ \\by{\\bad} }'),
+		[ 'expected id for \\by, got \\enter[["spr"], [\\by[[\\bad[]]]]]' ]
+	)
+
+
+func test_move():
+	assert_equals(
+		instructions('\\move{spr}{ \\to{0.5} }'),
+		[ TEScript.IMove.new('spr', '0.5', null) ]
+	)
+
+
+func test_move_with():
+	assert_equals(
+		instructions('\\move{spr}{ \\to{0.5} \\with{trans} }'),
+		[ TEScript.IMove.new('spr', '0.5', 'trans') ]
+	)
+
+
+func test_move_requires_to():
+	assert_equals(
+		errors('\\move{spr}{ \\with{trans} }'),
+		[ 'expected \\move to specify \\to, got \\move[["spr"], [\\with[["trans"]]]]' ]
+	)
+
+
+func test_move_arg_0_should_be_sprite_id():
+	assert_equals(
+		errors('\\move{\\no}{ \\to{0.5} }'),
+		[ 'expected sprite id in index 0 of \\move, got \\move[[\\no[]], [\\to[["0.5"]]]]' ]
+	)
+
+
+func test_move_with_should_take_transition():
+	assert_equals(
+		errors('\\move{spr}{ \\to{0.5}\\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\move[["spr"], [\\to[["0.5"]], \\with[[\\bad[]]]]]' ]
+	)
+
+
+func test_move_to_should_take_location_descriptor():
+	assert_equals(
+		errors('\\move{spr}{ \\to{\\bad} }'),
+		[ 'expected location descriptor for \\to, got \\move[["spr"], [\\to[[\\bad[]]]]]' ]
+	)
+
+
+func test_show():
+	assert_equals(
+		instructions('\\show{id}{ \\as{state} }'),
+		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  null) ]
+	)
+
+
+func test_show_with_transition():
+	assert_equals(
+		instructions('\\show{id}{ \\as{state} \\with{trans} }'),
+		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  'trans') ]
+	)
+
+
+func test_takes_max_2_args():
+	assert_equals(
+		errors('\\show{1}{ \\as{2} }{3}'),
+		[ 'expected 2 arguments for \\show, got \\show[["1"], [\\as[["2"]]], ["3"]]' ]
+	)
+
+
+func test_should_have_args_at_index_1():
+	assert_equals(
+		errors('\\show{id}{bad}'),
+		[ 'expected args in index 1 of \\show, got \\show[["id"], ["bad"]]' ]
+	)
+
+
+func test_show_requires_as():
+	assert_equals(
+		errors('\\show{spr}{ \\with{trans} }'),
+		[ 'expected \\show to specify \\as, got \\show[["spr"], [\\with[["trans"]]]]' ]
+	)
+
+
+func test_show_with_takes_transition():
+	assert_equals(
+		errors('\\show{spr}{ \\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\show[["spr"], [\\with[[\\bad[]]]]]' ]
+	)
+
+
+func test_exit_default_args():
+	assert_equals(
+		instructions('\\exit{id}'),
+		[ TEScript.IExit.new('id', null) ]
+	)
+
+
+func test_exit_all_and_with():
+	assert_equals(
+		instructions('\\exit{\\all}{ \\with{trans} }'),
+		[ TEScript.IExit.new('', 'trans') ]
+	)
+
+
+func test_exit_takes_max_2_args():
+	assert_equals(
+		errors('\\exit{1}{2}{3}'),
+		[ 'expected 1 or 2 arguments for \\exit, got \\exit[["1"], ["2"], ["3"]]' ]
+	)
+
+
+func test_exit_forbids_non_all_tags_in_arg_0():
+	assert_equals(
+		errors('\\exit{\\no}'),
+		[ 'expected sprite id or \\all in index 0 of \\exit, got \\exit[[\\no[]]]' ]
+	)
+
+
+func test_exit_with_takes_transition():
+	assert_equals(
+		errors('\\exit{id}{ \\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\exit[["id"], [\\with[[\\bad[]]]]]' ]
+	)
+
+
+func test_if():
+	var scripts = compiled_scripts('\\if{{CONDITION}}{ \\bg{possibly} } \n \\bg{after}')
+	
+	# test that the main script compiles to a conditional jump and then a jump to the after branch
+	assert_equals(
+		scripts['test'].instructions,
+		[ TEScript.IJmpIf.new('CONDITION', 'test$2_if'), TEScript.IJmp.new('test$1_after_if', null) ]
+	)
+	
+	# test that the after branch contains the test marker instruction
+	assert_equals(
+		scripts['test$1_after_if'].instructions,
+		[ TEScript.IBG.new('after', '') ]
+	)
+	
+	# test that the if branch contains the test marker instruction and then a jump to the after branch
+	assert_equals(
+		scripts['test$2_if'].instructions,
+		[ TEScript.IBG.new('possibly', ''), TEScript.IJmp.new('test$1_after_if', null) ]
+	)
+
+func test_if_requires_2_args():
+	assert_equals(
+		errors('\\if{1}{2}{3}'),
+		[ 'expected \\if to have condition and branch, got \\if[["1"], ["2"], ["3"]]' ]
+	)
+
+
+func test_if_requires_control_tag_at_index_0():
+	assert_equals(
+		errors('\\if{bad}{}'),
+		[ 'expected index 0 of \\if to be control tag, got \\if[["bad"], []]' ]
+	)
+
+
+func test_match():
+	var scripts = compiled_scripts("""
+\\match{{CONDITION}}{
+	\\case{{CASE1}}{ \\bg{case1_bg} }
+	\\default{ \\bg{default_bg} }
+}
+\\bg{after_bg}
+		""")
+	
+	assert_equals(
+		scripts['test'].instructions,
+		[
+			TEScript.IJmpIf.new('(CONDITION) == (CASE1)', 'test$2_case'),
+			TEScript.IJmp.new('test$3_default', null),
+			TEScript.IJmp.new('test$1_after_match', null)
+		]
+	)
+	
+	assert_equals(
+		scripts['test$1_after_match'].instructions,
+		[ TEScript.IBG.new('after_bg', '') ]
+	)
+	
+	assert_equals(
+		scripts['test$2_case'].instructions,
+		[ TEScript.IBG.new('case1_bg', ''), TEScript.IJmp.new('test$1_after_match', null) ]
+	)
+	
+	assert_equals(
+		scripts['test$3_default'].instructions,
+		[ TEScript.IBG.new('default_bg', ''), TEScript.IJmp.new('test$1_after_match', null) ]
+	)
+
+
+func test_match_requires_control_tag_as_condition():
+	assert_equals(
+		errors('\\match{bad}{}'),
+		[ 'expected index 0 of \\match to be control tag, got \\match[["bad"], []]' ]
+	)
+
+
+func test_match_takes_2_arguments():
+	assert_equals(
+		errors('\\match{{COND}}'),
+		[ 'expected \\match to have condition and arms, got \\match[[{{COND}}]]' ]
+	)
+
+
+func test_match_rejects_unknown_arms():
+	assert_equals(
+		errors('\\match{{COND}}{ \\bad{} }'),
+		[ 'unknown arm type for \\match, expected case or default: bad' ]
+	)
+
+
+func test_match_case_requires_control_tag():
+	assert_equals(
+		errors('\\match{{1}}{ \\case{bad}{} }'),
+		[ 'expected control tag in index 0 of \\match arm, got \\match[[{{1}}], [\\case[["bad"], []]]]' ]
+	)
+
+
+func test_match_case_takes_correct_number_of_args():
+	assert_equals(
+		errors('\\match{{1}}{ \\case{{2}} }'),
+		[ 'expected \\case arm of \\match to have condition and body, got \\match[[{{1}}], [\\case[[{{2}}]]]]' ]
+	)
+	
+	assert_equals(
+		errors('\\match{{1}}{ \\default{{2}}{} }'),
+		[ 'expected \\default arm of \\match to have body, got \\match[[{{1}}], [\\default[[{{2}}], []]]]' ]
+	)
+
+
+func test_jmp_in_same_file():
+	assert_equals(
+		instructions('\\jmp{there}'),
+		[ TEScript.IJmp.new('there', null) ]
+	)
+
+
+func test_jmp_to_other_file():
+	assert_equals(
+		instructions('\\jmp{otherfile:there}'),
+		[ TEScript.IJmp.new('there', 'otherfile') ]
+	)
+
+
+func test_jmp_requires_single_argument():
+	assert_equals(
+		errors('\\jmp{destination}{bad}'),
+		[ 'expected \\jmp to have destination, got \\jmp[["destination"], ["bad"]]' ]
+	)
+
+
+func test_jmp_rejects_malformed_destination():
+	assert_equals(
+		errors('\\jmp{a:b:c}'),
+		[ 'bad \\jmp destination \'a:b:c\' in \\jmp[["a:b:c"]]' ]
 	)

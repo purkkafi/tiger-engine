@@ -5,11 +5,14 @@ class_name ScriptFile extends Resource
 var id: String
 # a Dictionary of script ids to TEScript objects
 var scripts: Dictionary
+# parse errors encountered during compilation
+var errors: Array[String]
 
 
-func _init(_id: String, _scripts: Dictionary):
+func _init(_id: String, _scripts: Dictionary, _errors: Array[String]):
 	id = _id
 	scripts = _scripts
+	errors = _errors
 
 
 func _to_string() -> String:

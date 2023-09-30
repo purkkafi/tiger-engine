@@ -29,7 +29,7 @@ func enter_stage(_initial_state: Variant = null):
 
 
 # shows the sprite according to the given String describing its state
-func show_as(_as: String):
+func show_as(_as: Tag):
 	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override show_as()")
 
 

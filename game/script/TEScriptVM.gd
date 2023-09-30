@@ -6,19 +6,24 @@ var scriptfile: ScriptFile
 var current_script: TEScript
 var index: int = 0
 var lookahead_index: int = 0
-var BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View', 'Jmp', 'JmpIf' ]
-var CONDITIONAL_INSTRUCTIONS: Array[String] = [ 'JmpIf' ]
+var errors: Array[String] = []
+
+const BLOCKING_INSTRUCTIONS: Array[String] = [ 'Block', 'Pause', 'Break',  'View', 'Jmp', 'JmpIf' ]
+const CONDITIONAL_INSTRUCTIONS: Array[String] = [ 'JmpIf' ]
 
 
 func _init(_scriptfile: ScriptFile, script: String):
-	self.scriptfile = _scriptfile
-	self.current_script = scriptfile.scripts[script]
+	jump_to_file(_scriptfile, script)
 
 
 func jump_to(script: String):
+	self.errors = scriptfile.errors.duplicate()
 	if not script in scriptfile.scripts:
-		TE.log_error(TE.Error.SCRIPT_ERROR, 'tried to jump to unknown script: %s' % script)
+		errors.append('tried to jump to unknown script: %s' % script)
+		return
+	
 	self.current_script = scriptfile.scripts[script]
+	
 	index = 0   
 	lookahead_index = 0
 

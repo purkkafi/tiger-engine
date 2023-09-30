@@ -223,11 +223,11 @@ class IMove extends BaseInstruction:
 class IShow extends BaseInstruction:
 	const name: String = 'Show'
 	var sprite: String
-	var _as: String
+	var _as: Tag
 	var with: Variant # null or a transition id String
 	
 	
-	func _init(_sprite: String, __as: String, _with: Variant):
+	func _init(_sprite: String, __as: Tag, _with: Variant):
 		self.sprite = _sprite
 		self._as = __as
 		self.with = _with
@@ -238,12 +238,12 @@ class IShow extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'show %s as %s with %s' % [sprite, _as, with]
+		return 'show %s as %s with %s' % [sprite, str(_as), with]
 
 
 class IExit extends BaseInstruction:
 	const name: String = 'Exit'
-	var sprite: String
+	var sprite: String # sprite id or empty string for \all
 	var with: Variant # null or transition id String
 	
 	

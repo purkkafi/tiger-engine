@@ -7,8 +7,6 @@ var scripts: Dictionary
 var branch_count: Dictionary
 # error messages caused during compilation
 var errors: Array[String] = []
-# if set to false, errors won't be reported via push_error()
-var silent: bool = false
 
 
 func compile_script(script_tag: Tag):
@@ -25,8 +23,6 @@ func has_errors():
 
 # registers an error message encountered during compilation
 func error(msg: String):
-	if not silent:
-		push_error(msg)
 	errors.append(msg)
 
 
@@ -143,6 +139,193 @@ func parse_music(tag: Tag) -> Variant:
 	return TEScript.IMusic.new(song_id, transition, local_volume)
 
 
+# parses \enter
+func parse_enter(tag: Tag):
+	var sprite_id: String
+	var at: Variant = null
+	var with: Variant = null
+	var by: Variant = null
+	
+	match tag.length():
+		1:
+			pass
+		2:
+			var args = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\enter, got %s' % tag)
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							with = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					'at':
+						if arg.get_string() is String:
+							at = arg.get_string()
+						else:
+							error('expected location descriptor for \\at, got %s' % tag)
+							return null
+					'by':
+						if arg.get_string() is String:
+							by = arg.get_string()
+						else:
+							error('expected id for \\by, got %s' % tag)
+							return null
+					_:
+						error("unknown argument '%s' for \\enter: %s" % [arg.name, tag])
+						return null
+		_:
+			error('expected 1 or 2 arguments for \\enter, got %s' % tag)
+			return null
+	
+	if tag.get_string_at(0) is String:
+		sprite_id = tag.get_string_at(0)
+	else:
+		error('expected sprite id in index 0 of \\enter, got %s' % tag)
+		return null
+	
+	return TEScript.IEnter.new(sprite_id, at, with, by)
+
+
+# parses \move
+func parse_move(tag: Tag):
+	var sprite_id: String
+	var to: Variant = null
+	var with: Variant = null
+	
+	match tag.length():
+		2:
+			var args = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\move, got %s' % tag)
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							with = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					'to':
+						if arg.get_string() is String:
+							to = arg.get_string()
+						else:
+							error('expected location descriptor for \\to, got %s' % tag)
+							return null
+					_:
+						error("unknown argument '%s' for \\move: %s" % [arg.name, tag])
+						return null
+		_:
+			error('expected 2 arguments for \\move, got %s' % tag)
+			return null
+	
+	if tag.get_string_at(0) is String:
+		sprite_id = tag.get_string_at(0)
+	else:
+		error('expected sprite id in index 0 of \\move, got %s' % tag)
+		return null
+	
+	if to == null:
+		error('expected \\move to specify \\to, got %s' % tag)
+		return null
+	
+	return TEScript.IMove.new(sprite_id, to, with)
+
+
+# parses \show
+func parse_show(tag: Tag):
+	var sprite_id: String
+	var _as: Tag
+	var with: Variant = null
+	
+	match tag.length():
+		2:
+			var args = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\show, got %s' % tag)
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							with = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					'as':
+						_as = arg
+					_:
+						error("unknown argument '%s' for \\show: %s" % [arg.name, tag])
+						return null
+		_:
+			error('expected 2 arguments for \\show, got %s' % tag)
+			return null
+	
+	if tag.get_string_at(0) is String:
+		sprite_id = tag.get_string_at(0)
+	else:
+		error('expected sprite id in index 0 of \\show, got %s' % tag)
+		return null
+	
+	if _as == null:
+		error('expected \\show to specify \\as, got %s' % tag)
+		return null
+	
+	return TEScript.IShow.new(sprite_id, _as, with)
+
+
+# parses \exit
+func parse_exit(tag: Tag):
+	var sprite_id: String
+	var with: Variant = null
+	
+	match tag.length():
+		1:
+			pass
+		2:
+			var args = tag.get_tags_at(1)
+			
+			if len(args) == 0:
+				error('expected args in index 1 of \\exit, got %s' % tag)
+				return null
+			
+			for arg in args:
+				match arg.name:
+					'with':
+						if arg.get_string() is String:
+							with = arg.get_string()
+						else:
+							error('expected transition for \\with, got %s' % tag)
+							return null
+					_:
+						error("unknown argument '%s' for \\exit: %s" % [arg.name, tag])
+						return null
+		_:
+			error('expected 1 or 2 arguments for \\exit, got %s' % tag)
+			return null
+	
+	var value0 = tag.get_value_at(0)
+	if value0 is String:
+		sprite_id = tag.get_string_at(0)
+	elif value0 is Tag and value0.length() == 0 and value0.name == 'all':
+		sprite_id = ''
+	else:
+		error('expected sprite id or \\all in index 0 of \\exit, got %s' % tag)
+		return null
+	
+	return TEScript.IExit.new(sprite_id, with)
+
+
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
 	var ins: Array[TEScript.BaseInstruction] = []
 	
@@ -154,7 +337,7 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 			ins.append(TEScript.IControlExpr.new(string))
 			continue
 		
-		# is Tag
+		# else is tag
 		tag = tag as Tag
 		match tag.name:
 			'block':
@@ -190,109 +373,56 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				var parsed = parse_bg_or_fg(tag, 'bg')
 				if parsed != null:
 					ins.append(parsed)
+				
 			'fg':
 				var parsed = parse_bg_or_fg(tag, 'fg')
 				if parsed != null:
 					ins.append(parsed)
+				
 			'meta':
 				# TODO should maybe validate this or rework it in general
 				ins.append(TEScript.IMeta.new(tag.get_dict()))
+				
 			'break':
 				if tag.length() != 0:
 					error('expected \\break to have no arguments, got %s' % tag)
 				else:
 					ins.append(TEScript.IBreak.new())
+				
 			'enter':
-				for command in tag.args:
-					var sprite: String = ''
-					var at: Variant = null
-					var with: Variant = null
-					var by: Variant = null
-					
-					for arg in command:
-						if arg is String and sprite == '':
-							sprite = arg.strip_edges()
-						elif arg is Tag:
-							match arg.name:
-								'at':
-									at = arg.get_string()
-								'with':
-									with = arg.get_string()
-								'by':
-									by = arg.get_string()
-								_:
-									push_error('unknown argument for \\enter: %s' % arg)
-					
-					ins.append(TEScript.IEnter.new(sprite, at, with, by))
-			
+				var parsed = parse_enter(tag)
+				if parsed != null:
+					ins.append(parsed)
+				
 			'move':
-				for command in tag.args:
-					var sprite: String = ''
-					var to: String = ''
-					var with: Variant = null
-					
-					for arg in command:
-						if arg is String and sprite == '':
-							sprite = arg.strip_edges()
-						elif arg is Tag:
-							match arg.name:
-								'to':
-									to = arg.get_string()
-								'with':
-									with = arg.get_string()
-								_:
-									push_error('unknown argument for \\move: %s' % arg)
-					
-					if to == '':
-						push_error('argument \\to must be provided for \\move: %s' % tag)
-					
-					ins.append(TEScript.IMove.new(sprite, to, with))
+				var parsed = parse_move(tag)
+				if parsed != null:
+					ins.append(parsed)
 			
 			'show':
-				for command in tag.args:
-					var sprite: String = ''
-					var _as: String = ''
-					var with: Variant = null
-					
-					for arg in command:
-						if arg is String and sprite == '':
-							sprite = arg.strip_edges()
-						elif arg is Tag:
-							match arg.name:
-								'as':
-									_as = arg.get_string()
-								'with':
-									with = arg.get_string()
-								_:
-									push_error('unknown argument for \\show: %s' % arg)
-					
-					if _as == '':
-						push_error('argument \\as must be provided for \\show: %s' % tag)
-					
-					ins.append(TEScript.IShow.new(sprite, _as, with))
+				var parsed = parse_show(tag)
+				if parsed != null:
+					ins.append(parsed)
 			
 			'exit':
-				for command in tag.args:
-					var sprite: String = ''
-					var with: Variant = null
-					
-					for arg in command:
-						if arg is String and sprite == '':
-							sprite = arg.strip_edges()
-						elif arg is Tag:
-							match arg.name:
-								'with':
-									with = arg.get_string()
-								_:
-									push_error('unknown argument for \\exit: %s' % arg)
-					
-					ins.append(TEScript.IExit.new(sprite, with))
+				var parsed = parse_exit(tag)
+				if parsed != null:
+					ins.append(parsed)
 			
 			'if':
+				if tag.length() != 2:
+					error('expected \\if to have condition and branch, got %s' % tag)
+					return ins
+				
+				if tag.get_control_at(0) == null:
+					error("expected index 0 of \\if to be control tag, got %s" % tag)
+					return ins
+				
+				# generate a script to jump to if the condition is true
+				
 				# name of the script containing the rest of the instructions
 				var rest_name = generate_label(script_id) + '_after_if'
 				
-				# generate a script to jump to if the condition is true
 				var condition: String = tag.get_control_at(0)
 				var branch_tags: Array = tag.get_tags_at(1)
 				var branch_name = generate_label(script_id) + '_if'
@@ -315,6 +445,14 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				return ins
 			
 			'match':
+				if tag.length() != 2:
+					error('expected \\match to have condition and arms, got %s' % tag)
+					return ins
+				
+				if tag.get_control_at(0) == null:
+					error("expected index 0 of \\match to be control tag, got %s" % tag)
+					return ins
+				
 				var expr: String = tag.get_control_at(0)
 				# where every branch will jump to
 				var rest_name = generate_label(script_id) + '_after_match'
@@ -328,15 +466,28 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 					scripts[branch_name] = TEScript.new(branch_name, branch_ins)
 					
 					if arm.name == 'case':
+						if arm.length() != 2:
+							error('expected \\case arm of \\match to have condition and body, got %s' % tag)
+							return ins
+						
 						# generate JmpIf for each value given to the case
 						for i in range(len(arm.args)-1):
+							if arm.get_control_at(i) == null:
+								error('expected control tag in index 0 of \\match arm, got %s' % tag)
+								return ins
+							
 							var cond: String = '(%s) == (%s)' % [expr, arm.get_control_at(i)]
 							ins.append(TEScript.IJmpIf.new(cond, branch_name))
 					elif arm.name == 'default':
+						if arm.length() != 1:
+							error('expected \\default arm of \\match to have body, got %s' % tag)
+							return ins
+						
 						# generate unconditional jump to the branch
 						ins.append(TEScript.IJmp.new(branch_name))
 					else:
-						push_error('unknown arm for match: %s' % arm.name)
+						error('unknown arm type for \\match, expected case or default: %s' % arm.name)
+						return ins
 				
 				# jump to after branch; will be executed if there is no match and no default arm
 				ins.append(TEScript.IJmp.new(rest_name))
@@ -348,17 +499,23 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				return ins
 			
 			'jmp':
+				if tag.get_string() == null:
+					error('expected \\jmp to have destination, got %s' % tag)
+					continue
+				
 				var to: String = tag.get_string()
 				if ':' in to:
 					var parts = to.split(':')
 					if len(parts) != 2:
-						push_error('bad \\jmp destination: %s' % to)
-					ins.append(TEScript.IJmp.new(parts[1], parts[0]))
+						error("bad \\jmp destination '%s' in %s" % [to, tag])
+					else:
+						ins.append(TEScript.IJmp.new(parts[1], parts[0]))
 				else:
 					ins.append(TEScript.IJmp.new(to))
 			
 			_:
 				# interpret as the declaration of a View
+				# TODO think about how to implement this properly
 				if len(tag.args) == 0:
 					ins.append(TEScript.IView.new(tag.name, []))
 				else:
