@@ -138,10 +138,11 @@ func get_tags_at(index: int):
 
 # returns a Dictionary where keys are the names of tags the
 # first argument contains and the values are the tags
-func get_dict() -> Dictionary:
+# a function can be passed to apply it to all values of the dict
+func get_dict(apply_func: Callable = func(_tag): return _tag) -> Dictionary:
 	var dict: Dictionary = {}
 	for tag in get_tags():
-		dict[tag.name] = tag
+		dict[tag.name] = apply_func.call(tag)
 	return dict
 
 

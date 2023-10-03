@@ -11,8 +11,10 @@ var _transitions: Dictionary = {}
 var songs: Dictionary = {}
 # a map of song ids to custom volumes, which are in range [0, 1]
 var song_custom_volumes: Dictionary = {}
+var song_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
+var sound_metadata: Dictionary = {} # metadata specified with \meta{}
 # array of ids of unlockables
 var unlockables: Array[String] = []
 # ids of unlockables that should be unlocked automatically

@@ -190,10 +190,7 @@ func _resolve_definitions(tree: Tag):
 				defs.unlocked_by_song[id].append(unlockable_id)
 				
 			'sound':
-				var id: String = node.get_string_at(0)
-				var path: String = node.get_string_at(1)
-				
-				defs.sounds[id] = path
+				_parse_sound_definition(defs, node)
 			
 			'unlockable':
 				var id: String = node.get_string_at(0)
@@ -274,16 +271,46 @@ func _resolve_definitions(tree: Tag):
 	return defs
 
 
+func _parse_meta(id: String, option: Tag, metadata: Dictionary):
+	var dict: Dictionary = option.get_dict(func(t): return t.get_string())
+	
+	if id not in metadata:
+		metadata[id] = dict
+	elif metadata[id] is Array:
+		metadata[id].append(dict)
+	else: # turn into list if meta already specified
+		metadata[id] = [ metadata[id] ]
+		metadata[id].append(dict)
+
+
+func _parse_sound_definition(defs: Definitions, node: Tag):
+	node.expect_length(2, 3)
+	var id: String = node.get_string_at(0)
+	var path: String = node.get_string_at(1)
+	
+	if node.has_index(2):
+		for option in node.get_tags_at(2):
+			match option.name:
+				'meta':
+					_parse_meta(id, option, defs.sound_metadata)
+				_:
+					push_error('unknown option in sound definition: %s' % option)
+	
+	defs.sounds[id] = path
+
+
 func _parse_song_definition(defs: Definitions, node: Tag) -> String:
 	node.expect_length(2, 3)
 	var id: String = node.get_string_at(0)
 	var path: String = node.get_string_at(1)
 	
 	if node.has_index(2):
-		for option in node.get_dict_at(2).values():
+		for option in node.get_tags_at(2):
 			match option.name:
 				'volume':
 					defs.song_custom_volumes[id] = float(option.get_string())
+				'meta':
+					_parse_meta(id, option, defs.song_metadata)
 				_:
 					push_error('unknown option in song definition: %s' % option)
 	
