@@ -373,13 +373,17 @@ func get_skip_mode() -> SkipMode:
 
 
 func skip_toggled(on: bool):
-	if on:
+	if on: # skip toggled on
 		speedup = Speedup.SKIP
 		_to_end_of_line()
-	else:
+	else: # skip toggled off
 		speedup = Speedup.NORMAL
-		if _current_label() != null:
-			state = State.SCROLLING_TEXT
+		if waiting_tween != null and waiting_tween.is_running():
+			# if waiting a tween, just move on
+			state = State.READY_TO_PROCEED
+		else:
+			# else wait until user proceeds manually
+			state = State.WAITING_ADVANCE
 
 
 func skip_pressed():
