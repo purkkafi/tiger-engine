@@ -399,12 +399,14 @@ func _gui_input(event):
 
 func before_overlay():
 	overlay_active = true
+	self.focus_mode = Control.FOCUS_NONE
 	$VNControls.set_buttons_disabled(true)
 	focus_before_overlay = focus_now.get_ref()
 
 
 func after_overlay():
 	overlay_active = false
+	self.focus_mode = Control.FOCUS_ALL
 	$VNControls.set_buttons_disabled(false)
 	if tabbing:
 		focus_before_overlay.grab_focus()

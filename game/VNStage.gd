@@ -108,7 +108,7 @@ func enter_sprite(id: String, at: Variant, with: Variant, by: Variant, tween: Tw
 	
 	$Sprites.add_child(sprite)
 	sprite.enter_stage(null)
-	sprite.move_to(_parse_position_descriptor(at), Definitions.instant(), null)
+	sprite.move_to(_parse_position_descriptor(at), Definitions.INSTANT, null)
 	
 	if with != null:
 		if tween == null:
@@ -147,7 +147,7 @@ func move_sprite(id: String, to: String, with: Variant, tween: Tween) -> Tween:
 		tween = create_tween()
 	
 	if with == null:
-		with = TE.defs.instant()
+		with = Definitions.INSTANT
 	else:
 		with = TE.defs.transition(with)
 	sprite.move_to(_parse_position_descriptor(to), with, tween)
@@ -172,7 +172,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	var new_sprite = _create_sprite(sprite.path)
 	sprite.add_sibling(new_sprite, false)
 	new_sprite.enter_stage(_as)
-	new_sprite.move_to(sprite.sprite_position, Definitions.instant())
+	new_sprite.move_to(sprite.sprite_position, Definitions.INSTANT)
 	
 	new_sprite.modulate.a = 0.0
 	var tweener = tween.parallel().tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
@@ -270,7 +270,7 @@ func set_state(state: Dictionary):
 		sprite.enter_stage()
 		sprite.id = sprite_data.id
 		sprite.set_sprite_state(sprite_data['state'])
-		sprite.move_to(sprite_data['x'], TE.defs.instant())
+		sprite.move_to(sprite_data['x'], Definitions.INSTANT)
 
 
 # clears the stage, returning it to the empty initial state

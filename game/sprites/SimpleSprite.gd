@@ -52,7 +52,7 @@ func show_as_frame(frame: String):
 	current_frame = frame
 	rect.texture = resource.files[paths[frame]]
 	self.position.y = get_parent().size.y - rect.texture.get_height()
-	move_to(sprite_position, Definitions.instant(), null)
+	move_to(sprite_position, Definitions.INSTANT, null)
 
 
 func get_sprite_state() -> Variant:

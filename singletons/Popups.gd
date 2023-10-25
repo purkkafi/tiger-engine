@@ -27,6 +27,9 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.popup_centered_clamped()
 	edit.grab_focus()
 	
+	popup.connect('canceled', _remove_popup.bind(popup))
+	popup.connect('confirmed', _remove_popup.bind(popup))
+	
 	return popup
 
 

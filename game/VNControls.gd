@@ -48,8 +48,10 @@ func set_buttons_disabled(disabled: bool):
 		if disabled: # record current state into metadata when disabling
 			btn.set_meta('disabled_state', btn.disabled)
 			btn.disabled = true
+			btn.focus_mode = FOCUS_NONE
 		else: # when enabling, read previous state from metadata
 			if btn.has_meta('disabled_state'):
 				btn.disabled = btn.get_meta('disabled_state')
 			else:
 				btn.disabled = false
+			btn.focus_mode = FOCUS_ALL

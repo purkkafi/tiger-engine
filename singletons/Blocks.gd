@@ -29,7 +29,7 @@ static func find(id: String, queue_only = false) -> Variant:
 		Assets.blockfiles.queue('lang:text/' + blockfile_id + '.tef')
 		return null
 	
-	var blockfile: BlockFile = Assets.blockfiles.get_resource('lang:text/' + blockfile_id + '.tef')
+	var blockfile: BlockFile = Assets.blockfiles.get_unqueued('lang:text/' + blockfile_id + '.tef')
 	
 	if blockfile != null and block_id in blockfile.blocks:
 		return blockfile.blocks[block_id]
