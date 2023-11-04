@@ -466,7 +466,7 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 					scripts[branch_name] = TEScript.new(branch_name, branch_ins)
 					
 					if arm.name == 'case':
-						if arm.length() != 2:
+						if arm.length() < 2:
 							error('expected \\case arm of \\match to have condition and body, got %s' % tag)
 							return ins
 						
