@@ -1,0 +1,59 @@
+[gd_scene load_steps=3 format=3 uid="uid://hekxp6y8nfsu"]
+
+[ext_resource type="Script" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
+[ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="1_o0gew"]
+
+[node name="StageEditor" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8xaur")
+
+[node name="VNStage" parent="." instance=ExtResource("1_o0gew")]
+layout_mode = 1
+
+[node name="Margins" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Margins"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="SetBG" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "BG"
+
+[node name="SetFG" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "FG
+"
+
+[node name="Enter" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "Enter"
+
+[node name="Move" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "Move"
+
+[node name="Show" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "Show"
+
+[node name="Exit" type="Button" parent="Margins/Buttons"]
+layout_mode = 2
+text = "Exit"
+
+[connection signal="pressed" from="Margins/Buttons/SetBG" to="." method="_on_set_bg_pressed"]
+[connection signal="pressed" from="Margins/Buttons/SetFG" to="." method="_on_set_fg_pressed"]
+[connection signal="pressed" from="Margins/Buttons/Enter" to="." method="_on_enter_pressed"]
+[connection signal="pressed" from="Margins/Buttons/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="Margins/Buttons/Show" to="." method="_on_show_pressed"]
+[connection signal="pressed" from="Margins/Buttons/Exit" to="." method="_on_exit_pressed"]
