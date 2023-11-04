@@ -50,6 +50,12 @@ func _sprite_width() -> float:
 	return 0
 
 
+# can return null or a string array containing suggested states for the stage editor
+# every state should be of form "\as{...}", mimicing what you'd write in the script
+func stage_editor_hints() -> Variant:
+	return null
+
+
 # moves the sprite to the given relative coordinate
 # if the duration of the transition is not 0 and a tween is provided,
 # the movement will be animated with the tween

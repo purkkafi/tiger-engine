@@ -5,8 +5,12 @@ class_name TEInitScreen extends ColorRect
 # otherwise, the title screen will be displayed
 
 
+# alternate scene to possibly load based on cmd args; PackedScene or null
+var instead_scene: Variant
+
+
 func _ready():
-	CmdArgs.handle_args()
+	instead_scene = CmdArgs.handle_args()
 	
 	# queue title screen for loading
 	Assets.noncached.queue(TE.opts.title_screen)
@@ -61,11 +65,13 @@ func _ready():
 		TE.settings.unlock(id, true)
 
 
-# changes to the splash screen if specified or else to the title screen
+# changes to the appropriate next scene
 func _next_screen():
-	if TE.opts.splash_screen != null:
+	if instead_scene != null: # if specified in cmd args
+		TE.switch_scene((instead_scene as PackedScene).instantiate())
+	elif TE.opts.splash_screen != null: # go to splash screen if specified
 		TE.switch_scene(load(TE.opts.splash_screen).instantiate())
-	else:
+	else: # by default go to the title screen
 		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
 
 

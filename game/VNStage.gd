@@ -106,6 +106,11 @@ func enter_sprite(id: String, at: Variant, with: Variant, by: Variant, tween: Tw
 	else:
 		sprite.id = id
 	
+	if sprite.id in get_sprite_ids():
+		TE.log_error(TE.Error.FILE_ERROR, 'sprite already on stage: %s' % sprite.id)
+		sprite.queue_free()
+		return tween
+	
 	$Sprites.add_child(sprite)
 	sprite.enter_stage(null)
 	sprite.move_to(_parse_position_descriptor(at), Definitions.INSTANT, null)
@@ -170,6 +175,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	with = TE.defs.transition(with)
 	
 	var new_sprite = _create_sprite(sprite.path)
+	new_sprite.id = sprite.id
 	sprite.add_sibling(new_sprite, false)
 	new_sprite.enter_stage(_as)
 	new_sprite.move_to(sprite.sprite_position, Definitions.INSTANT)
@@ -240,6 +246,14 @@ func find_sprite(id: String) -> VNSprite:
 		TE.log_error(TE.Error.ENGINE_ERROR, 'sprite not found: %s' % id)
 	
 	return sprite
+
+
+# returns an array containing the ids of all sprite objects on the stage
+func get_sprite_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for child in $Sprites.get_children():
+		ids.append(child.id)
+	return ids
 
 
 # returns current state as a Dict

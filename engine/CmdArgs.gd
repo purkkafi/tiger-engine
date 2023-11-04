@@ -3,8 +3,9 @@ class_name CmdArgs extends Node
 
 
 # parses cmd args, setting game options or executing an additional task and quitting
-static func handle_args():
+static func handle_args() -> Variant:
 	var args: Array = Array(OS.get_cmdline_user_args())
+	var instead = null
 	
 	var i: int = 0
 	while i < len(args):
@@ -19,6 +20,8 @@ static func handle_args():
 				TE._force_mobile = true
 			'--no-mobile':
 				TE._force_mobile = false
+			'--stage-editor', '-se':
+				instead = preload('res://tiger-engine/engine/StageEditor.tscn')
 			'--word-count', '-wc':
 				i += 1
 				var lang: String = args[i]
@@ -49,6 +52,8 @@ static func handle_args():
 				TE.quit_game()
 		
 		i += 1
+	
+	return instead
 
 
 # regex that matches if a word has any alphanumeric charcters and

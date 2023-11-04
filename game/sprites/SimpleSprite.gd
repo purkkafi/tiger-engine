@@ -49,6 +49,11 @@ func show_as(tag: Tag):
 
 
 func show_as_frame(frame: String):
+	if not frame in paths:
+		TE.log_error(TE.Error.SCRIPT_ERROR, 'invalid SimpleSprite frame: %s' % frame)
+		# set to default frame to stop everything from blowing up
+		frame = default_frame
+	
 	current_frame = frame
 	rect.texture = resource.files[paths[frame]]
 	self.position.y = get_parent().size.y - rect.texture.get_height()
@@ -61,3 +66,7 @@ func get_sprite_state() -> Variant:
 
 func set_sprite_state(state: Variant):
 	show_as_frame(state as String)
+
+
+func stage_editor_hints() -> Variant:
+	return paths.keys().map(func(s): return '\\as{%s}' % s)
