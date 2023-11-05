@@ -10,6 +10,8 @@ var paths: Dictionary = {}
 var default_frame: String = ''
 # currently shown frame
 var current_frame: String = ''
+# vertical offset down from bounding box, as percentage of stage height
+var y_offset: float = 0.0
 # the texture used to display the sprite
 var rect: TextureRect
 
@@ -17,21 +19,32 @@ var rect: TextureRect
 func _init(_resource: SpriteResource):
 	resource = _resource
 	
-	for framedef in resource.tag.get_tags():
-		if framedef.name != 'frame':
-			TE.log_error(TE.Error.FILE_ERROR, 'unknown tag in SimpleSprite: %s' % framedef)
-		var frame_id: String = framedef.get_string_at(0)
-		var texture_path: String = framedef.get_string_at(1)
-		paths[frame_id] = texture_path
-		
-		# set default frame to the first frame
-		if default_frame == '':
-			default_frame = frame_id
+	for tag in resource.tag.get_tags():
+		match tag.name:
+			'frame':
+				if tag.length() != 2:
+					TE.log_error(TE.Error.FILE_ERROR, 'SimpleSprite \\tag requires 2 args, got %s' % tag)
+					continue
+				
+				var frame_id: String = tag.get_string_at(0)
+				var texture_path: String = tag.get_string_at(1)
+				paths[frame_id] = texture_path
+				
+				# set default frame to the first frame
+				if default_frame == '':
+					default_frame = frame_id
+				
+			'y_offset':
+				y_offset = float(tag.get_string())
+			
+			_:
+				TE.log_error(TE.Error.FILE_ERROR, 'unknown tag in SimpleSprite: %s' % tag)
 
 
 func enter_stage(initial_state: Variant = null):
 	rect = TextureRect.new()
 	add_child(rect)
+	rect.position.y = _stage_size().y * y_offset
 	
 	if initial_state != null:
 		show_as(initial_state)
