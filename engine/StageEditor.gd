@@ -12,7 +12,10 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'fg': func(): return '',
 	'trans': func(): return '',
 	# null is a good default value
-	'sprite_at': func(): return null,
+	'sprite_at_x': func(): return null,
+	'sprite_at_y': func(): return null,
+	'sprite_at_zoom': func(): return null,
+	'sprite_at_order': func(): return null,
 	# no default value, just error
 	'sprite_id': func(): show_error('Sprite ID must be specified'); return null,
 	'sprite_as': func(): show_error('"as" must be specified'); return null
@@ -24,7 +27,7 @@ var TRANSITIONS: Array[String] = []
 var SPRITES: Array[String] = []
 
 
-const SPRITE_AT_TOOLTIP = """
+const SPRITE_AT_X_TOOLTIP = """
 Sprite location descriptor, which can be:
 – number in range [0, 1]
 – "<n> of <m>" to place sprite in n:th of m points equidistant from edges and each other
@@ -65,7 +68,10 @@ func _change_fg(values: Dictionary):
 func _on_enter_pressed():
 	show_dialog('Enter sprite', [
 		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return SPRITES },
-		{ 'id': 'sprite_at', 'name': 'At', 'tooltip': SPRITE_AT_TOOLTIP },
+		{ 'id': 'sprite_at_x', 'name': 'At X', 'tooltip': SPRITE_AT_X_TOOLTIP },
+		{ 'id': 'sprite_at_y', 'name': 'At Y' },
+		{ 'id': 'sprite_at_zoom', 'name': 'At zoom' },
+		{ 'id': 'sprite_at_order', 'name': 'Draw order' },
 		{ 'id': 'trans', 'name': 'With', 'suggestions': func(_state): return TRANSITIONS }
 	], _enter_sprite)
 
@@ -85,19 +91,33 @@ func _enter_sprite(values: Dictionary):
 				break
 			i = i + 1
 	
-	_wait_tween(stage.enter_sprite(sprite_id, values['sprite_at'], values['trans'], by, null))
+	_wait_tween(stage.enter_sprite(sprite_id,
+		values['sprite_at_x'],
+		values['sprite_at_y'],
+		values['sprite_at_zoom'],
+		values['sprite_at_order'],
+		values['trans'], by, null))
 
 
 func _on_move_pressed():
 	show_dialog('Move sprite', [
 		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return stage.get_sprite_ids() },
-		{ 'id': 'sprite_at', 'name': 'To', 'tooltip': SPRITE_AT_TOOLTIP },
+		{ 'id': 'sprite_at_x', 'name': 'To X', 'tooltip': SPRITE_AT_X_TOOLTIP },
+		{ 'id': 'sprite_at_y', 'name': 'To Y' },
+		{ 'id': 'sprite_at_zoom', 'name': 'To zoom' },
+		{ 'id': 'sprite_at_order', 'name': 'To order' },
 		{ 'id': 'trans', 'name': 'With', 'suggestions': func(_state): return TRANSITIONS }
 	], _move_sprite)
 
 
 func _move_sprite(values: Dictionary):
-	_wait_tween(stage.move_sprite(values['sprite_id'], values['sprite_at'], values['trans'], null))
+	_wait_tween(stage.move_sprite(
+		values['sprite_id'],
+		values['sprite_at_x'],
+		values['sprite_at_y'],
+		values['sprite_at_zoom'],
+		values['sprite_at_order'],
+		values['trans'], null))
 
 
 func _on_show_pressed():
@@ -241,3 +261,7 @@ func _call_callback(edits: Array[Control], callback: Callable):
 
 func show_error(msg: String):
 	Popups.error_dialog(TE.Error.ENGINE_ERROR, msg)
+
+
+func _on_debug_toggled(button_pressed):
+	TE.draw_debug = button_pressed

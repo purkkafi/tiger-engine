@@ -19,6 +19,12 @@ var all_languages: Array[Lang] = []
 var _force_debug = null
 # if set to a bool, force enables or disables mobile mode
 var _force_mobile = null
+# whether visual debug tools should be drawn
+# toggling forces a global redraw of the current scene
+var draw_debug: bool = false:
+	set(enabled):
+		draw_debug = enabled
+		_redraw_all(current_scene)
 
 
 # screen size constants
@@ -186,3 +192,11 @@ func is_debug() -> bool:
 	if _force_debug == null:
 		return OS.is_debug_build()
 	return _force_debug
+
+
+# recursively redraws everything
+func _redraw_all(node: Node):
+	for child in node.get_children():
+		_redraw_all(child)
+	
+	node.queue_redraw()

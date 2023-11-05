@@ -51,9 +51,14 @@ text = "Show"
 layout_mode = 2
 text = "Exit"
 
+[node name="Debug" type="CheckButton" parent="Margins/Buttons"]
+layout_mode = 2
+text = "Debug"
+
 [connection signal="pressed" from="Margins/Buttons/SetBG" to="." method="_on_set_bg_pressed"]
 [connection signal="pressed" from="Margins/Buttons/SetFG" to="." method="_on_set_fg_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Enter" to="." method="_on_enter_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Show" to="." method="_on_show_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Exit" to="." method="_on_exit_pressed"]
+[connection signal="toggled" from="Margins/Buttons/Debug" to="." method="_on_debug_toggled"]

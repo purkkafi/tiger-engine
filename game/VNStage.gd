@@ -5,7 +5,8 @@ class_name VNStage extends Node
 
 var bg_id: String = ''
 var fg_id: String = ''
-var TRANSPARENT: Color = Color(0, 0, 0, 0)
+const TRANSPARENT: Color = Color(0, 0, 0, 0)
+var _draw_debug: bool = false
 
 
 # transitions to a new background with the given transition
@@ -95,11 +96,12 @@ func _replace_with(layer: Node, new_layer: Node):
 
 # adds a sprite to the stage
 # path is the full path to the sprite folder
-# at is the initial position descriptor or null
+# at_x, at_y, at_zoom are initial position descriptors or null
+# at_order is the draw order int or null
 # with is a transition descriptor or null
 # by is an alternative id to give to the sprite or null
 # tween is the tween to use or null, in case it will be created; returned for chaining
-func enter_sprite(id: String, at: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
+func enter_sprite(id: String, at_x: Variant, at_y: Variant, at_zoom: Variant, at_order: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = _create_sprite(Assets._resolve(TE.defs.sprites[id], 'res://assets/sprites'))
 	if by != null:
 		sprite.id = by as String
@@ -112,8 +114,19 @@ func enter_sprite(id: String, at: Variant, with: Variant, by: Variant, tween: Tw
 		return tween
 	
 	$Sprites.add_child(sprite)
+	_sort_sprites()
 	sprite.enter_stage(null)
-	sprite.move_to(_parse_position_descriptor(at), Definitions.INSTANT, null)
+	
+	if at_x != null:
+		at_x = _parse_x_position_descriptor(at_x)
+	
+	if at_y != null:
+		at_y = float(at_y as String)
+	
+	if at_zoom != null:
+		at_zoom = float(at_zoom as String)
+	
+	sprite.move_to(at_x, at_y, at_zoom, at_order, Definitions.INSTANT, null)
 	
 	if with != null:
 		if tween == null:
@@ -140,12 +153,13 @@ func _create_sprite(path: String) -> VNSprite:
 	else:
 		TE.log_error(TE.Error.SCRIPT_ERROR, 'sprite provider for %s not implemented' % path)
 	
+	sprite.connect('draw_order_changed', _sort_sprites)
 	return sprite
 
 
-# moves a sprite to the given location (a position descriptor String)
+# moves a sprite according to the given values
 # with is the optional transition and tween is the optional Tween (returned for chaining)
-func move_sprite(id: String, to: String, with: Variant, tween: Tween) -> Tween:
+func move_sprite(id: String, to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, with: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = find_sprite(id)
 	
 	if tween == null:
@@ -155,7 +169,18 @@ func move_sprite(id: String, to: String, with: Variant, tween: Tween) -> Tween:
 		with = Definitions.INSTANT
 	else:
 		with = TE.defs.transition(with)
-	sprite.move_to(_parse_position_descriptor(to), with, tween)
+	
+	if to_x != null:
+		to_x = _parse_x_position_descriptor(to_x)
+	
+	if to_y != null:
+		to_y = float(to_y as String)
+	
+	if to_zoom != null:
+		to_zoom = float(to_zoom as String)
+	
+	sprite.move_to(to_x, to_y, to_zoom, to_order, with, tween)
+	
 	return tween
 
 
@@ -178,7 +203,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	new_sprite.id = sprite.id
 	sprite.add_sibling(new_sprite, false)
 	new_sprite.enter_stage(_as)
-	new_sprite.move_to(sprite.sprite_position, Definitions.INSTANT)
+	new_sprite.move_to(sprite.horizontal_position, sprite.vertical_position, sprite.zoom, sprite.draw_order, Definitions.INSTANT)
 	
 	new_sprite.modulate.a = 0.0
 	var tweener = tween.parallel().tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
@@ -218,16 +243,10 @@ func _remove_sprite(sprite: VNSprite):
 	sprite.queue_free()
 
 
-# parses a sprite position descriptor:
-# – if given null, it is 0.5
+# parses a sprite x position descriptor
 # – if given a String of form "n of m", it is n / (m+1)
 # – else, it is the argument parsed as a float
-func _parse_position_descriptor(desc: Variant) -> float:
-	if desc == null:
-		return 0.5
-	
-	desc = desc as String
-	
+func _parse_x_position_descriptor(desc: String) -> float:
 	if desc.contains('of'):
 		var parts = desc.split('of', false, 2)
 		return float(parts[0]) / (float(parts[1]) + 1)
@@ -256,12 +275,32 @@ func get_sprite_ids() -> Array[String]:
 	return ids
 
 
+# sorts the sprites to make sure draw order is respected
+func _sort_sprites():
+	var og_order = $Sprites.get_children().duplicate()
+	var new_order = $Sprites.get_children().duplicate()
+	new_order.sort_custom(_cmp_sprites.bind(og_order))
+	
+	for child in og_order:
+		$Sprites.move_child(child, new_order.find(child))
+
+
+func _cmp_sprites(a: VNSprite, b: VNSprite, og_order: Array):
+	# we have to do this because sort_custom() isn't stable
+	if a.draw_order == b.draw_order:
+		return og_order.find(a) < og_order.find(b)
+	return a.draw_order < b.draw_order
+
+
 # returns current state as a Dict
 func get_state() -> Dictionary:
 	var sprites: Array = []
 	for sprite in $Sprites.get_children():
 		sprites.append({
-			'x' : sprite.sprite_position,
+			'x' : sprite.horizontal_position,
+			'y' : sprite.vertical_position,
+			'zoom' : sprite.zoom,
+			'order' : sprite.draw_order,
 			'path' : sprite.path,
 			'id' : sprite.id,
 			'state' : sprite.get_sprite_state()
@@ -284,7 +323,7 @@ func set_state(state: Dictionary):
 		sprite.enter_stage()
 		sprite.id = sprite_data.id
 		sprite.set_sprite_state(sprite_data['state'])
-		sprite.move_to(sprite_data['x'], Definitions.INSTANT)
+		sprite.move_to(sprite_data['x'], sprite_data['y'], sprite_data['zoom'], sprite_data['order'], Definitions.INSTANT)
 
 
 # clears the stage, returning it to the empty initial state

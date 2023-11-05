@@ -37,11 +37,6 @@ func enter_stage(initial_state: Variant = null):
 		show_as(initial_state)
 	else:
 		show_as_frame(default_frame)
-	move_to(sprite_position, Definitions.INSTANT, null)
-
-
-func _sprite_width() -> float:
-	return rect.texture.get_width()
 
 
 func show_as(tag: Tag):
@@ -56,8 +51,7 @@ func show_as_frame(frame: String):
 	
 	current_frame = frame
 	rect.texture = resource.files[paths[frame]]
-	self.position.y = get_parent().size.y - rect.texture.get_height()
-	move_to(sprite_position, Definitions.INSTANT, null)
+	self.size = Vector2(rect.texture.get_width(), rect.texture.get_height())
 
 
 func get_sprite_state() -> Variant:

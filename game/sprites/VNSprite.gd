@@ -1,4 +1,4 @@
-class_name VNSprite extends Control
+class_name VNSprite extends Node2D
 # base class for sprites
 #
 # every sprite is a folder containing a sprite.tef file and
@@ -8,13 +8,51 @@ class_name VNSprite extends Control
 # a sprite has an implementation-defined internal state. it is set (as a String)
 # by enter_stage() and show_as(), while get_sprite_state() and set_sprite_state()
 # return and set it as a JSON object for serialization purposes
+#
+# subclasses need to declare their size by updating the 'size' variable
+# but should not touch any other Node2D variables directly
 
+# relative horizontal position of the sprite on the stage in range [0, 1]
+# 0.5 (the default) is the middle
+var horizontal_position: float = 0.5
+# relative vertical position the bottom of the sprite touches on the stage
+# 0 (the default) corresponds to the bottom of the screen, 1 is the top
+# if negative, the sprite is cut from the bottom
+var vertical_position: float = 0
 
-# relative position of the sprite on the stage in range [0, 1]
-var sprite_position: float = 0.5
+# size of the sprite
+# subclasses need to update this to keep themselves positioned gracefully
+var size: Vector2 = Vector2(0, 0):
+	set(new_size):
+		size = new_size
+		_recalc()
+
+# how the sprite is zoomed, corresponding to Node2D's scale
+var zoom: float = 1.0
+
+# draw order, relative to other sprites in the scene
+var draw_order: int = 0:
+	set(new_draw_order):
+		if new_draw_order != draw_order:
+			draw_order = new_draw_order
+			emit_signal('draw_order_changed')
+
+# internal debug outline, subclasses should not change
+var _debug_outline: Rect2 = Rect2(0, 0, 0, 0)
 # set by whoever is loading the sprite
 var id: String # id the sprite is referred to with
 var path: String # path of the sprite folder
+
+
+# signal for stage to rearrange sprites
+signal draw_order_changed
+
+
+# calculates this sprite's position
+func _recalc():
+	position.x = _stage_x(horizontal_position)
+	position.y = _stage_y(vertical_position)
+	_debug_outline = Rect2(Vector2(-1, -1), size + Vector2(2, 2))
 
 
 # construct this sprite from its SpriteResource
@@ -44,31 +82,65 @@ func set_sprite_state(_state: Variant):
 	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override set_sprite_state()")
 
 
-# returns the width of the sprite; used to calculate its position
-func _sprite_width() -> float:
-	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override _sprite_width()")
-	return 0
-
-
 # can return null or a string array containing suggested states for the stage editor
 # every state should be of form "\as{...}", mimicing what you'd write in the script
 func stage_editor_hints() -> Variant:
 	return null
 
 
-# moves the sprite to the given relative coordinate
+# moves the sprite to the given coordinates and sets the draw order
 # if the duration of the transition is not 0 and a tween is provided,
 # the movement will be animated with the tween
-func move_to(to: float, trans: Definitions.Transition, tween: Tween = null):
-	sprite_position = to
+# values are floats/ints or null (meaning they will be ignored)
+func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, trans: Definitions.Transition, tween: Tween = null):
+	var x0: float = horizontal_position
+	if to_x != null:
+		horizontal_position = to_x as float
+	
+	var y0: float = vertical_position
+	if to_y != null:
+		vertical_position = to_y as float
+	
+	if to_zoom != null:
+		zoom = to_zoom as float
+	
+	if to_order != null:
+		draw_order = to_order as int
+	
 	if trans.duration == 0 or tween == null:
-		self.position.x = _stage_x(to)
+		scale = Vector2(zoom, zoom)
+		position.x = _stage_x(horizontal_position)
+		position.y = _stage_y(vertical_position)
+		
 	else:
-		var tweener = tween.parallel().tween_property(self, 'position:x', _stage_x(to), trans.duration)
-		tweener.set_ease(trans.ease_type)
-		tweener.set_trans(trans.trans_type)
+		var x_tweener = tween.parallel().tween_method(func(_x): position.x = _stage_x(_x), x0, horizontal_position, trans.duration)
+		x_tweener.set_ease(trans.ease_type)
+		x_tweener.set_trans(trans.trans_type)
+		
+		var y_tweener = tween.parallel().tween_method(func(_y): position.y = _stage_y(_y); print(_y, ' ', position.y), y0, vertical_position, trans.duration)
+		y_tweener.set_ease(trans.ease_type)
+		y_tweener.set_trans(trans.trans_type)
+		
+		var zoom_tweener = tween.parallel().tween_property(self, 'scale', Vector2(zoom, zoom), trans.duration)
+		zoom_tweener.set_ease(trans.ease_type)
+		zoom_tweener.set_trans(trans.trans_type)
 
 
-# converts a relative coordinate in range [0, 1] to stage coordinates in pixels
+# the size of the stage (ie the parent node) this sprite is on
+func _stage_size():
+	return get_parent().size
+
+
+# converts a relative x coordinate to stage pixels
 func _stage_x(rel_x: float):
-	return (get_parent().size.x * rel_x) - _sprite_width()/2
+	return (_stage_size().x * rel_x) - (size.x * scale.x)/2
+
+
+# converts a relative y coordinate to stage pixels
+func _stage_y(rel_y: float):
+	return _stage_size().y * (1.0 - rel_y) - size.y * scale.y
+
+
+func _draw():
+	if TE.draw_debug:
+		draw_rect(_debug_outline, Color.RED, false)
