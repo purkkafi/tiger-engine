@@ -142,7 +142,10 @@ func parse_music(tag: Tag) -> Variant:
 # parses \enter
 func parse_enter(tag: Tag):
 	var sprite_id: String
-	var at: Variant = null
+	var at_x: Variant = null
+	var at_y: Variant = null
+	var at_zoom: Variant = null
+	var at_order: Variant = null
 	var with: Variant = null
 	var by: Variant = null
 	
@@ -164,11 +167,29 @@ func parse_enter(tag: Tag):
 						else:
 							error('expected transition for \\with, got %s' % tag)
 							return null
-					'at':
+					'x':
 						if arg.get_string() is String:
-							at = arg.get_string()
+							at_x = arg.get_string()
 						else:
-							error('expected location descriptor for \\at, got %s' % tag)
+							error('expected string for \\x, got %s' % tag)
+							return null
+					'y':
+						if arg.get_string() is String:
+							at_y = arg.get_string()
+						else:
+							error('expected string for \\y, got %s' % tag)
+							return null
+					'zoom':
+						if arg.get_string() is String:
+							at_zoom = arg.get_string()
+						else:
+							error('expected string for \\zoom, got %s' % tag)
+							return null
+					'order':
+						if arg.get_string() is String:
+							at_order = arg.get_string()
+						else:
+							error('expected string for \\order, got %s' % tag)
 							return null
 					'by':
 						if arg.get_string() is String:
@@ -189,13 +210,16 @@ func parse_enter(tag: Tag):
 		error('expected sprite id in index 0 of \\enter, got %s' % tag)
 		return null
 	
-	return TEScript.IEnter.new(sprite_id, at, with, by)
+	return TEScript.IEnter.new(sprite_id, at_x, at_y, at_zoom, at_order, with, by)
 
 
 # parses \move
 func parse_move(tag: Tag):
 	var sprite_id: String
-	var to: Variant = null
+	var to_x: Variant = null
+	var to_y: Variant = null
+	var to_zoom: Variant = null
+	var to_order: Variant = null
 	var with: Variant = null
 	
 	match tag.length():
@@ -214,11 +238,29 @@ func parse_move(tag: Tag):
 						else:
 							error('expected transition for \\with, got %s' % tag)
 							return null
-					'to':
+					'x':
 						if arg.get_string() is String:
-							to = arg.get_string()
+							to_x = arg.get_string()
 						else:
-							error('expected location descriptor for \\to, got %s' % tag)
+							error('expected string for \\x, got %s' % tag)
+							return null
+					'y':
+						if arg.get_string() is String:
+							to_y = arg.get_string()
+						else:
+							error('expected string for \\y, got %s' % tag)
+							return null
+					'zoom':
+						if arg.get_string() is String:
+							to_zoom = arg.get_string()
+						else:
+							error('expected string for \\zoom, got %s' % tag)
+							return null
+					'order':
+						if arg.get_string() is String:
+							to_order = arg.get_string()
+						else:
+							error('expected string for \\order, got %s' % tag)
 							return null
 					_:
 						error("unknown argument '%s' for \\move: %s" % [arg.name, tag])
@@ -233,11 +275,11 @@ func parse_move(tag: Tag):
 		error('expected sprite id in index 0 of \\move, got %s' % tag)
 		return null
 	
-	if to == null:
-		error('expected \\move to specify \\to, got %s' % tag)
+	if to_x == null and to_y == null and to_zoom == null and to_order == null:
+		error('expected \\move to specify \\x, \\y, \\zoom, or \\order, got %s' % tag)
 		return null
 	
-	return TEScript.IMove.new(sprite_id, to, with)
+	return TEScript.IMove.new(sprite_id, to_x, to_y, to_zoom, to_order, with)
 
 
 # parses \show

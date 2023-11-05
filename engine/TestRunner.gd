@@ -8,7 +8,7 @@ static func run_tests() -> int:
 	
 	var failed: bool = false
 	
-	for cls in 	ProjectSettings.get_global_class_list():
+	for cls in ProjectSettings.get_global_class_list():
 		if cls['base'] == 'TETest':
 			var succ: int = 0
 			var fail: int = 0

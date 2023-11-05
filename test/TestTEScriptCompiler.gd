@@ -257,14 +257,14 @@ func test_break_should_be_empty():
 func test_enter_default_values():
 	assert_equals(
 		instructions('\\enter{the_sprite}'),
-		[ TEScript.IEnter.new('the_sprite', null, null, null) ]
+		[ TEScript.IEnter.new('the_sprite', null, null, null, null, null, null) ]
 	)
 
 
 func test_enter_with_arguments():
 	assert_equals(
-		instructions('\\enter{the_sprite}{ \\at{1 of 1} \\with{trans} \\by{alt_id} }'),
-		[ TEScript.IEnter.new('the_sprite', '1 of 1', 'trans', 'alt_id') ]
+		instructions('\\enter{the_sprite}{ \\x{1 of 1} \\y{0.5} \\zoom{1.5} \\order{3} \\with{trans} \\by{alt_id} }'),
+		[ TEScript.IEnter.new('the_sprite', '1 of 1', '0.5', '1.5', '3', 'trans', 'alt_id') ]
 	)
 
 
@@ -282,10 +282,10 @@ func test_enter_first_arg_should_be_sprite_id():
 	)
 
 
-func test_enter_at_should_take_location_descriptor():
+func test_enter_x_should_take_string():
 	assert_equals(
-		errors('\\enter{spr}{ \\at{\\bad} }'),
-		[ 'expected location descriptor for \\at, got \\enter[["spr"], [\\at[[\\bad[]]]]]' ]
+		errors('\\enter{spr}{ \\x{\\bad} }'),
+		[ 'expected string for \\x, got \\enter[["spr"], [\\x[[\\bad[]]]]]' ]
 	)
 
 
@@ -305,43 +305,43 @@ func test_enter_by_should_take_sprite_id():
 
 func test_move():
 	assert_equals(
-		instructions('\\move{spr}{ \\to{0.5} }'),
-		[ TEScript.IMove.new('spr', '0.5', null) ]
+		instructions('\\move{spr}{ \\x{0.5} \\y{0} \\zoom{1.5} \\order{-2} }'),
+		[ TEScript.IMove.new('spr', '0.5', '0', '1.5', '-2', null) ]
 	)
 
 
 func test_move_with():
 	assert_equals(
-		instructions('\\move{spr}{ \\to{0.5} \\with{trans} }'),
-		[ TEScript.IMove.new('spr', '0.5', 'trans') ]
+		instructions('\\move{spr}{ \\x{0.5} \\with{trans} }'),
+		[ TEScript.IMove.new('spr', '0.5', null, null, null, 'trans') ]
 	)
 
 
-func test_move_requires_to():
+func test_move_requires_properties():
 	assert_equals(
 		errors('\\move{spr}{ \\with{trans} }'),
-		[ 'expected \\move to specify \\to, got \\move[["spr"], [\\with[["trans"]]]]' ]
+		[ 'expected \\move to specify \\x, \\y, \\zoom, or \\order, got \\move[["spr"], [\\with[["trans"]]]]' ]
 	)
 
 
 func test_move_arg_0_should_be_sprite_id():
 	assert_equals(
-		errors('\\move{\\no}{ \\to{0.5} }'),
-		[ 'expected sprite id in index 0 of \\move, got \\move[[\\no[]], [\\to[["0.5"]]]]' ]
+		errors('\\move{\\no}{ \\x{0.5} }'),
+		[ 'expected sprite id in index 0 of \\move, got \\move[[\\no[]], [\\x[["0.5"]]]]' ]
 	)
 
 
 func test_move_with_should_take_transition():
 	assert_equals(
-		errors('\\move{spr}{ \\to{0.5}\\with{\\bad} }'),
-		[ 'expected transition for \\with, got \\move[["spr"], [\\to[["0.5"]], \\with[[\\bad[]]]]]' ]
+		errors('\\move{spr}{ \\x{0.5}\\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\move[["spr"], [\\x[["0.5"]], \\with[[\\bad[]]]]]' ]
 	)
 
 
-func test_move_to_should_take_location_descriptor():
+func test_move_x_should_take_string():
 	assert_equals(
-		errors('\\move{spr}{ \\to{\\bad} }'),
-		[ 'expected location descriptor for \\to, got \\move[["spr"], [\\to[[\\bad[]]]]]' ]
+		errors('\\move{spr}{ \\x{\\bad} }'),
+		[ 'expected string for \\x, got \\move[["spr"], [\\x[[\\bad[]]]]]' ]
 	)
 
 

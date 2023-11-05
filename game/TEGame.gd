@@ -142,10 +142,10 @@ func next_blocking():
 				tween = _hide_ui(TE.defs.transition(ins.transition_id).duration, tween)
 			
 			'Enter':
-				tween = $VNStage.enter_sprite(ins.sprite, ins.at, ins.with, ins.by, tween)
+				tween = $VNStage.enter_sprite(ins.sprite, ins.at_x, ins.at_y, ins.at_zoom, ins.at_order, ins.with, ins.by, tween)
 			
 			'Move':
-				tween = $VNStage.move_sprite(ins.sprite, ins.to, ins.with, tween)
+				tween = $VNStage.move_sprite(ins.sprite, ins.to_x, ins.to_y, ins.to_zoom, ins.to_order, ins.with, tween)
 			
 			'Show':
 				tween = $VNStage.show_sprite(ins.sprite, ins._as, ins.with, tween)

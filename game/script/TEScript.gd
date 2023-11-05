@@ -179,14 +179,20 @@ class IBreak extends BaseInstruction:
 class IEnter extends BaseInstruction:
 	const name: String = 'Enter'
 	var sprite: String
-	var at: Variant # null or a sprite position descriptor String
+	var at_x: Variant # null or a String
+	var at_y: Variant # null or a String
+	var at_zoom: Variant # null or a String
+	var at_order: Variant # null or a String
 	var with: Variant # null or a transition id String
 	var by: Variant # null or String
 	
 	
-	func _init(_sprite: String, _at: Variant, _with: Variant, _by: Variant):
+	func _init(_sprite: String, _at_x: Variant, _at_y: Variant, _at_zoom: Variant, _at_order: Variant, _with: Variant, _by: Variant):
 		self.sprite = _sprite
-		self.at = _at
+		self.at_x = _at_x
+		self.at_y = _at_y
+		self.at_zoom = _at_zoom
+		self.at_order = _at_order
 		self.with = _with
 		self.by = _by
 	
@@ -196,19 +202,25 @@ class IEnter extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'enter %s at %s with %s by %s' % [sprite, at, with, by]
+		return 'enter %s at %s %s %s %s with %s by %s' % [sprite, at_x, at_y, at_zoom, at_order, with, by]
 
 
 class IMove extends BaseInstruction:
 	const name: String = 'Move'
 	var sprite: String
-	var to: Variant # null or a sprite position descriptor String
+	var to_x: Variant # null or String
+	var to_y: Variant # null or String
+	var to_zoom: Variant # null or String
+	var to_order: Variant # null or String
 	var with: Variant # null or a transition id String
 	
 	
-	func _init(_sprite: String, _to: Variant, _with: Variant):
+	func _init(_sprite: String, _to_x: Variant, _to_y: Variant, _to_zoom: Variant, _to_order: Variant, _with: Variant):
 		self.sprite = _sprite
-		self.to = _to
+		self.to_x = _to_x
+		self.to_y = _to_y
+		self.to_zoom = _to_zoom
+		self.to_order = _to_order
 		self.with = _with
 	
 	
@@ -217,7 +229,7 @@ class IMove extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'move %s to %s with %s' % [sprite, to, with]
+		return 'move %s to %s %s %s %s with %s' % [sprite, to_x, to_y, to_zoom, to_order, with]
 
 
 class IShow extends BaseInstruction:
