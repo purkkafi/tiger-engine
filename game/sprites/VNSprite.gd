@@ -117,7 +117,7 @@ func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, 
 		x_tweener.set_ease(trans.ease_type)
 		x_tweener.set_trans(trans.trans_type)
 		
-		var y_tweener = tween.parallel().tween_method(func(_y): position.y = _stage_y(_y); print(_y, ' ', position.y), y0, vertical_position, trans.duration)
+		var y_tweener = tween.parallel().tween_method(func(_y): position.y = _stage_y(_y), y0, vertical_position, trans.duration)
 		y_tweener.set_ease(trans.ease_type)
 		y_tweener.set_trans(trans.trans_type)
 		

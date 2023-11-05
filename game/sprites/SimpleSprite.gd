@@ -12,6 +12,8 @@ var default_frame: String = ''
 var current_frame: String = ''
 # vertical offset down from bounding box, as percentage of stage height
 var y_offset: float = 0.0
+# constant factor by which the sprite is scaled
+var sprite_scale: float = 1.0
 # the texture used to display the sprite
 var rect: TextureRect
 
@@ -37,6 +39,9 @@ func _init(_resource: SpriteResource):
 			'y_offset':
 				y_offset = float(tag.get_string())
 			
+			'scale':
+				sprite_scale = float(tag.get_string())
+			
 			_:
 				TE.log_error(TE.Error.FILE_ERROR, 'unknown tag in SimpleSprite: %s' % tag)
 
@@ -45,6 +50,7 @@ func enter_stage(initial_state: Variant = null):
 	rect = TextureRect.new()
 	add_child(rect)
 	rect.position.y = _stage_size().y * y_offset
+	rect.scale = Vector2(sprite_scale, sprite_scale)
 	
 	if initial_state != null:
 		show_as(initial_state)
@@ -64,7 +70,10 @@ func show_as_frame(frame: String):
 	
 	current_frame = frame
 	rect.texture = resource.files[paths[frame]]
-	self.size = Vector2(rect.texture.get_width(), rect.texture.get_height())
+	self.size = Vector2(
+		sprite_scale * rect.texture.get_width(),
+		sprite_scale * rect.texture.get_height()
+	)
 
 
 func get_sprite_state() -> Variant:
