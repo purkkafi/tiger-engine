@@ -333,6 +333,8 @@ func _resolve_options(tree: Tag):
 				opts.notify_on_unlock.append_array(node.get_strings())
 			'register_view':
 				opts.custom_views[node.get_string_at(0)] = node.get_string_at(1)
+			'register_sprite_object':
+				opts.custom_sprite_objects[node.get_string_at(0)] = node.get_string_at(1)
 			'default_theme':
 				opts.default_theme = node.get_string()
 			'bug_report_url':
@@ -347,11 +349,17 @@ func _resolve_options(tree: Tag):
 func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	var sprite: SpriteResource = SpriteResource.new()
 	var dir_path: String = path.trim_suffix('/sprite.tef')
-	var dir: DirAccess = DirAccess.open(dir_path)
 	
 	sprite.tag = sprite_tef
+	_load_sprite_folder(dir_path, '', sprite)
 	
-	for file in dir.get_files():
+	return sprite
+
+# recursively load resources in sprite folder
+func _load_sprite_folder(path: String, prefix: String, sprite: SpriteResource):
+	var dir_access: DirAccess = DirAccess.open(path)
+	
+	for file in dir_access.get_files():
 		# ignore the sprite.tef file
 		if file == 'sprite.tef':
 			continue
@@ -360,8 +368,10 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 		# assume '.import' files correspond with a resource we want to load
 		if file.ends_with('import'):
 			var resource: String = file.rstrip('.import')
-			sprite.files[resource] = load(dir_path + '/' + resource)
+			var resource_id = resource if prefix == '' else '%s/%s' % [prefix, resource]
+			sprite.files[resource_id] = load(path + '/' + resource)
 	
-	return sprite
-	
-	
+	for subdir in dir_access.get_directories():
+		var subpath: String = '%s/%s' % [path, subdir]
+		var subprefix: String = subdir if prefix == '' else '%s/%s' % [prefix, subdir]
+		_load_sprite_folder(subpath, subprefix, sprite)

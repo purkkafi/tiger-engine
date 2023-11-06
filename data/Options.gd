@@ -13,6 +13,7 @@ var version_callback: Callable = func() -> String: return ''
 var notify_on_unlock: Array[String] = []
 # dict of custom view ids to paths of the View scenes
 var custom_views: Dictionary = {}
+var custom_sprite_objects: Dictionary = {}
 # the id of the game's default theme; if null, the engine default theme is used
 var default_theme: String
 # url for reporting bugs from the error dialog

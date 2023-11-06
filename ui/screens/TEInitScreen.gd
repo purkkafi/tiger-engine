@@ -43,6 +43,10 @@ func _ready():
 	TE.defs.view_registry['cutscene'] = preload('res://tiger-engine/game/views/CutsceneView.tscn')
 	TE.defs.view_registry['continue_point'] = preload('res://tiger-engine/game/views/ContinuePointView.tscn')
 	
+	# setup sprite object registry
+	TE.defs.sprite_object_registry['simple_sprite'] = preload('res://tiger-engine/game/sprites/SimpleSprite.gd')
+	TE.defs.sprite_object_registry['composite_sprite'] = preload('res://tiger-engine/game/sprites/CompositeSprite.gd')
+	
 	# install custom views
 	for custom_view in TE.opts.custom_views:
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])

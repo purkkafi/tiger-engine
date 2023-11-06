@@ -144,14 +144,16 @@ func enter_sprite(id: String, at_x: Variant, at_y: Variant, at_zoom: Variant, at
 func _create_sprite(path: String) -> VNSprite:
 	var resource: SpriteResource = Assets.sprites.get_resource('sprite.tef', path)
 	var sprite: VNSprite
-	# TODO: implement registering of custom sprite providers
-	if resource.tag.name == 'simple_sprite':
-		sprite = SimpleSprite.new(resource)
-		sprite.path = path
-		# default id to being last part of sprite folder's path
-		sprite.id = path.split('/')[-1]
+	
+	if resource.tag.name in TE.defs.sprite_object_registry.keys():
+		var sprite_object: GDScript = TE.defs.sprite_object_registry[resource.tag.name]
+		sprite = sprite_object.new(resource)
 	else:
 		TE.log_error(TE.Error.SCRIPT_ERROR, 'sprite provider for %s not implemented' % path)
+	
+	sprite.path = path
+	# default id to being last part of sprite folder's path
+	sprite.id = path.split('/')[-1]
 	
 	sprite.connect('draw_order_changed', _sort_sprites)
 	return sprite

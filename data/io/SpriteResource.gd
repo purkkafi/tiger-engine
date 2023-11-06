@@ -6,5 +6,5 @@ class_name SpriteResource extends Resource
 # the tag read from sprite.tef
 var tag: Tag = null
 # the resources in the sprite folder
-# keys are the parts of the paths after the final slash, values are Resources
+# keys are the the paths relative to the sprite folder
 var files: Dictionary = {}

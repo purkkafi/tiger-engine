@@ -35,6 +35,9 @@ var variables: Dictionary = {}
 # registry of Views recognized by the game
 # dict of view ids to PackedScenes
 var view_registry: Dictionary = {}
+# registry of recognized sprite objects
+# dict of sprite object ids to Godot scripts
+var sprite_object_registry: Dictionary = {}
 
 
 const trans_types = {
