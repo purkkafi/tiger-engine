@@ -143,4 +143,10 @@ func _stage_y(rel_y: float):
 
 func _draw():
 	if TE.draw_debug:
+		var font = TETheme.current_theme.default_font
+		var font_size = int(TETheme.current_theme.default_font_size * 0.75)
+		var text_offset = Vector2(0, int(font_size) * 0.5)
+		
 		draw_rect(_debug_outline, Color.RED, false)
+		draw_string(font, -text_offset, id, HORIZONTAL_ALIGNMENT_LEFT,
+			-1, font_size, Color.RED)

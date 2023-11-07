@@ -121,6 +121,10 @@ func show_as(tag: Tag):
 				"cannot display layer '%s': nothing matches (state: '%s')" % [layer.id, state])
 		else:
 			layer.rect.texture = resource.textures[_match]
+			layer.debug_rect = Rect2(
+				layer.rect.texture.margin.position,
+				layer.rect.texture.region.size
+			)
 			
 			if layer_size == null:
 				layer_size = layer.rect.texture.get_size()
@@ -135,10 +139,25 @@ func show_as(tag: Tag):
 	)
 
 
+func _draw():
+	super._draw()
+	
+	if TE.draw_debug:
+		var font = TETheme.current_theme.default_font
+		var font_size = int(TETheme.current_theme.default_font_size * 0.75)
+		var text_offset = Vector2(0, int(font_size) * 0.5)
+		
+		for layer in layers:
+			draw_rect(layer.debug_rect, Color.BLUE, false)
+			draw_string(font, layer.debug_rect.position - text_offset, layer.id,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.BLUE)
+
+
 class Layer extends RefCounted:
 	var id: String
 	var cases: Array[Case]
 	var rect: TextureRect
+	var debug_rect: Rect2
 	
 	
 	func _init(_id: String, _case_tags: Array, sprite: CompositeSprite):

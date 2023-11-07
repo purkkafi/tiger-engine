@@ -391,8 +391,6 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 		texture.margin = margins[i]
 		sprite.textures[file_names[i]] = texture
 	
-	#atlas.save_png('debug_atlas.png')
-	
 	sprite.atlas = ImageTexture.create_from_image(atlas)
 	
 	for texture in sprite.textures.values():
