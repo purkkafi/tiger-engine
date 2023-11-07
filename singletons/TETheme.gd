@@ -40,6 +40,8 @@ func set_theme(theme_id: String):
 		# workaround for godot issue:
 		# Callable.is_valid() doesn't understand static methods properly
 		# using an instance as the object of Callable instead of the GDScript works
+		# TODO: maybe just don't use static methods, this seems to be causing
+		# some kind of memory leak?
 		if _animations != null:
 			_animations.queue_free()
 		_animations = animations.new()

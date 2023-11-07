@@ -82,10 +82,10 @@ func set_sprite_state(_state: Variant):
 	TE.log_error(TE.Error.ENGINE_ERROR, "VNSprite doesn't override set_sprite_state()")
 
 
-# can return null or a string array containing suggested states for the stage editor
+# returns a (possibly empty) array containing suggested states for the stage editor
 # every state should be of form "\as{...}", mimicing what you'd write in the script
-func stage_editor_hints() -> Variant:
-	return null
+func stage_editor_hints() -> Array:
+	return []
 
 
 # moves the sprite to the given coordinates and sets the draw order

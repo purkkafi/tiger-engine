@@ -69,7 +69,8 @@ func show_as_frame(frame: String):
 		frame = default_frame
 	
 	current_frame = frame
-	rect.texture = resource.files[paths[frame]]
+	rect.texture = resource.textures[paths[frame]]
+	
 	self.size = Vector2(
 		sprite_scale * rect.texture.get_width(),
 		sprite_scale * rect.texture.get_height()
@@ -84,5 +85,5 @@ func set_sprite_state(state: Variant):
 	show_as_frame(state as String)
 
 
-func stage_editor_hints() -> Variant:
+func stage_editor_hints() -> Array:
 	return paths.keys().map(func(s): return '\\as{%s}' % s)

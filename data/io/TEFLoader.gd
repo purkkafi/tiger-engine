@@ -351,12 +351,57 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	var dir_path: String = path.trim_suffix('/sprite.tef')
 	
 	sprite.tag = sprite_tef
-	_load_sprite_folder(dir_path, '', sprite)
+	var files: Dictionary = {}
+	
+	_load_sprite_folder(dir_path, '', files)
+	
+	# TODO explicitly filter images instead of assuming all files are
+	var images = files.values()
+	
+	# crop every image to remove transparent border, saving margin info
+	var margins: Array = []
+	for i in len(images):
+		var image: Image = images[i]
+		var used_rect: Rect2i = image.get_used_rect()
+		
+		margins.append(Rect2(used_rect.position,
+			image.get_size() - used_rect.size
+		))
+		
+		images[i] = image.get_region(used_rect)
+	
+	
+	var file_names: Array = files.keys().duplicate()
+	var sizes: Array = images.map(func(img: Image): return img.get_size())
+	
+	var atlas_data: Dictionary = Geometry2D.make_atlas(sizes)
+	var atlas: Image = Image.create(atlas_data['size'][0], atlas_data['size'][1], false, Image.FORMAT_RGBA8)
+	
+	for i in len(images):
+		var image: Image = images[i]
+		image.decompress()
+		image.convert(Image.FORMAT_RGBA8)
+		
+		var point: Vector2 = atlas_data['points'][i]
+		
+		atlas.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), point)
+		
+		var texture = AtlasTexture.new()
+		texture.region = Rect2(point, image.get_size())
+		texture.margin = margins[i]
+		sprite.textures[file_names[i]] = texture
+	
+	#atlas.save_png('debug_atlas.png')
+	
+	sprite.atlas = ImageTexture.create_from_image(atlas)
+	
+	for texture in sprite.textures.values():
+		texture.atlas = sprite.atlas
 	
 	return sprite
 
 # recursively load resources in sprite folder
-func _load_sprite_folder(path: String, prefix: String, sprite: SpriteResource):
+func _load_sprite_folder(path: String, prefix: String, files: Dictionary):
 	var dir_access: DirAccess = DirAccess.open(path)
 	
 	for file in dir_access.get_files():
@@ -369,9 +414,9 @@ func _load_sprite_folder(path: String, prefix: String, sprite: SpriteResource):
 		if file.ends_with('import'):
 			var resource: String = file.rstrip('.import')
 			var resource_id = resource if prefix == '' else '%s/%s' % [prefix, resource]
-			sprite.files[resource_id] = load(path + '/' + resource)
+			files[resource_id] = load(path + '/' + resource)
 	
 	for subdir in dir_access.get_directories():
 		var subpath: String = '%s/%s' % [path, subdir]
 		var subprefix: String = subdir if prefix == '' else '%s/%s' % [prefix, subdir]
-		_load_sprite_folder(subpath, subprefix, sprite)
+		_load_sprite_folder(subpath, subprefix, files)
