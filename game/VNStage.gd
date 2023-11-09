@@ -204,7 +204,9 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	var new_sprite = _create_sprite(sprite.path)
 	new_sprite.id = sprite.id
 	sprite.add_sibling(new_sprite, false)
-	new_sprite.enter_stage(_as)
+	new_sprite.enter_stage()
+	new_sprite.set_sprite_state(sprite.get_sprite_state())
+	new_sprite.show_as(_as)
 	new_sprite.move_to(sprite.horizontal_position, sprite.vertical_position, sprite.zoom, sprite.draw_order, Definitions.INSTANT)
 	
 	new_sprite.modulate.a = 0.0

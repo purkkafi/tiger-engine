@@ -10,8 +10,8 @@ var DEFAULT_HANDLERS: Dictionary = {
 	# the empty string is a good default value
 	'bg': func(): return '',
 	'fg': func(): return '',
-	'trans': func(): return '',
 	# null is a good default value
+	'trans': func(): return null,
 	'sprite_at_x': func(): return null,
 	'sprite_at_y': func(): return null,
 	'sprite_at_zoom': func(): return null,
@@ -101,7 +101,9 @@ func _enter_sprite(values: Dictionary):
 
 func _on_move_pressed():
 	show_dialog('Move sprite', [
-		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return stage.get_sprite_ids() },
+		{ 'id': 'sprite_id', 'name': 'Sprite ID',
+			'default': only_sprite_id,
+			'suggestions': func(_state): return stage.get_sprite_ids() },
 		{ 'id': 'sprite_at_x', 'name': 'To X', 'tooltip': SPRITE_AT_X_TOOLTIP },
 		{ 'id': 'sprite_at_y', 'name': 'To Y' },
 		{ 'id': 'sprite_at_zoom', 'name': 'To zoom' },
@@ -122,8 +124,10 @@ func _move_sprite(values: Dictionary):
 
 func _on_show_pressed():
 	show_dialog('Show sprite', [
-		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return stage.get_sprite_ids() },
-		{ 'id': 'sprite_as', 'name': 'As', 'default': '\\as{}', 'suggestions': _get_sprite_as_suggestions },
+		{ 'id': 'sprite_id', 'name': 'Sprite ID',
+			'default': only_sprite_id,
+			'suggestions': func(_state): return stage.get_sprite_ids() },
+		{ 'id': 'sprite_as', 'name': 'As', 'default': func(): return '\\as{}', 'suggestions': _get_sprite_as_suggestions },
 		{ 'id': 'trans', 'name': 'With', 'suggestions': func(_state): return TRANSITIONS }
 	], _show_sprite)
 
@@ -158,7 +162,9 @@ func _show_sprite(values: Dictionary):
 
 func _on_exit_pressed():
 	show_dialog('Exit sprite', [
-		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return stage.get_sprite_ids() },
+		{ 'id': 'sprite_id', 'name': 'Sprite ID',
+			'default': only_sprite_id,
+			'suggestions': func(_state): return stage.get_sprite_ids() },
 		{ 'id': 'trans', 'name': 'With', 'suggestions': func(_state): return TRANSITIONS }
 	], _exit_sprite)
 
@@ -182,13 +188,21 @@ func _tween_finished():
 		(child as Button).disabled = false
 
 
+# returns the id of the only sprite on the stage or ''
+func only_sprite_id() -> String:
+	var sprites: Node = stage.get_node('Sprites')
+	if len(sprites.get_children()) == 1:
+		return (sprites.get_child(0) as VNSprite).id
+	return ''
+
+
 # shows a dialog containing the given settings and finally calls the given callback
 # settings is an array of dictionaries, their keys signifying:
 # – 'id': the id; the callback will be given a state dict of ids -> values
 # – 'name': the name, displayed to the user
 # – 'suggestions': (optional) callback that, given the state, returns an array of
 #                  suggested strings displayed to the user
-# – 'default': (optional) the initial string
+# – 'default': (optional) callback returning the initial string
 func show_dialog(title: String, settings: Array, callback: Callable):
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 2
@@ -206,11 +220,11 @@ func show_dialog(title: String, settings: Array, callback: Callable):
 			edit = SuggestLineEdit.new()
 			edit.suggestion_provider = _get_suggestions.bind(edits, setting['suggestions'])
 			if 'default' in setting:
-				edit.set_edit_text(setting['default'])
+				edit.set_edit_text(setting['default'].call())
 		else: # spawn LineEdit
 			edit = LineEdit.new()
 			if 'default' in setting:
-				edit.text = setting['default']
+				edit.text = setting['default'].call()
 		
 		if 'tooltip' in setting:
 			edit.tooltip_text = setting['tooltip']

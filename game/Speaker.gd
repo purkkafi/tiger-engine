@@ -17,6 +17,7 @@ static var EXTRACT_ARG: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<co
 static func resolve(declaration: String, ctxt: ControlExpr.BaseContext) -> Speaker:
 	var id: String = EXTRACT_ID.search(declaration).get_string(0)
 	var def: Definitions.SpeakerDef = TE.defs.speakers[id]
+	@warning_ignore("shadowed_variable")
 	var name: Variant = def.name
 	
 	for arg in EXTRACT_ARG.search_all(declaration):

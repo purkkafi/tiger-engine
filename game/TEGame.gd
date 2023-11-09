@@ -594,6 +594,7 @@ func get_custom_data(key: String):
 
 # toggles whether VNControls and the view are hidden
 func toggle_user_hide():
+	@warning_ignore("shadowed_variable_base_class")
 	var show: bool = not $VNControls.visible
 	$VNControls.visible = show
 	# modulate instead because visibility messes with the input events

@@ -177,7 +177,7 @@ func _save_icon_clicked(btn: SaveButton):
 			if btn.continue_point == SaveButton.ContinuePoint.UNCONTINUABLE:
 				var label: Label = Label.new()
 				label.text = TE.localize.saving_uncontinuable
-				var popup = Popups.info_dialog(TE.localize.saving_future_continue_point, label)
+				var _popup = Popups.info_dialog(TE.localize.saving_future_continue_point, label)
 		
 	elif mode == SavingMode.SAVE:
 		if not btn.is_empty:
