@@ -22,7 +22,7 @@ var tabbing: bool = false # whether user is navigating buttons by tabbing
 var focus_before_overlay: Control # the Control that had focus before an overlay was spawned
 
 
-enum DebugMode { NONE, AUDIO }
+enum DebugMode { NONE, AUDIO, SPRITES }
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -142,7 +142,7 @@ func next_blocking():
 				tween = _hide_ui(TE.defs.transition(ins.transition_id).duration, tween)
 			
 			'Enter':
-				tween = $VNStage.enter_sprite(ins.sprite, ins.at_x, ins.at_y, ins.at_zoom, ins.at_order, ins.with, ins.by, tween)
+				tween = $VNStage.enter_sprite(ins.sprite, ins._as, ins.at_x, ins.at_y, ins.at_zoom, ins.at_order, ins.with, ins.by, tween)
 			
 			'Move':
 				tween = $VNStage.move_sprite(ins.sprite, ins.to_x, ins.to_y, ins.to_zoom, ins.to_order, ins.with, tween)
@@ -643,9 +643,15 @@ func _toast_closed(tween: Tween):
 
 func toggle_debug_mode():
 	debug_mode = (debug_mode + 1 as DebugMode)
+	
 	if debug_mode >= len(DebugMode.values()):
 		debug_mode = (0 as DebugMode)
 	
+	if debug_mode == DebugMode.SPRITES:
+		TE.draw_debug = true
+	else:
+		TE.draw_debug = false
+
 
 func update_debug_mode_text():
 	match debug_mode:
@@ -653,3 +659,5 @@ func update_debug_mode_text():
 			%DebugMsg.text = ''
 		DebugMode.AUDIO:
 			%DebugMsg.text = Audio.debug_text()
+		DebugMode.SPRITES:
+			%DebugMsg.text = $VNStage._sprite_debug_msg()

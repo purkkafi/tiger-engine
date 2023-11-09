@@ -20,9 +20,9 @@ signal song_paused
 # plays a song with the given id, fading in with the given duration in seconds
 # if another song is playing, it is faded out simultaneously
 # an empty string can be passed to stop playing a song
-func play_song(new_song_id: String, duration: float, local_volume: float = 1.0):
+func play_song(new_song_id: String, duration: float, with_local_volume: float = 1.0):
 	song_id = new_song_id
-	self.local_volume = local_volume
+	self.local_volume = with_local_volume
 	var new_song: AudioStream
 	
 	if new_song_id != '':

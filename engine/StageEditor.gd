@@ -16,6 +16,7 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'sprite_at_y': func(): return null,
 	'sprite_at_zoom': func(): return null,
 	'sprite_at_order': func(): return null,
+	'sprite_as_optional': func(): return null,
 	# no default value, just error
 	'sprite_id': func(): show_error('Sprite ID must be specified'); return null,
 	'sprite_as': func(): show_error('"as" must be specified'); return null
@@ -68,6 +69,7 @@ func _change_fg(values: Dictionary):
 func _on_enter_pressed():
 	show_dialog('Enter sprite', [
 		{ 'id': 'sprite_id', 'name': 'Sprite ID', 'suggestions': func(_state): return SPRITES },
+		{ 'id': 'sprite_as_optional', 'name': 'As', 'suggestions': _get_sprite_as_suggestions },
 		{ 'id': 'sprite_at_x', 'name': 'At X', 'tooltip': SPRITE_AT_X_TOOLTIP },
 		{ 'id': 'sprite_at_y', 'name': 'At Y' },
 		{ 'id': 'sprite_at_zoom', 'name': 'At zoom' },
@@ -92,6 +94,7 @@ func _enter_sprite(values: Dictionary):
 			i = i + 1
 	
 	_wait_tween(stage.enter_sprite(sprite_id,
+		parse_tag(values['sprite_as_optional']) if values['sprite_as_optional'] != null else null,
 		values['sprite_at_x'],
 		values['sprite_at_y'],
 		values['sprite_at_zoom'],
@@ -140,24 +143,7 @@ func _get_sprite_as_suggestions(state: Dictionary) -> Array:
 
 
 func _show_sprite(values: Dictionary):
-	# parse given 'as' value to Tag
-	var tokens = lexer.tokenize_string(values['sprite_as'], '<input>')
-	
-	if tokens == null:
-		show_error('Tokenization error: %s' % lexer.error_message)
-		return
-	
-	var result = parser.parse(tokens)
-	
-	if result == null:
-		show_error('Parse error: %s' % parser.error_message)
-		return
-	
-	if not (result is Array and len(result) == 1 and result[0] is Tag):
-		show_error('Expected single \\as tag, got %s' % result)
-		return
-	
-	_wait_tween(stage.show_sprite(values['sprite_id'], result[0] as Tag, values['trans'], null))
+	_wait_tween(stage.show_sprite(values['sprite_id'], parse_tag(values['sprite_as']), values['trans'], null))
 
 
 func _on_exit_pressed():
@@ -186,6 +172,27 @@ func _wait_tween(tween: Tween):
 func _tween_finished():
 	for child in %Buttons.get_children():
 		(child as Button).disabled = false
+
+
+func parse_tag(of: String) -> Variant:
+	# parse given 'as' value to Tag
+	var tokens = lexer.tokenize_string(of, '<input>')
+	
+	if tokens == null:
+		show_error('Tokenization error: %s' % lexer.error_message)
+		return null
+	
+	var result = parser.parse(tokens)
+	
+	if result == null:
+		show_error('Parse error: %s' % parser.error_message)
+		return null
+	
+	if not (result is Array and len(result) == 1 and result[0] is Tag):
+		show_error('Expected single \\as tag, got %s' % result)
+		return null
+	
+	return result[0]
 
 
 # returns the id of the only sprite on the stage or ''

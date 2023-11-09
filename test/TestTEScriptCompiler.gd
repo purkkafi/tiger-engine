@@ -257,14 +257,14 @@ func test_break_should_be_empty():
 func test_enter_default_values():
 	assert_equals(
 		instructions('\\enter{the_sprite}'),
-		[ TEScript.IEnter.new('the_sprite', null, null, null, null, null, null) ]
+		[ TEScript.IEnter.new('the_sprite', null, null, null, null, null, null, null) ]
 	)
 
 
 func test_enter_with_arguments():
 	assert_equals(
-		instructions('\\enter{the_sprite}{ \\x{1 of 1} \\y{0.5} \\zoom{1.5} \\order{3} \\with{trans} \\by{alt_id} }'),
-		[ TEScript.IEnter.new('the_sprite', '1 of 1', '0.5', '1.5', '3', 'trans', 'alt_id') ]
+		instructions('\\enter{the_sprite}{ \\as{state} \\x{1 of 1} \\y{0.5} \\zoom{1.5} \\order{3} \\with{trans} \\by{alt_id} }'),
+		[ TEScript.IEnter.new('the_sprite', Tag.new('as', [['state']]), '1 of 1', '0.5', '1.5', '3', 'trans', 'alt_id') ]
 	)
 
 

@@ -391,12 +391,14 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 		texture.margin = margins[i]
 		sprite.textures[file_names[i]] = texture
 	
+	atlas.fix_alpha_edges() # need to do this or it looks bad
 	sprite.atlas = ImageTexture.create_from_image(atlas)
 	
 	for texture in sprite.textures.values():
 		texture.atlas = sprite.atlas
 	
 	return sprite
+
 
 # recursively load resources in sprite folder
 func _load_sprite_folder(path: String, prefix: String, files: Dictionary):

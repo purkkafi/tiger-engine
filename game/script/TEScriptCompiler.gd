@@ -142,6 +142,7 @@ func parse_music(tag: Tag) -> Variant:
 # parses \enter
 func parse_enter(tag: Tag):
 	var sprite_id: String
+	var _as: Variant = null
 	var at_x: Variant = null
 	var at_y: Variant = null
 	var at_zoom: Variant = null
@@ -161,6 +162,8 @@ func parse_enter(tag: Tag):
 			
 			for arg in args:
 				match arg.name:
+					'as':
+						_as = arg as Tag
 					'with':
 						if arg.get_string() is String:
 							with = arg.get_string()
@@ -210,7 +213,7 @@ func parse_enter(tag: Tag):
 		error('expected sprite id in index 0 of \\enter, got %s' % tag)
 		return null
 	
-	return TEScript.IEnter.new(sprite_id, at_x, at_y, at_zoom, at_order, with, by)
+	return TEScript.IEnter.new(sprite_id, _as, at_x, at_y, at_zoom, at_order, with, by)
 
 
 # parses \move

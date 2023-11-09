@@ -179,6 +179,7 @@ class IBreak extends BaseInstruction:
 class IEnter extends BaseInstruction:
 	const name: String = 'Enter'
 	var sprite: String
+	var _as: Variant # null or Tag
 	var at_x: Variant # null or a String
 	var at_y: Variant # null or a String
 	var at_zoom: Variant # null or a String
@@ -187,8 +188,9 @@ class IEnter extends BaseInstruction:
 	var by: Variant # null or String
 	
 	
-	func _init(_sprite: String, _at_x: Variant, _at_y: Variant, _at_zoom: Variant, _at_order: Variant, _with: Variant, _by: Variant):
+	func _init(_sprite: String, __as: Variant, _at_x: Variant, _at_y: Variant, _at_zoom: Variant, _at_order: Variant, _with: Variant, _by: Variant):
 		self.sprite = _sprite
+		self._as = __as
 		self.at_x = _at_x
 		self.at_y = _at_y
 		self.at_zoom = _at_zoom
@@ -202,7 +204,7 @@ class IEnter extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'enter %s at %s %s %s %s with %s by %s' % [sprite, at_x, at_y, at_zoom, at_order, with, by]
+		return 'enter %s as %s at %s %s %s %s with %s by %s' % [sprite, _as, at_x, at_y, at_zoom, at_order, with, by]
 
 
 class IMove extends BaseInstruction:

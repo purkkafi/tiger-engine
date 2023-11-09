@@ -6,7 +6,6 @@ class_name VNStage extends Node
 var bg_id: String = ''
 var fg_id: String = ''
 const TRANSPARENT: Color = Color(0, 0, 0, 0)
-var _draw_debug: bool = false
 
 
 # transitions to a new background with the given transition
@@ -96,12 +95,13 @@ func _replace_with(layer: Node, new_layer: Node):
 
 # adds a sprite to the stage
 # path is the full path to the sprite folder
+# _as is the Tag describing the initial state or null
 # at_x, at_y, at_zoom are initial position descriptors or null
 # at_order is the draw order int or null
 # with is a transition descriptor or null
 # by is an alternative id to give to the sprite or null
 # tween is the tween to use or null, in case it will be created; returned for chaining
-func enter_sprite(id: String, at_x: Variant, at_y: Variant, at_zoom: Variant, at_order: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
+func enter_sprite(id: String, _as: Variant, at_x: Variant, at_y: Variant, at_zoom: Variant, at_order: Variant, with: Variant, by: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = _create_sprite(Assets._resolve(TE.defs.sprites[id], 'res://assets/sprites'))
 	if by != null:
 		sprite.id = by as String
@@ -115,7 +115,7 @@ func enter_sprite(id: String, at_x: Variant, at_y: Variant, at_zoom: Variant, at
 	
 	$Sprites.add_child(sprite)
 	_sort_sprites()
-	sprite.enter_stage(null)
+	sprite.enter_stage(_as)
 	
 	if at_x != null:
 		at_x = _parse_x_position_descriptor(at_x)
@@ -336,3 +336,17 @@ func clear():
 	
 	for sprite in $Sprites.get_children():
 		_remove_sprite(sprite)
+
+
+func _sprite_debug_msg() -> String:
+	var msg: String = ''
+	for sprite in $Sprites.get_children():
+		msg += '%s (x=%.3f, y=%.3f, zm=%.3f, ord=%d): %s\n' % [
+			sprite.id,
+			sprite.horizontal_position,
+			sprite.vertical_position,
+			sprite.zoom,
+			sprite.draw_order,
+			str(sprite.get_sprite_state())
+		]
+	return msg.strip_edges()
