@@ -199,4 +199,5 @@ func _redraw_all(node: Node):
 	for child in node.get_children():
 		_redraw_all(child)
 	
-	node.queue_redraw()
+	if node is CanvasItem:
+		node.queue_redraw()

@@ -40,20 +40,33 @@ layout_mode = 2
 text = "Enter"
 
 [node name="Move" type="Button" parent="Margins/Buttons"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Move"
 
 [node name="Show" type="Button" parent="Margins/Buttons"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Show"
 
 [node name="Exit" type="Button" parent="Margins/Buttons"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Exit"
+
+[node name="SaveSprite" type="Button" parent="Margins/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save sprite"
 
 [node name="Debug" type="CheckButton" parent="Margins/Buttons"]
 layout_mode = 2
 text = "Debug"
+
+[node name="ScreenshotViewport" type="SubViewport" parent="."]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(2, 2)
 
 [connection signal="pressed" from="Margins/Buttons/SetBG" to="." method="_on_set_bg_pressed"]
 [connection signal="pressed" from="Margins/Buttons/SetFG" to="." method="_on_set_fg_pressed"]
@@ -61,4 +74,5 @@ text = "Debug"
 [connection signal="pressed" from="Margins/Buttons/Move" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Show" to="." method="_on_show_pressed"]
 [connection signal="pressed" from="Margins/Buttons/Exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="Margins/Buttons/SaveSprite" to="." method="_on_save_sprite_pressed"]
 [connection signal="toggled" from="Margins/Buttons/Debug" to="." method="_on_debug_toggled"]

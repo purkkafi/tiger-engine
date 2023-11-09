@@ -17,6 +17,7 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'sprite_at_zoom': func(): return null,
 	'sprite_at_order': func(): return null,
 	'sprite_as_optional': func(): return null,
+	'filename': func(): return null,
 	# no default value, just error
 	'sprite_id': func(): show_error('Sprite ID must be specified'); return null,
 	'sprite_as': func(): show_error('"as" must be specified'); return null
@@ -42,6 +43,11 @@ func _init():
 	TRANSITIONS.append_array(TE.defs._transitions.keys())
 	
 	SPRITES.append_array(TE.defs.sprites.keys())
+
+
+func _ready():
+	_enable_buttons()
+	$ScreenshotViewport.size = Vector2(0, 0)
 
 
 func _on_set_bg_pressed():
@@ -158,20 +164,74 @@ func _on_exit_pressed():
 func _exit_sprite(values: Dictionary):
 	_wait_tween(stage.exit_sprite(values['sprite_id'], values['trans'], null))
 
+
+
+func _on_save_sprite_pressed():
+	show_dialog('Save sprite image', [
+		{ 'id': 'sprite_id', 'name': 'Sprite ID',
+			'default': only_sprite_id,
+			'suggestions': func(_state): return stage.get_sprite_ids() },
+		{ 'id': 'filename', 'name': 'File name' }
+	], _save_sprite)
+
+
+func _save_sprite(values: Dictionary):
+	var sprite: VNSprite = stage.find_sprite(values['sprite_id'])
+	var sprites: Node = stage.get_node('Sprites')
+	
+	var file = values['filename']
+	if not file is String:
+		show_error('File name must be specified')
+		return
+	
+	$ScreenshotViewport.size = sprite.size
+	
+	# steal the sprite from the stage and add it to the Viewport
+	var sprite_index = sprite.get_index()
+	sprites.remove_child(sprite)
+	$ScreenshotViewport.add_child(sprite)
+	var sprite_position = sprite.position
+	sprite.position = Vector2(0, 0)
+	
+	# render the Viewport
+	$ScreenshotViewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	await RenderingServer.frame_post_draw
+	
+	# get and save screenshot
+	var screenshot: Image = $ScreenshotViewport.get_texture().get_image()
+	screenshot.convert(Image.FORMAT_RGBA8)
+	screenshot.save_png(file)
+	
+	$ScreenshotViewport.size = Vector2(0, 0)
+	
+	# return sprite to stage and restore its state
+	$ScreenshotViewport.remove_child(sprite)
+	sprites.add_child(sprite)
+	sprites.move_child(sprite, sprite_index)
+	sprite.position = sprite_position
+
+
 # disables UI until given tween finishes
 func _wait_tween(tween: Tween):
 	if tween == null:
+		_enable_buttons()
 		return
 	
 	for child in %Buttons.get_children():
 		(child as Button).disabled = true
 	
-	tween.tween_callback(_tween_finished)
+	tween.tween_callback(_enable_buttons)
 
 
-func _tween_finished():
+func _enable_buttons():
 	for child in %Buttons.get_children():
 		(child as Button).disabled = false
+	
+	var has_sprites: bool = $VNStage.get_node('Sprites').get_child_count() > 0
+	
+	if not has_sprites:
+		for btn in [%Move, %Show, %Exit, %SaveSprite]:
+			btn.disabled = true
 
 
 func parse_tag(of: String) -> Variant:
