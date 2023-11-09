@@ -111,7 +111,6 @@ func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, 
 		scale = Vector2(zoom, zoom)
 		position.x = _stage_x(horizontal_position)
 		position.y = _stage_y(vertical_position)
-		
 	else:
 		var x_tweener = tween.parallel().tween_method(func(_x): position.x = _stage_x(_x), x0, horizontal_position, trans.duration)
 		x_tweener.set_ease(trans.ease_type)

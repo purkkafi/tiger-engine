@@ -164,12 +164,11 @@ func _create_sprite(path: String) -> VNSprite:
 func move_sprite(id: String, to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, with: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = find_sprite(id)
 	
-	if tween == null:
-		tween = create_tween()
-	
 	if with == null:
 		with = Definitions.INSTANT
 	else:
+		if tween == null:
+			tween = create_tween()
 		with = TE.defs.transition(with)
 	
 	if to_x != null:

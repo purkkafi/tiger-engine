@@ -196,11 +196,11 @@ func show_as(tag: Tag):
 
 
 func get_sprite_state() -> Variant:
-	return state
+	return state.duplicate()
 
 
 func set_sprite_state(_state: Variant):
-	state = _state
+	state = _state.duplicate()
 	show_as(SHOW_AS_CURRENT)
 
 
