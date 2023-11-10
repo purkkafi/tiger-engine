@@ -84,7 +84,7 @@ func display_language_choice():
 		var btn = Button.new()
 		btn.text = lang.full_name()
 		btn.set_h_size_flags(Control.SIZE_SHRINK_CENTER) 
-		btn.connect('pressed', Callable(self, '_language_selected').bind(lang))
+		btn.connect('pressed', _language_selected.bind(lang))
 		
 		$LanguageOptions.add_child(btn)
 

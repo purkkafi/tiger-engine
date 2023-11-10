@@ -15,7 +15,7 @@ var default_text_color: Color = Color.WHITE # the color of Label's font
 # animations
 # empty animation used if animations aren't specified
 var NO_ANIM: Callable = func(_target: Control) -> Tween: return null
-var _animations = null # reference to object that holds the animations
+var animations = null # reference to object that holds the animations
 var anim_overlay_in: Callable = NO_ANIM
 var anim_overlay_out: Callable = NO_ANIM
 var anim_shadow_in: Callable = NO_ANIM
@@ -34,31 +34,28 @@ func set_theme(theme_id: String):
 	_base_theme = _resolve_base_theme(theme_id)
 	_large_theme = _resolve_large_theme(theme_id)
 	
-	# load animations, which are static funcs in 'animations.gd'
-	var animations = _resolve_animations(theme_id)
+	# load animations, which are funcs in 'animations.gd' in theme folder
 	if animations != null:
-		# workaround for godot issue:
-		# Callable.is_valid() doesn't understand static methods properly
-		# using an instance as the object of Callable instead of the GDScript works
-		# TODO: maybe just don't use static methods, this seems to be causing
-		# some kind of memory leak?
-		if _animations != null:
-			_animations.queue_free()
-		_animations = animations.new()
+		self.remove_child(animations)
+	
+	var animations = _resolve_animations(theme_id)
+	
+	if animations != null:
+		self.add_child(animations)
 		
-		var overlay_in = Callable(_animations, 'overlay_in')
+		var overlay_in = Callable(animations, 'overlay_in')
 		anim_overlay_in = overlay_in if overlay_in.is_valid() else NO_ANIM
 		
-		var overlay_out = Callable(_animations, 'overlay_out')
+		var overlay_out = Callable(animations, 'overlay_out')
 		anim_overlay_out = overlay_out if overlay_out.is_valid() else NO_ANIM
 		
-		var shadow_in = Callable(_animations, 'shadow_in')
+		var shadow_in = Callable(animations, 'shadow_in')
 		anim_shadow_in = shadow_in if shadow_in.is_valid() else NO_ANIM
 		
-		var shadow_out = Callable(_animations, 'shadow_out')
+		var shadow_out = Callable(animations, 'shadow_out')
 		anim_shadow_out = shadow_out if shadow_out.is_valid() else NO_ANIM
 		
-		var full_image_in = Callable(_animations, 'full_image_in')
+		var full_image_in = Callable(animations, 'full_image_in')
 		anim_full_image_in = full_image_in if full_image_in.is_valid() else NO_ANIM
 	else:
 		anim_overlay_in = NO_ANIM
@@ -159,7 +156,7 @@ static func _resolve_large_theme(id: String) -> Theme:
 static func _resolve_animations(id: String) -> Variant:
 	var path = 'res://assets/themes/%s/animations.gd' % id
 	if FileAccess.file_exists(path):
-		return load(path)
+		return (load(path) as GDScript).new()
 	return null
 
 
