@@ -16,6 +16,7 @@ var language_disabled: bool = false
 @onready var sfx_volume: Slider = %SFXVolSlider
 @onready var text_speed: Slider = %TextSpeedSlider
 @onready var dyn_text_speed: CheckBox = %DynTextSpeed
+@onready var skip_unseen_text: CheckBox = %SkipUnseenText
 @onready var lang_options: OptionButton = %LangOptions
 @onready var keys_section: MarginContainer = %Keys
 @onready var keys_grid: GridContainer = %KeysGrid
@@ -46,6 +47,7 @@ func _initialize_overlay():
 	
 	text_speed.value = TE.settings.text_speed
 	dyn_text_speed.button_pressed = TE.settings.dynamic_text_speed
+	skip_unseen_text.button_pressed = TE.settings.skip_unseen_text
 	
 	var selected_lang_index = null
 	for i in len(TE.all_languages):
@@ -156,6 +158,7 @@ func _save_exit():
 	TE.settings.sfx_volume = sfx_volume.value
 	TE.settings.text_speed = text_speed.value
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
+	TE.settings.skip_unseen_text = skip_unseen_text.button_pressed
 	TE.settings.lang_id = TE.language.id
 	
 	for btn in key_buttons:

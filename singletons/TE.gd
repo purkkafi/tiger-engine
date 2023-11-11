@@ -8,6 +8,7 @@ var language: Lang = null # don't set directly, use load_language()
 var localize: Localize = null
 var savefile: Savefile = null
 var settings: Settings = null
+var seen_blocks: SeenBlocks = null
 # game config files, set by this object
 var defs: Definitions = load('res://assets/definitions.tef')
 var opts: Options = null
@@ -108,6 +109,11 @@ func load_language(new_lang: Lang):
 	else:
 		savefile = load(save.path())
 		savefile.lang_id = language.id
+	
+	# save seen_blocks of current language and load the new one
+	if seen_blocks != null:
+		seen_blocks.write_to_disk()
+	seen_blocks = SeenBlocks.new(language.id)
 
 
 # loads the game from a save state, switching the scene to TEGame
@@ -170,6 +176,7 @@ func is_large_gui():
 
 # exits the game
 func quit_game(exit_code=0):
+	seen_blocks.write_to_disk()
 	await get_tree().process_frame
 	get_tree().quit(exit_code)
 

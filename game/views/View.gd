@@ -15,6 +15,8 @@ var next_letter_delta: float = 0.0 # delta until next letter is displayed
 var advance_held: float = 0.0 # sum of delta for which game has been advanced
 var line_switch_delta = 0.0 # delta until advancing to the next line if on FASTER speedup
 var speedup: Speedup = Speedup.NORMAL # status of speedup
+# whether current line has been read previously by the player
+var previously_seen_line: bool = false
 var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
 var game: TEGame = null # TEGame object used to access various game data
@@ -104,13 +106,21 @@ func wait_tween(tween: Tween):
 func _is_waiting():
 	if _waiting_custom_condition():
 		return true
-	if waiting_tween != null and waiting_tween.is_running():
+	if _is_tweening():
 		return true
-	if pause_delta > 0:
+	if _is_paused():
 		return true
 	if line_switch_delta > 0:
 		return true
 	return false
+
+
+func _is_tweening():
+	return waiting_tween != null and waiting_tween.is_running()
+
+
+func _is_paused():
+	return pause_delta > 0
 
 
 # returns whether parent should ask for next block by calling show_block()
@@ -133,7 +143,6 @@ func is_next_line_requested():
 	return false
 
 
-
 # displays the given block next
 func show_block(_block: Block) -> void:
 	var old_block: Variant = block
@@ -145,6 +154,14 @@ func show_block(_block: Block) -> void:
 
 # proceeds to the next line
 func next_line(loading_from_save: bool = false) -> void:
+	previously_seen_line = TE.seen_blocks.is_read(block, line_index)
+	
+	# if skipping but skip mode was just set to DISABLED, stop
+	if get_skip_mode() == SkipMode.DISABLED and speedup != Speedup.NORMAL:
+		skip_toggled(false)
+	
+	TE.seen_blocks.mark_read(block, line_index)
+	
 	var line: String = _lines[line_index]
 	
 	var bbcode: RegExMatch = GET_BBCODE.search(line)
@@ -365,10 +382,17 @@ func copy_state_from(old: View):
 
 
 # how the skip button should work with this View
-# by default is toggleable and affects speedup
+# by default is toggleable and controlled by whether
+# the current line has been read before
 # subclasses can override this and skip_toggled() / skip_pressed() to
 # control skip behaviour
 func get_skip_mode() -> SkipMode:
+	if not TE.settings.skip_unseen_text:
+		var has_block: bool = block != null and block != Blocks.EMPTY_BLOCK
+		
+		if has_block and not _is_tweening() and not previously_seen_line:
+			return SkipMode.DISABLED
+	
 	return SkipMode.TOGGLE
 
 

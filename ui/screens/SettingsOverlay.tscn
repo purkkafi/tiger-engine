@@ -144,6 +144,13 @@ size_flags_horizontal = 0
 tooltip_text = "%settings_dynamic_text_speed_tooltip%"
 text = "%settings_dynamic_text_speed%"
 
+[node name="SkipUnseenText" type="CheckBox" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+tooltip_text = "%settings_skip_unseen_text_tooltip%"
+text = "%settings_skip_unseen_text%"
+
 [node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
 layout_mode = 2
 

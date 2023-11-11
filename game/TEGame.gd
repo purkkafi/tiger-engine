@@ -14,7 +14,6 @@ var overlay_active: bool = false # whether there is an overlay and game should b
 var last_save: Variant = null # last save state (may be null if game has not been saved)
 var game_name: Variant = null # name of the game, can be set by the script and is visible in saves
 var _custom_data: Dictionary = {} # persistent, game-specific custom save data
-var last_skip_mode: View.SkipMode # skip mode of previous frame
 var toast_queue: Array[Dictionary] # queue of toast notifications to show
 var debug_mode: DebugMode = DebugMode.NONE # active debug overlay
 var focus_now: WeakRef # control that last had focus
@@ -251,8 +250,6 @@ func _replace_view(new_view: Node):
 	
 	new_view.adjust_size($VNControls)
 	
-	update_skip_button()
-	
 	if old_view is View:
 		new_view.copy_state_from(old_view as View)
 
@@ -275,6 +272,7 @@ func _adjust_toast_size():
 
 
 # updates the state of the toggle button according to the current View's skip mode
+# and speedup_enabled
 func update_skip_button():
 	if $View.get_skip_mode() == View.SkipMode.DISABLED:
 		$VNControls.btn_skip.set_pressed_no_signal(false)
@@ -335,9 +333,6 @@ func _process(delta):
 		update_debug_mode_text()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
-	if skip_mode != last_skip_mode:
-		update_skip_button()
-		last_skip_mode = skip_mode
 	
 	# handle skipping via the keyboard shortcut
 	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip'):
@@ -377,6 +372,8 @@ func _process(delta):
 			return
 	
 	$View.update_state(delta)
+	# the button flickers less if it's only updated here
+	update_skip_button()
 
 
 # advances rollback, saving the current state for later and appending the

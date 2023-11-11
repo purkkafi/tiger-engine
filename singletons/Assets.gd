@@ -17,8 +17,8 @@ var permanent: Cache = Cache.new('permanent', 99999)
 
 
 func _ready():
-	blockfiles.hash_function = Callable(self, '_blockfile_hash')
-	scripts.hash_function = Callable(self, '_scriptfile_hash')
+	blockfiles.hash_function = _blockfile_hash
+	scripts.hash_function = _scriptfile_hash
 
 
 # resolves the given path relative to another
@@ -50,7 +50,7 @@ static func _resolve(path: String, relative_to: Variant = null) -> String:
 
 
 # calculates the hash of every Block in the given BlockFile
-# stores the hashes in keys of form 'blockfile_path:block_id'
+# stores the hashes in keys of form '<blockfile path>:<block id>'
 func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
 	for block_id in blockfile.blocks.keys():
 		var hashcode: String = blockfile.blocks[block_id].resolve_hash()
