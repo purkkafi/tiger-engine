@@ -5,7 +5,7 @@ class_name TEInitScreen extends ColorRect
 # otherwise, the title screen will be displayed
 
 
-# alternate scene to possibly load based on cmd args; PackedScene or null
+# alternate scene to possibly load based on cmd args; Node or null
 var instead_scene: Variant
 
 
@@ -72,7 +72,7 @@ func _ready():
 # changes to the appropriate next scene
 func _next_screen():
 	if instead_scene != null: # if specified in cmd args
-		TE.switch_scene((instead_scene as PackedScene).instantiate())
+		TE.switch_scene(instead_scene as Node)
 	elif TE.opts.splash_screen != null: # go to splash screen if specified
 		TE.switch_scene(load(TE.opts.splash_screen).instantiate())
 	else: # by default go to the title screen
