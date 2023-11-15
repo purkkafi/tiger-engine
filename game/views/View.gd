@@ -8,6 +8,8 @@ class_name View extends Control
 # values may not be in a usable form, but length can be releid on
 var _lines: Array[String]
 var block: Block # the current Block
+# stores previous blocks if previous_block_policy is RETAIN
+var _previous_blocks: Array[Block] = []
 var line_index: int = -1 # index of lines
 var next_effect = RichTextNext.new() # effect that implements the ▶ effect
 var pause_delta: float = 0.0 # delta to wait until pause is over
@@ -40,6 +42,8 @@ const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	DEL : 5
 }
 
+
+# parses a bbcode tag surrounding a string
 static var GET_BBCODE: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<content>.+?)\\[\\/(?P=tag)\\]')
 
 
@@ -65,6 +69,7 @@ enum State {
 	READY_TO_PROCEED, # can proceed to next line/block
 }
 
+
 # how the skip button should behave
 enum SkipMode {
 	TOGGLE, # skip can be toggled on and off
@@ -80,6 +85,19 @@ enum InitContext {
 }
 
 
+# how previous Blocks are treated
+enum PreviousBlocksPolicy {
+	DISCARD, # they are simply discarded
+	RETAIN # they are stored in _previous_blocks and persist in save data
+}
+
+
+# emitted when pause() is called
+signal game_paused
+# emitted when a pause ends
+signal game_unpaused
+
+
 # adjusts the size of this View based on how the VNControls instance has
 # decided to set its size. will be called with a null parameter if the View
 # is run directly in the editor; in this case, the controls should be treated
@@ -91,7 +109,7 @@ func adjust_size(_controls: VNControls) -> void:
 
 # pauses the game for the given amount of time, preventing the View from updating
 func pause(seconds: float):
-	_game_paused()
+	emit_signal('game_paused')
 	pause_delta = seconds
 
 
@@ -144,9 +162,12 @@ func is_next_line_requested():
 
 
 # displays the given block next
-func show_block(_block: Block) -> void:
+func show_block(new_block: Block) -> void:
 	var old_block: Variant = block
-	block = _block
+	if old_block != null:
+		_previous_blocks.append(old_block)
+	
+	block = new_block
 	_lines = Blocks.resolve_parts(block, game.context)
 	line_index = 0
 	_block_started(old_block, block)
@@ -164,13 +185,25 @@ func next_line(loading_from_save: bool = false) -> void:
 	
 	var line: String = _lines[line_index]
 	
-	var bbcode: RegExMatch = GET_BBCODE.search(line)
+	# parse lines containing engine-specific bbcode
+	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)	
 	
-	# TODO refactor speakers to how full imgs work
-	if bbcode != null and bbcode.get_string('tag') == 'fullimg':
-		_parse_full_image_line(bbcode.get_string('content'), loading_from_save)
-	else:
-		_parse_normal_line(line, loading_from_save)
+	# parse custom tag and let subclass decide what to do with the line
+	if tag_bbcode != null and tag_bbcode.get_string('tag') in _supported_custom_tags():
+		_parse_custom_tag_line(line, tag_bbcode, loading_from_save)
+		
+	else: # no custom tags, display normally
+		# handle speaker tag if present
+		var speaker: Speaker = null
+		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
+			var result: Dictionary  = _parse_speaker_line(line, tag_bbcode)
+			line = result['line']
+			speaker = result['speaker']
+		
+		if not loading_from_save:
+			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
+		
+		_display_line(line + LINE_END, speaker)
 	
 	line_index += 1
 	next_effect.reset()
@@ -191,26 +224,28 @@ func next_line(loading_from_save: bool = false) -> void:
 			state = State.WAITING_LINE_SWITCH_COOLDOWN
 
 
-func _parse_normal_line(line: String, loading_from_save: bool):
-	# parse speaker specification
-	var speaker: Speaker
-	var speaker_search: RegExMatch = GET_BBCODE.search(line)
+func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
+	var speaker_declaration: String = tag_bbcode.get_string('content')
 	
-	if speaker_search != null and speaker_search.get_string('tag') == 'speaker':
-		var speaker_declaration: String = speaker_search.get_string('content')
-		speaker = Speaker.resolve(speaker_declaration, game.context)
-		line = TE.localize.autoquote(line.substr(speaker_search.get_end(0)).strip_edges())
-	
-	if not loading_from_save:
-		game.gamelog.add_line(process_line(line), speaker)
-	
-	_next_line(line + LINE_END, speaker)
+	return {
+		'line': TE.localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
+		'speaker': Speaker.resolve(speaker_declaration, game.context)
+	}
 
 
-# Views can override this to support full images however they wish
-func _parse_full_image_line(contents: String, _loading_from_save: bool):
-	TE.log_error(TE.Error.FILE_ERROR, "View doesn't support full images")
-	_next_line(contents + LINE_END)
+# returns an Array of custom bbcode tags this View is able to parse with
+# _parse_custom_tag_line()
+func _supported_custom_tags() -> Array[String]:
+	return []
+
+
+# parses lines with custom bbcode the View claims to support
+# should call _display_line() and game.gamelog.add_line() if needed
+# – line is the full line, as a String
+# – tag_bbcode is a RegExMatch resulting from GET_BBCODE.search()
+# – loading_from_save is whether game is being loaded from a save file/state
+func _parse_custom_tag_line(line: String, tag_bbcode: RegExMatch, loading_from_save: bool) -> void:
+	TE.log_error(TE.Error.FILE_ERROR, "View doesn't override _parse_custom_tag_line() despite overriding _supported_custom_tags()")
 
 
 func _is_end_of_line() -> bool:
@@ -223,12 +258,12 @@ func _to_end_of_line():
 	if label != null:
 		label.visible_characters = label.get_total_character_count()
 		# handles DEL characters
-		label.text = process_line(label.text)
+		label.text = convert_line_to_finished_form(label.text)
 
 
 # converts the given line to a form that is suitable to display,
 # handling DEL characters properly
-func process_line(line: String):
+func convert_line_to_finished_form(line: String):
 	while line.find(View.DEL) != -1:
 		var index = line.find(View.DEL)
 		line = line.substr(0, index-1) + line.substr(index+1)
@@ -245,9 +280,11 @@ func update_state(delta: float):
 		pause_delta -= delta
 		
 		if pause_delta <= 0:
+			emit_signal('game_unpaused')
 			state = State.READY_TO_PROCEED
 		return
 	
+	# make tween faster on skip
 	if waiting_tween != null:
 		if speedup == Speedup.FASTER or speedup == Speedup.SKIP:
 			waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
@@ -322,7 +359,7 @@ func game_advanced(delta: float):
 		line_switch_delta = LINE_SWITCH_COOLDOWN
 		state = State.WAITING_LINE_SWITCH_COOLDOWN
 	
-	if speedup == Speedup.FAST and advance_held >= SPEEDUP_THRESHOLD_FASTER:
+	elif speedup == Speedup.FAST and advance_held >= SPEEDUP_THRESHOLD_FASTER: # TODO was if
 		speedup = Speedup.FASTER
 		_to_end_of_line()
 		line_switch_delta = LINE_SWITCH_COOLDOWN
@@ -416,15 +453,8 @@ func skip_pressed():
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
-func _next_line(_line: String, _speaker: Speaker = null):
-	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _next_line()")
-
-
-# subclasses can override to respond to the game being paused with the \pause instruction
-# for now, there is no _game_unpaused() counterpart
-# if desired, the effects can be undone in a method like _next_line()
-func _game_paused():
-	pass
+func _display_line(_line: String, _speaker: Speaker = null):
+	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _display_line()")
 
 
 # optionally, subclasses may respond to a new block starting
@@ -445,6 +475,7 @@ func _current_label():
 
 # if saving from View creates a continue point, it is returned; otherwise
 # returns null
+# see TEScriptVM.is_continue_point_valid() for format
 func continue_point() -> Variant:
 	return null
 
@@ -505,13 +536,27 @@ func get_state() -> Dictionary:
 	
 	if block != null and block != Blocks.EMPTY_BLOCK: # no block info for Views that do not show blocks
 		savestate.merge({
-			'line_index' : line_index,
-			'hash' : Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
-			'blockfile' : block.blockfile_path,
-			'block' : block.id
+			'line_index': line_index,
+			'hash': Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
+			'blockfile': block.blockfile_path,
+			'block': block.id
 		})
+		
+		if previous_block_policy() == PreviousBlocksPolicy.RETAIN:
+			savestate['previous_blocks'] = []
+			for old_block in _previous_blocks:
+				savestate['previous_blocks'].append({
+					'hash': Assets.blockfiles.hashes[old_block.blockfile_path + ':' + old_block.id],
+					'blockfile': old_block.blockfile_path,
+					'block': block.id
+				})
 	
 	return savestate
+
+
+# returns the PreviousBlocksPolicy of this View; should return a constant value
+func previous_block_policy() -> PreviousBlocksPolicy:
+	return PreviousBlocksPolicy.DISCARD
 
 
 # sets the current state based on the given Dictionary
@@ -526,19 +571,19 @@ func from_state(savestate: Dictionary):
 	if not 'block' in savestate:
 		return
 	
-	if not FileAccess.file_exists(savestate['blockfile']):
-		TE.log_error(TE.Error.BAD_SAVE, "blockfile '%s' not found" % savestate['blockfile'], true)
-		return
+	# restore previously displayed Blocks
+	if previous_block_policy() == PreviousBlocksPolicy.RETAIN:
+		_previous_blocks = []
+		for old_block in savestate['previous_blocks']:
+			var _block = _resolve_block(old_block)
+			_previous_blocks.append(_block)
+			
+			var lines = Blocks.resolve_parts(_block, game.context)
+			
+			for line in lines:
+				_display_line(line, null)
 	
-	var blockfile: BlockFile = Assets.blockfiles.get_resource(savestate['blockfile'])
-	
-	if not savestate['block'] in blockfile.blocks:
-		TE.log_error(TE.Error.BAD_SAVE, "block '%s' not found in blockfile '%s'" % [savestate['block'], savestate['blockfile']], true)
-		return
-	
-	var _block: Block = blockfile.blocks[savestate['block']]
-	
-	show_block(_block)
+	show_block(_resolve_block(savestate))
 	
 	if savestate['line_index']-1 > len(_lines):
 		TE.log_error(TE.Error.BAD_SAVE, "block line index out of range in block '%s' in '%s'" % [savestate['block'], savestate['blockfile']], true)
@@ -548,6 +593,21 @@ func from_state(savestate: Dictionary):
 	while line_index <= savestate['line_index']-1:
 		next_line(true)
 		_to_end_of_line()
+
+
+# resolves a dict with keys 'blockfile' and 'block' into a Block instance
+func _resolve_block(dict: Dictionary) -> Block:
+	if not FileAccess.file_exists(dict['blockfile']):
+		TE.log_error(TE.Error.BAD_SAVE, "blockfile '%s' not found" % dict['blockfile'], true)
+		return
+	
+	var blockfile: BlockFile = Assets.blockfiles.get_resource(dict['blockfile'])
+	
+	if not dict['block'] in blockfile.blocks:
+		TE.log_error(TE.Error.BAD_SAVE, "block '%s' not found in blockfile '%s'" % [dict['block'], dict['blockfile']], true)
+		return
+	
+	return blockfile.blocks[dict['block']]
 
 
 # resets speedup-related data; may be needed if a View alternates between showing

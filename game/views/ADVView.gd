@@ -14,6 +14,8 @@ func _ready():
 	label = create_label()
 	box.add_child(label)
 	
+	connect('game_paused', _game_paused)
+	
 	speaker_panel.visible = false
 	
 	if speaker_panel.get_theme_stylebox('panel', 'ADVSpeaker') is StyleBoxFlat:
@@ -49,7 +51,7 @@ func _game_paused():
 	speaker_panel.visible = false
 
 
-func _next_line(line: String, speaker: Speaker = null):
+func _display_line(line: String, speaker: Speaker = null):
 	box.visible = true
 	speaker_panel.visible = true
 	label.text = line

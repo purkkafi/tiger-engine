@@ -11,8 +11,6 @@ var vcenter: bool = false
 var outline_size: float = 0
 var outline_color: Variant = null # Color or null
 var text_color: Variant = null # Color or null
-# contains previous blocks in form [ <blockfile id>, <block id> ]
-var previous_blocks: Array = []
 
 
 # indent that appears at the start of lines after the first
@@ -62,14 +60,8 @@ func adjust_size(controls: VNControls):
 			_set_full_img_size(child)
 
 
-func _block_started(old: Variant, _new: Block):
-	# record id of non-null previous Block
-	if old != null:
-		previous_blocks.append([ old.blockfile_path, old.id ])
-
-
 # Speakers are not handled right now
-func _next_line(line: String, _speaker: Speaker = null):
+func _display_line(line: String, _speaker: Speaker = null):
 	var label: RichTextLabel = create_label()
 	label.fit_content = true
 	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
@@ -120,18 +112,22 @@ func _scroll_to_bottom():
 	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
 
 
-func _parse_full_image_line(contents: String, loading_from_save: bool):
-	_next_line('')
+func _supported_custom_tags() -> Array[String]:
+	return [ 'fullimg' ]
+
+
+func _parse_custom_tag_line(line: String, tag_bbcode: RegExMatch, loading_from_save: bool):
+	_display_line('')
 	
 	var path: String
 	var width: float
 	
-	for tag in GET_BBCODE.search_all(contents):
-		match tag.get_string('tag'):
+	for inner_tag in GET_BBCODE.search_all(tag_bbcode.get_string('content')):
+		match inner_tag.get_string('tag'):
 			'id':
-				path = Assets._resolve(TE.defs.imgs[tag.get_string('content')], 'res://assets/img')
+				path = Assets._resolve(TE.defs.imgs[inner_tag.get_string('content')], 'res://assets/img')
 			'width':
-				width = float(tag.get_string('content'))
+				width = float(inner_tag.get_string('content'))
 	
 	var rect: TextureRect = TextureRect.new()
 	rect.texture = load(path)
@@ -145,7 +141,7 @@ func _parse_full_image_line(contents: String, loading_from_save: bool):
 	if not loading_from_save:
 		TETheme.anim_full_image_in.call(rect)
 	
-	_next_line('[center]%s[/center]' % LINE_END)
+	_display_line('[center]%s[/center]' % LINE_END)
 
 
 func _set_full_img_size(img: TextureRect):
@@ -154,9 +150,12 @@ func _set_full_img_size(img: TextureRect):
 	img.custom_minimum_size = Vector2(width, height)
 
 
+func previous_block_policy() -> View.PreviousBlocksPolicy:
+	return View.PreviousBlocksPolicy.RETAIN
+
+
 func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
-	savestate['previous_blocks'] = previous_blocks
 	if hcenter:
 		savestate['hcenter'] = hcenter
 	if vcenter:
@@ -171,7 +170,6 @@ func get_state() -> Dictionary:
 
 
 func from_state(savestate: Dictionary):
-	previous_blocks = (savestate['previous_blocks'] as Array).duplicate(true)
 	if 'hcenter' in savestate:
 		hcenter = savestate['hcenter']
 	if 'vcenter' in savestate:
@@ -182,15 +180,5 @@ func from_state(savestate: Dictionary):
 		outline_size = savestate['outline_size']
 	if 'text_color' in savestate:
 		text_color = Color.html(savestate['text_color'])
-	
-	# restore previously displayed Blocks
-	for old_block in previous_blocks:
-		var blockfile_id: String = old_block[0]
-		var block_id: String = old_block[1]
-		
-		var lines = Blocks.resolve_parts(Assets.blockfiles.get_unqueued(blockfile_id).blocks[block_id], game.context)
-		
-		for line in lines:
-			_next_line(line, null)
 	
 	super.from_state(savestate)

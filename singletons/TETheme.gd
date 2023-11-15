@@ -38,7 +38,7 @@ func set_theme(theme_id: String):
 	if animations != null:
 		self.remove_child(animations)
 	
-	var animations = _resolve_animations(theme_id)
+	animations = _resolve_animations(theme_id)
 	
 	if animations != null:
 		self.add_child(animations)
