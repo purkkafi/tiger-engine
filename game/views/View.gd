@@ -537,7 +537,7 @@ func get_state() -> Dictionary:
 	if block != null and block != Blocks.EMPTY_BLOCK: # no block info for Views that do not show blocks
 		savestate.merge({
 			'line_index': line_index,
-			'hash': Assets.blockfiles.hashes[block.blockfile_path + ':' + block.id],
+			'hash': Assets.blockfiles.hashes[block.full_id()],
 			'blockfile': block.blockfile_path,
 			'block': block.id
 		})
@@ -546,7 +546,7 @@ func get_state() -> Dictionary:
 			savestate['previous_blocks'] = []
 			for old_block in _previous_blocks:
 				savestate['previous_blocks'].append({
-					'hash': Assets.blockfiles.hashes[old_block.blockfile_path + ':' + old_block.id],
+					'hash': Assets.blockfiles.hashes[block.full_id()],
 					'blockfile': old_block.blockfile_path,
 					'block': block.id
 				})

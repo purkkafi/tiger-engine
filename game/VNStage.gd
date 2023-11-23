@@ -315,18 +315,65 @@ func get_state() -> Dictionary:
 	}
 
 
-# sets state from a Dict
-func set_state(state: Dictionary):
-	set_background(state['bg'], '', null)
-	set_foreground(state['fg'], '', null)
+# returns a cache containing stage objects to be be reused later
+# this removes all objects from the stage and whoever uses the cache
+# must free them manually
+func get_node_cache() -> Dictionary:
+	var cache: Dictionary = {
+		'BG:%s' % bg_id: $BG,
+		'FG:%s' % fg_id: $FG
+	}
+	remove_child($BG)
+	remove_child($FG)
+	
+	for sprite in $Sprites.get_children():
+		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite
+		$Sprites.remove_child(sprite)
+	
+	return cache
+
+
+# sets state from a Dict, using the objects in the cache if possible
+func set_state(state: Dictionary, node_cache: Dictionary = {}):
+	# retrieve BG from cache or create a fresh object
+	var bg_from_cache: String = 'BG:%s' % state['bg']
+	if bg_from_cache in node_cache:
+		bg_id = state['bg']
+		$BG.add_sibling(node_cache[bg_from_cache])
+		_replace_with($BG, node_cache[bg_from_cache])
+	else:
+		set_background(state['bg'], '', null)
+	
+	# retrieve FG from cache or create a fresh object
+	var fg_from_cache: String = 'FG:%s' % state['fg']
+	if fg_from_cache in node_cache:
+		fg_id = state['fg']
+		$FG.add_sibling(node_cache[fg_from_cache])
+		_replace_with($FG, node_cache[fg_from_cache])
+	else:
+		set_foreground(state['fg'], '', null)
 	
 	for sprite_data in state['sprites']:
-		var sprite = _create_sprite(sprite_data['path'])
-		$Sprites.add_child(sprite)
-		sprite.enter_stage()
-		sprite.id = sprite_data.id
+		var sprite_from_cache: String = 'sprite:%s:%s' % [sprite_data['id'], sprite_data['path']]
+		var sprite: VNSprite
+		
+		# get sprite from cache or create fresh object
+		if sprite_from_cache in node_cache:
+			sprite = node_cache[sprite_from_cache]
+			$Sprites.add_child(sprite)
+		else:
+			sprite = _create_sprite(sprite_data['path'])
+			$Sprites.add_child(sprite)
+			sprite.enter_stage()
+			sprite.id = sprite_data.id
+		
 		sprite.set_sprite_state(sprite_data['state'])
 		sprite.move_to(sprite_data['x'], sprite_data['y'], sprite_data['zoom'], sprite_data['order'], Definitions.INSTANT)
+	
+	# free unused cache objects
+	for cached_obj in node_cache.values():
+		if (cached_obj as Node).get_parent() == null:
+			cached_obj.queue_free()
 
 
 # clears the stage, returning it to the empty initial state

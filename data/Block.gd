@@ -12,6 +12,11 @@ func _init(_taglist: Array[Variant]):
 	self.taglist = _taglist
 
 
+# full, unique id of this Block in form of "<blockfile path>:<block id>"
+func full_id() -> String:
+	return '%s:%s' % [ blockfile_path, id ]
+
+
 # calculates the hash code of this block
 func resolve_hash() -> String:
 	var ctxt: HashingContext = HashingContext.new()

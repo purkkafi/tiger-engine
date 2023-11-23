@@ -25,7 +25,7 @@ func _init(_lang_id: String):
 # marks the given Block & line as read, updating the hash
 # if game has been read past where it was originally saved
 func mark_read(block: Block, line: int):
-	var id: String = _to_id(block, line)
+	var id: String = block.full_id()
 	var hash: String = Assets.blockfiles.hashes[id]
 	
 	if id in data:
@@ -43,7 +43,7 @@ func mark_read(block: Block, line: int):
 # returns whether the given Block & line have been read before
 # hashes have to match for this to be true
 func is_read(block: Block, line: int) -> bool:
-	var id: String = _to_id(block, line)
+	var id: String = block.full_id()
 	
 	if id not in data:
 		return false
@@ -55,10 +55,6 @@ func is_read(block: Block, line: int) -> bool:
 		return false
 	
 	return true
-
-
-func _to_id(block: Block, line: int) -> String:
-	return '%s:%s' % [ block.blockfile_path, block.id ]
 
 
 func write_to_disk():

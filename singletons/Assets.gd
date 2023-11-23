@@ -52,9 +52,9 @@ static func _resolve(path: String, relative_to: Variant = null) -> String:
 # calculates the hash of every Block in the given BlockFile
 # stores the hashes in keys of form '<blockfile path>:<block id>'
 func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
-	for block_id in blockfile.blocks.keys():
-		var hashcode: String = blockfile.blocks[block_id].resolve_hash()
-		hashes[blockfile.resource_path + ':' + block_id] = hashcode
+	for block in blockfile.blocks.values():
+		var hashcode: String = block.resolve_hash()
+		hashes[block.full_id()] = hashcode
 
 
 # calculates the hash of every Script in the given ScriptFile

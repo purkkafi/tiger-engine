@@ -498,7 +498,7 @@ func jump_to_continue_point(continue_point: String):
 
 # loads the game from the given save
 # call this after switching the scene to TEGame
-func load_save(save: Dictionary):
+func load_save(save: Dictionary, stage_cache: Dictionary):
 	last_save = save
 	game_name = save['game_name']
 	
@@ -521,7 +521,7 @@ func load_save(save: Dictionary):
 	
 	# otherwise, initialize state normally
 	vm = TEScriptVM.from_state(save['vm'])
-	$VNStage.set_state(save['stage'])
+	$VNStage.set_state(save['stage'], stage_cache)
 	
 	# replace View with the correct scene first
 	var view_scene = load(save['view']['scene'])
@@ -563,7 +563,7 @@ func take_user_screenshot():
 
 
 func _back():
-	TE.load_from_save(rollback.pop(), rollback, gamelog)
+	TE.load_from_save(rollback.pop(), rollback, gamelog, $VNStage.get_node_cache())
 
 
 func _log():
