@@ -177,7 +177,7 @@ func _save_exit():
 
 func _discard():
 	# switch language back in case it was changed
-	if TE.settings.change_language(TE.settings.lang_id):
+	if Settings.change_language(TE.settings.lang_id):
 		TE.localize.translate(TE.current_scene)
 	# reset changes by implementing saved settings
 	TE.settings.change_settings()

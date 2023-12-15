@@ -196,9 +196,9 @@ func next_line(loading_from_save: bool = false) -> void:
 		# handle speaker tag if present
 		var speaker: Speaker = null
 		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
-			var result: Dictionary  = _parse_speaker_line(line, tag_bbcode)
-			line = result['line']
-			speaker = result['speaker']
+			var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode)
+			line = _result['line']
+			speaker = _result['speaker']
 		
 		if not loading_from_save:
 			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
@@ -244,7 +244,7 @@ func _supported_custom_tags() -> Array[String]:
 # – line is the full line, as a String
 # – tag_bbcode is a RegExMatch resulting from GET_BBCODE.search()
 # – loading_from_save is whether game is being loaded from a save file/state
-func _parse_custom_tag_line(line: String, tag_bbcode: RegExMatch, loading_from_save: bool) -> void:
+func _parse_custom_tag_line(_line: String, _tag_bbcode: RegExMatch, _loading_from_save: bool) -> void:
 	TE.log_error(TE.Error.FILE_ERROR, "View doesn't override _parse_custom_tag_line() despite overriding _supported_custom_tags()")
 
 
@@ -459,7 +459,7 @@ func _display_line(_line: String, _speaker: Speaker = null):
 
 # optionally, subclasses may respond to a new block starting
 # old is the previously displayed Block (may be null) and new is the new one
-func _block_started(old: Variant, new: Block):
+func _block_started(_old: Variant, _new: Block):
 	pass
 
 

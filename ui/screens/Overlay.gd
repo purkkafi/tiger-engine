@@ -29,7 +29,7 @@ func _ready():
 	else:
 		animated_in_callback.call()
 	
-	shadow = add_shadow(self)
+	shadow = Overlay.add_shadow(self)
 
 
 # subclasses should override this to initialize the overlay
@@ -43,7 +43,7 @@ func _initialize_overlay():
 func _close_overlay():
 	animating_out_callback.call()
 	
-	remove_shadow(shadow)
+	Overlay.remove_shadow(shadow)
 	
 	var tween = TETheme.anim_overlay_out.call(self)
 	if tween == null:

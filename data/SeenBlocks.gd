@@ -26,6 +26,7 @@ func _init(_lang_id: String):
 # if game has been read past where it was originally saved
 func mark_read(block: Block, line: int):
 	var id: String = block.full_id()
+	@warning_ignore("shadowed_global_identifier")
 	var hash: String = Assets.blockfiles.hashes[id]
 	
 	if id in data:

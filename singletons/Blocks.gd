@@ -4,7 +4,7 @@ extends Node
 
 
 # a null object representing an empty block
-static var EMPTY_BLOCK = Block.new([])
+var EMPTY_BLOCK = Block.new([])
 
 
 # initializes properties of EMPTY_BLOCK
@@ -17,7 +17,7 @@ func _ready():
 # for instance, given "a:b", the block b in the blockfile a.tef is returned
 # EMPTY_BLOCK is returned if the Block cannot be found
 # if queue_only is true, the blockfile is queued for loading and null is returned
-static func find(id: String, queue_only = false) -> Variant:
+func find(id: String, queue_only = false) -> Variant:
 	var parts = id.split(':')
 	if len(parts) != 2:
 		TE.log_error(TE.Error.FILE_ERROR, 'block id should be of form <file>:<block>, got %s' % id)

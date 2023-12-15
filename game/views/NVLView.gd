@@ -116,7 +116,7 @@ func _supported_custom_tags() -> Array[String]:
 	return [ 'fullimg' ]
 
 
-func _parse_custom_tag_line(line: String, tag_bbcode: RegExMatch, loading_from_save: bool):
+func _parse_custom_tag_line(_line: String, tag_bbcode: RegExMatch, loading_from_save: bool):
 	_display_line('')
 	
 	var path: String

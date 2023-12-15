@@ -25,7 +25,7 @@ func _ready():
 # supports two special prefixes that ignore relative_to:
 # – 'assets:' causes the path to be resolved relative to the assets folder
 # – 'lang:' causes the path to be resolved relative to the chosen language's folder
-static func _resolve(path: String, relative_to: Variant = null) -> String:
+func _resolve(path: String, relative_to: Variant = null) -> String:
 	var result: String = ''
 	
 	if path.begins_with('assets:'):

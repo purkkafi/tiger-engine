@@ -127,7 +127,7 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 
 
 # GODOT BUG: merge_with() ignres default base scale, font, and font size
-static func _copy_default_values(to: Theme, from: Theme):
+func _copy_default_values(to: Theme, from: Theme):
 	if from.has_default_base_scale():
 		to.default_base_scale = from.default_base_scale
 	if from.has_default_font():
@@ -137,7 +137,7 @@ static func _copy_default_values(to: Theme, from: Theme):
 
 
 # returns the Theme from the themes folder specified by the given id
-static func _resolve_base_theme(id: String) -> Theme:
+func _resolve_base_theme(id: String) -> Theme:
 	var path = 'res://assets/themes/%s/theme.tres' % id
 	var theme: Theme = load(path)
 	if theme == null:
@@ -145,7 +145,7 @@ static func _resolve_base_theme(id: String) -> Theme:
 	return theme
 
 
-static func _resolve_large_theme(id: String) -> Theme:
+func _resolve_large_theme(id: String) -> Theme:
 	var path = 'res://assets/themes/%s/theme_large.tres' % id
 	var theme: Theme = load(path)
 	if theme == null:
@@ -153,7 +153,7 @@ static func _resolve_large_theme(id: String) -> Theme:
 	return theme
 
 
-static func _resolve_animations(id: String) -> Variant:
+func _resolve_animations(id: String) -> Variant:
 	var path = 'res://assets/themes/%s/animations.gd' % id
 	if FileAccess.file_exists(path):
 		return (load(path) as GDScript).new()

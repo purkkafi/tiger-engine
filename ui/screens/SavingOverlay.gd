@@ -38,7 +38,7 @@ class SaveBank extends MarginContainer:
 func _initialize_overlay():
 	for i in len(TE.savefile.banks):
 		tabs.add_child(SaveBank.new(i))
-		tabs.set_tab_title(i, trim_tab_name(TE.savefile.banks[i]['name']))
+		tabs.set_tab_title(i, SavingOverlay.trim_tab_name(TE.savefile.banks[i]['name']))
 	
 	# find out which bank to display based on utimes
 	var max_utime: int = -1

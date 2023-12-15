@@ -410,11 +410,10 @@ func after_overlay():
 
 
 func _quit():
+	before_overlay()
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
 	popup.get_ok_button().connect('pressed', func(): TE.quit_game())
-	
-	if not tabbing:
-		popup.get_cancel_button().connect('pressed', func(): self.grab_focus())
+	popup.get_cancel_button().connect('pressed', after_overlay)
 
 
 func _skip():
