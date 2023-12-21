@@ -411,9 +411,29 @@ func after_overlay():
 
 func _quit():
 	before_overlay()
+	
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
-	popup.get_ok_button().connect('pressed', func(): TE.quit_game())
-	popup.get_cancel_button().connect('pressed', after_overlay)
+	
+	popup.get_ok_button().text = TE.localize.general_quit
+	popup.get_ok_button().theme_type_variation = 'DangerButton'
+	popup.add_button(TE.localize.general_to_title, true, 'to_title').theme_type_variation = 'DangerButton'
+	
+	popup.connect('canceled', _quit_cancel_pressed)
+	popup.connect('confirmed', TE.quit_game)
+	popup.connect('custom_action', _quit_to_title_pressed)
+	
+	popup.popup_centered()
+
+
+func _quit_to_title_pressed(action: String):
+	if action == 'to_title':
+		TE.switch_scene(load(TE.opts.title_screen).instantiate())
+
+
+func _quit_cancel_pressed():
+	after_overlay()
+	if not tabbing:
+		self.grab_focus()
 
 
 func _skip():
