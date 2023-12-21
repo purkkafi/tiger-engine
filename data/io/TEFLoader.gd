@@ -156,14 +156,10 @@ func _resolve_definitions(tree: Tag):
 				defs._colors[id] = value
 				
 			'img':
-				var id: String = node.get_string_at(0)
-				var value: String = node.get_string_at(1)
-				defs.imgs[id] = value
+				_parse_img_definition(defs, node)
 			
 			'img_unlockable':
-				var id: String = node.get_string_at(0)
-				var value: String = node.get_string_at(1)
-				defs.imgs[id] = value
+				var id: String = _parse_img_definition(defs, node)
 				
 				var unlockable_id = 'img:%s' % id
 				defs.unlockables.append(unlockable_id)
@@ -315,6 +311,23 @@ func _parse_song_definition(defs: Definitions, node: Tag) -> String:
 					push_error('unknown option in song definition: %s' % option)
 	
 	defs.songs[id] = path
+	return id
+
+
+func _parse_img_definition(defs: Definitions, node: Tag) -> String:
+	node.expect_length(2, 3)
+	var id: String = node.get_string_at(0)
+	var value: String = node.get_string_at(1)
+	
+	if node.has_index(2):
+		for option in node.get_tags_at(2):
+			match option.name:
+				'meta':
+					_parse_meta(id, option, defs.img_metadata)
+				_:
+					push_error('unknown option in img definition: %s' % option)
+	
+	defs.imgs[id] = value
 	return id
 
 

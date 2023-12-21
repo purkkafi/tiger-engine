@@ -4,6 +4,7 @@ class_name Definitions extends Resource
 
 # a map of ids to images, which are paths relative to the 'assets/bg' folder
 var imgs: Dictionary = {}
+var img_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of transition ids to Transition objects
 # users should not access directly, use Definitions.transition()
 var _transitions: Dictionary = {}
