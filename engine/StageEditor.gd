@@ -10,8 +10,8 @@ var DEFAULT_HANDLERS: Dictionary = {
 	# the empty string is a good default value
 	'bg': func(): return '',
 	'fg': func(): return '',
+	'trans': func(): return '',
 	# null is a good default value
-	'trans': func(): return null,
 	'sprite_at_x': func(): return null,
 	'sprite_at_y': func(): return null,
 	'sprite_at_zoom': func(): return null,
