@@ -9,7 +9,7 @@ var dynamic_text_speed: bool # dynamic text speed on/off
 var skip_unseen_text: bool # skip allowed even when reading new text
 var fullscreen: bool # fullscreen on/off
 var lang_id # language id; String or null if unset
-# keyboard shortcuts; values should be dictionaries with keys 'keycode' and 'unicode'
+# keyboard shortcuts; values should be dictionaries with keys 'keycode' and 'string'
 var keys: Dictionary
 var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
@@ -30,13 +30,26 @@ const TRANSIENT_PROPERTIES: Array[String] = [ 'RefCounted', 'script', 'Settings.
 const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys', 'persistent' ]
 # available keyboard shortcuts and their default values
 # every shortcut is saved as a dict of:
-# – the keycode, a Key
-# – the key's unicode value or 0 if it doesn't correspond to a character
-const KEYBOARD_SHORTCUTS: Dictionary = {
-	'game_screenshot': { 'keycode': KEY_S, 'unicode': 83 },
-	'game_hide': { 'keycode': KEY_H, 'unicode': 72 },
-	'game_skip': { 'keycode': KEY_CTRL, 'unicode': 0 },
-	'debug_toggle' : { 'keycode': KEY_F1, 'unicode': 0 }
+# – 'keycode', a Key
+# – 'string', a string representing the key
+# – 'shift', 'alt', 'ctrl', bools representing the modifiers
+static var KEYBOARD_SHORTCUTS: Dictionary = {
+	'game_screenshot': {
+		'keycode': KEY_S,
+		'string': key_to_string(KEY_S),
+		'shift': false, 'alt': false, 'ctrl': false },
+	'game_hide': {
+		'keycode': KEY_H,
+		'string': key_to_string(KEY_H),
+		'shift': false, 'alt': false, 'ctrl': false },
+	'game_skip': {
+		'keycode': KEY_CTRL,
+		'string': key_to_string(KEY_CTRL),
+		'shift': false, 'alt': false, 'ctrl': false },
+	'debug_toggle' : {
+		'keycode': KEY_F1,
+		'string': key_to_string(KEY_F1),
+		'shift': false, 'alt': false, 'ctrl': false }
 }
 
 
@@ -107,16 +120,18 @@ static func change_fullscreen(to_fullscreen: bool):
 
 
 static func change_keyboard_shortcuts(_keys: Dictionary):
-	for key in _keys.keys():
-		_setup_keyboard_shortcut(key, _keys[key]['keycode'])
+	for key in _keys:
+		_setup_keyboard_shortcut(key, _keys[key])
 
 
-static func _setup_keyboard_shortcut(eventName: String, keycode: Key):
+static func _setup_keyboard_shortcut(eventName: String, data: Dictionary):
 	InputMap.action_erase_events(eventName)
 	var event = InputEventKey.new()
-	event.keycode = keycode
+	event.keycode = data['keycode']
+	event.shift_pressed = data['shift']
+	event.alt_pressed = data['alt']
+	event.ctrl_pressed = data['ctrl']
 	InputMap.action_add_event(eventName, event)
-	
 
 
 # changes language unless the given id is the current language;
@@ -195,15 +210,15 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	
 	# include auto-unlocks from default settings, overwriting them with whatever is in the given dict
 	settings.unlocked = defaults['unlocked']
-	settings.unlocked.merge(dict.get('unlocked', {}))
+	settings.unlocked.merge(dict.get('unlocked', {}), true)
 	
 	# same for keys
 	settings.keys = defaults['keys']
-	settings.keys.merge(dict.get('keys', {}))
+	settings.keys.merge(dict.get('keys', {}), true)
 	
 	# same for persistent
 	settings.persistent = defaults['persistent']
-	settings.persistent.merge(dict.get('persistent', {}))
+	settings.persistent.merge(dict.get('persistent', {}), true)
 	
 	return settings
 
@@ -231,3 +246,20 @@ static func default_settings():
 	defs.unlocked = {}
 	
 	return defs
+
+
+# converts a Key constant or an InputEventKey to a standardized string
+static func key_to_string(key: Variant) -> String:
+	if key is Key:
+		return OS.get_keycode_string(key)
+	elif key is InputEventKey:
+		# if there is a usable, non-letter unicode character, use it
+		if key.unicode != 0 and char(key.unicode).to_upper() == char(key.unicode).to_lower():
+			return char(key.unicode)
+		else:
+			# else default to Godot-provided string
+			# need to use this with letters to handle modifiers gracefully
+			return OS.get_keycode_string(key.get_key_label_with_modifiers())
+	
+	push_error("key_to_string() expected Key or InputEventKey, got '%s'" % key)
+	return ''

@@ -321,27 +321,27 @@ func _process(delta):
 	if len(toast_queue) != 0 and not %ToastContainer.visible:
 		show_toast(toast_queue.pop_front())
 	
-	if Input.is_action_just_pressed('game_screenshot'):
+	if Input.is_action_just_pressed('game_screenshot', true):
 		take_user_screenshot()
 	
 	# hide is active while the key is being held down
-	if Input.is_action_just_pressed('game_hide') or Input.is_action_just_released('game_hide'):
+	if Input.is_action_just_pressed('game_hide', true) or Input.is_action_just_released('game_hide', true):
 		toggle_user_hide()
 	
-	if Input.is_action_just_pressed('debug_toggle') and TE.is_debug():
+	if Input.is_action_just_pressed('debug_toggle', true) and TE.is_debug():
 		toggle_debug_mode()
 		update_debug_mode_text()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	
 	# handle skipping via the keyboard shortcut
-	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip'):
+	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip', true):
 		$VNControls.btn_skip.emit_signal('pressed')
 	elif skip_mode == View.SkipMode.TOGGLE:
-		if Input.is_action_just_pressed('game_skip') and not $VNControls.btn_skip.button_pressed:
+		if Input.is_action_just_pressed('game_skip', true) and not $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = true
 			$View.skip_toggled(true)
-		elif Input.is_action_just_released('game_skip') and $VNControls.btn_skip.button_pressed:
+		elif Input.is_action_just_released('game_skip', true) and $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = false
 			$View.skip_toggled(false)
 	

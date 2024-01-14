@@ -77,6 +77,9 @@ func _initialize_overlay():
 		var button: Button = Button.new()
 		button.set_meta('key_id', key)
 		button.set_meta('key', TE.settings.keys[key])
+		button.set_meta('shift_held', false)
+		button.set_meta('alt_held', false)
+		button.set_meta('ctrl_held', false)
 		_update_key_button_text(button)
 		button.connect('pressed', _key_button_pressed.bind(button))
 		keys_grid.add_child(button)
@@ -105,33 +108,58 @@ func _window_mode_selected(selection):
 
 
 func _key_button_pressed(btn: Button):
-	btn.text = '_'
+	btn.text = '...'
 	unhandled_input_callback = _key_button_changed.bind(btn)
 
 
-func _key_button_changed(event: InputEventKey, btn: Button):
-	# do a swap if the keycode is already in use
+# returns whether a change was actually applied, no if just a modifier was pressed
+func _key_button_changed(event: InputEventKey, btn: Button) -> bool:
+	const MODIFIER_KEYS: Dictionary = {
+		KEY_CTRL: 'ctrl_held',
+		KEY_ALT: 'alt_held',
+		KEY_SHIFT: 'shift_held'
+	}
+	
+	# check if modifier key is pressed
+	for mod_key in MODIFIER_KEYS:
+		if event.keycode == mod_key:
+			if event.pressed: # if pressed, change button state and return
+				btn.set_meta(MODIFIER_KEYS[mod_key], true)
+				btn.text = Settings.key_to_string(event) + '...'
+				return false
+			else: # if released, cancel and accept
+				btn.set_meta(MODIFIER_KEYS[mod_key], false)
+	
+	var meta: Dictionary = {
+		'keycode': event.keycode,
+		'shift': btn.get_meta('shift_held'),
+		'alt': btn.get_meta('alt_held'),
+		'ctrl': btn.get_meta('ctrl_held'),
+		'string': Settings.key_to_string(event)
+	}
+	
+	# do a swap if the key is already in use
 	for other in key_buttons:
-		if other.get_meta('key')['keycode'] == event.keycode:
+		if other.get_meta('key')['string'] == meta['string']:
 			other.set_meta('key', btn.get_meta('key'))
 			_update_key_button_text(other)
 	
-	btn.set_meta('key', { 'keycode': event.keycode, 'unicode': event.unicode })
+	btn.set_meta('key', meta)
 	_update_key_button_text(btn)
+	btn.set_meta('shift_held', false)
+	btn.set_meta('alt_held', false)
+	btn.set_meta('ctrl_held', false)
+	return true
 
 
 func _update_key_button_text(btn: Button):
-	var unicode: int = btn.get_meta('key')['unicode']
-	if unicode != 0:
-		btn.text = char(int(unicode)).to_upper()
-	else:
-		btn.text = OS.get_keycode_string(btn.get_meta('key')['keycode'])
+	btn.text = btn.get_meta('key')['string']
 
 
 func _unhandled_key_input(event):
 	if event is InputEventKey and unhandled_input_callback != null:
-		unhandled_input_callback.call(event)
-		unhandled_input_callback = null
+		if unhandled_input_callback.call(event):
+			unhandled_input_callback = null
 
 
 func _change_theme_settings():
@@ -164,6 +192,7 @@ func _save_exit():
 	for btn in key_buttons:
 		if btn is Button:
 			TE.settings.keys[btn.get_meta('key_id')] = btn.get_meta('key')
+	Settings.change_keyboard_shortcuts(TE.settings.keys)
 	
 	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	TE.settings.dyslexic_font = dyslexic_font.button_pressed
