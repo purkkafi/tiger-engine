@@ -52,8 +52,9 @@ func _ready():
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
 	
 	# if settings file exists, read it and switch to the specified language
-	if Settings.has_settings_file():
-		TE.settings = Settings.load_from_file()
+	var loaded_settings = Settings.load_from_file()
+	if loaded_settings is Settings:
+		TE.settings = loaded_settings
 		# save immediately in case settings were modified due to
 		# the file being from an older version of the game
 		TE.settings.save_to_file()

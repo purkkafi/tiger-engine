@@ -1,5 +1,6 @@
 class_name Settings extends RefCounted
 # user-changeable settings
+# TODO refactor misc persistent data into its own file
 
 
 var music_volume: float # volume of music, in range [0, 1]
@@ -13,6 +14,7 @@ var lang_id # language id; String or null if unset
 var keys: Dictionary
 var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
+var format: int # current format
 
 # hidden settings
 # dict of ids of unlockables to bool (whether unlockeds)
@@ -27,7 +29,7 @@ const SETTINGS_PATH: String = 'user://settings.cfg'
 const TRANSIENT_PROPERTIES: Array[String] = [ 'RefCounted', 'script', 'Settings.gd' ]
 # properties that have special handling when loaded
 # (not automatically getting their default value if absent)
-const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys', 'persistent' ]
+const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys', 'persistent', 'format' ]
 # available keyboard shortcuts and their default values
 # every shortcut is saved as a dict of:
 # – 'keycode', a Key
@@ -51,12 +53,16 @@ static var KEYBOARD_SHORTCUTS: Dictionary = {
 		'string': key_to_string(KEY_F1),
 		'shift': false, 'alt': false, 'ctrl': false }
 }
+# current settings file format number
+const SETTINGS_FORMAT: int = 1
+# an illegal placeholder value for 'format', signifying that it is absent
+const ILLEGAL_FORMAT: int = -1
 
 
 enum GUIScale { NORMAL = 0, LARGE = 1 }
 
 
-# unlocks the given unlockable and saves settings to the disk
+# unlocks the given unlockable and saves settings to the disk (unless no_save is true)
 # does nothing if it was already unlocked
 func unlock(unlockable_id: String, no_toasts: bool = false):
 	if not unlockable_id in TE.defs.unlockables:
@@ -180,16 +186,23 @@ static func has_settings_file():
 # (an example of this kind of migration: a new auto-unlocked unlockable has been added,
 # in case it gets added into the list of unlockables. also, new engine versions may add
 # new settings, which means that their default values will be added.)
-static func load_from_file():
+static func load_from_file() -> Variant:
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	
 	if file == null:
-		push_error('cannot load settings: %d' % file.get_error())
 		return file.get_error()
 	
 	var json = JSON.new()
 	if json.parse(file.get_as_text()) != OK:
-		push_error('error reading settings: %s' % json.get_error_message())
+		TE.log_warning('settings file cannot be parsed')
+		return FAILED
+	
+	# do not accept files that have an unsupported format
+	# TODO: implement format conversion
+	if 'format' not in json.data:
+		json.data['format'] = ILLEGAL_FORMAT
+	if json.data['format'] != SETTINGS_FORMAT:
+		TE.log_warning('settings file has an unsupported format, reverting to default settings')
 		return FAILED
 	
 	return _of_dict(json.data)
@@ -207,6 +220,7 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	
 	# must be set, no possible default value
 	settings.lang_id = dict['lang_id']
+	settings.format = dict['format'] if 'format' in dict else ILLEGAL_FORMAT
 	
 	# include auto-unlocks from default settings, overwriting them with whatever is in the given dict
 	settings.unlocked = defaults['unlocked']
@@ -244,6 +258,7 @@ static func default_settings():
 	defs.dyslexic_font = false
 	defs.persistent = {}
 	defs.unlocked = {}
+	defs.format = SETTINGS_FORMAT
 	
 	return defs
 
