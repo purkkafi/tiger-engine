@@ -38,7 +38,7 @@ func _get_layer_node(id: String) -> Node:
 		# unlock possible unlockable
 		if id in TE.defs.unlocked_by_img:
 			for unlockable in TE.defs.unlocked_by_img[id]:
-				TE.settings.unlock(unlockable)
+				TE.persistent.unlock(unlockable)
 		
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene

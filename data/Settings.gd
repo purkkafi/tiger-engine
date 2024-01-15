@@ -16,12 +16,6 @@ var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
 var format: int # current format
 
-# hidden settings
-# dict of ids of unlockables to bool (whether unlockeds)
-var unlocked: Dictionary
-# persistent data saved with settings for use by games
-var persistent: Dictionary
-
 
 # path of file where settings are stored
 const SETTINGS_PATH: String = 'user://settings.cfg'
@@ -29,7 +23,7 @@ const SETTINGS_PATH: String = 'user://settings.cfg'
 const TRANSIENT_PROPERTIES: Array[String] = [ 'RefCounted', 'script', 'Settings.gd' ]
 # properties that have special handling when loaded
 # (not automatically getting their default value if absent)
-const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'unlocked', 'keys', 'persistent', 'format' ]
+const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'keys', 'format' ]
 # available keyboard shortcuts and their default values
 # every shortcut is saved as a dict of:
 # – 'keycode', a Key
@@ -60,43 +54,6 @@ const ILLEGAL_FORMAT: int = -1
 
 
 enum GUIScale { NORMAL = 0, LARGE = 1 }
-
-
-# unlocks the given unlockable and saves settings to the disk (unless no_save is true)
-# does nothing if it was already unlocked
-func unlock(unlockable_id: String, no_toasts: bool = false):
-	if not unlockable_id in TE.defs.unlockables:
-		TE.log_error(TE.Error.ENGINE_ERROR, 'unknown unlockable: %s' % unlockable_id)
-		return false
-	if not unlockable_id in unlocked:
-		unlocked[unlockable_id] = true
-		TE.log_info('unlocked %s' % unlockable_id)
-		
-		if ':' in unlockable_id:
-			var parts = unlockable_id.split(':', false, 2)
-			var _namespace: String = parts[0]
-			var id: String = parts[1]
-			
-			TE.emit_signal('unlockable_unlocked', _namespace, id)
-			
-			if _namespace in TE.opts.notify_on_unlock and not no_toasts:
-				var noun: String = TE.localize['toast_unlocked_' + _namespace]
-				var toast_title: String = TE.localize.toast_unlocked.replace('[]', noun)
-				var toast_description: String = TE.localize['%s_%s' % [_namespace, id]]
-				
-				TE.send_toast_notification(toast_title, toast_description)
-		else:
-			TE.log_error(TE.Error.ENGINE_ERROR, 'unlockable not namespaced: %s' % unlockable_id)
-		
-		save_to_file()
-
-
-# returns whether the given unlockable is unlocked
-func is_unlocked(unlockable_id: String) -> bool:
-	if not unlockable_id in TE.defs.unlockables:
-		TE.log_error(TE.Error.ENGINE_ERROR, 'unknown unlockable: %s' % unlockable_id)
-		return false
-	return unlockable_id in unlocked and unlocked[unlockable_id]
 
 
 # makes changes to game state
@@ -174,18 +131,9 @@ func _to_dict() -> Dictionary:
 	return dict
 
 
-# returns whether the settings file exists
-# it does not if the game is run for the first time
-static func has_settings_file():
-	return FileAccess.file_exists(SETTINGS_PATH)
-
-
 # reads settings from file; returns the Settings or an error code
-# if settings file is from an older version, it may be migrated;
-# settings should be saved immediately after loading
-# (an example of this kind of migration: a new auto-unlocked unlockable has been added,
-# in case it gets added into the list of unlockables. also, new engine versions may add
-# new settings, which means that their default values will be added.)
+# setting files containing an unsupported format number will not be loaded
+# TODO: implement format conversion
 static func load_from_file() -> Variant:
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	
@@ -198,7 +146,6 @@ static func load_from_file() -> Variant:
 		return FAILED
 	
 	# do not accept files that have an unsupported format
-	# TODO: implement format conversion
 	if 'format' not in json.data:
 		json.data['format'] = ILLEGAL_FORMAT
 	if json.data['format'] != SETTINGS_FORMAT:
@@ -222,17 +169,9 @@ static func _of_dict(dict: Dictionary) -> Settings:
 	settings.lang_id = dict['lang_id']
 	settings.format = dict['format'] if 'format' in dict else ILLEGAL_FORMAT
 	
-	# include auto-unlocks from default settings, overwriting them with whatever is in the given dict
-	settings.unlocked = defaults['unlocked']
-	settings.unlocked.merge(dict.get('unlocked', {}), true)
-	
-	# same for keys
+	# include keys from default settings, overwriting them with whatever is in the given dict
 	settings.keys = defaults['keys']
 	settings.keys.merge(dict.get('keys', {}), true)
-	
-	# same for persistent
-	settings.persistent = defaults['persistent']
-	settings.persistent.merge(dict.get('persistent', {}), true)
 	
 	return settings
 
@@ -256,8 +195,6 @@ static func default_settings():
 	defs.keys = KEYBOARD_SHORTCUTS.duplicate(true)
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	defs.dyslexic_font = false
-	defs.persistent = {}
-	defs.unlocked = {}
 	defs.format = SETTINGS_FORMAT
 	
 	return defs

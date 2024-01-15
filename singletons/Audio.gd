@@ -62,7 +62,7 @@ func play_song(new_song_id: String, duration: float, with_local_volume: float = 
 	# unlock possible unlockable
 	if song_id in TE.defs.unlocked_by_song:
 		for unlockable in TE.defs.unlocked_by_song[song_id]:
-			TE.settings.unlock(unlockable)
+			TE.persistent.unlock(unlockable)
 	
 	# emit signal
 	emit_signal('song_played', song_id)

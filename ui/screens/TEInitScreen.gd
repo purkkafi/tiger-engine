@@ -67,7 +67,7 @@ func _ready():
 	
 	# unlock auto-unlocks possibly not unlocked
 	for id in TE.defs.unlocked_from_start:
-		TE.settings.unlock(id, true)
+		TE.persistent.unlock(id, true)
 
 
 # changes to the appropriate next scene

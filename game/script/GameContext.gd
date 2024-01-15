@@ -47,11 +47,11 @@ func result() -> Variant:
 
 
 func unlock(unlockable: String):
-	TE.settings.unlock(unlockable)
+	TE.persistent.unlock(unlockable)
 
 
 func is_unlocked(unlockable: String) -> bool:
-	return TE.settings.is_unlocked(unlockable)
+	return TE.persistent.is_unlocked(unlockable)
 
 
 func show_toast(title: String, description: String, icon = null):

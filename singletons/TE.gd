@@ -9,6 +9,7 @@ var localize: Localize = null
 var savefile: Savefile = null
 var settings: Settings = null
 var seen_blocks: SeenBlocks = null
+var persistent: Persistent = Persistent.load_from_file()
 # game config files, set by this object
 var defs: Definitions = load('res://assets/definitions.tef')
 var opts: Options = null
