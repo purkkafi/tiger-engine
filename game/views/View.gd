@@ -401,6 +401,7 @@ func create_label() -> RichTextLabel:
 	label.bbcode_enabled = true
 	label.mouse_filter = Control.MOUSE_FILTER_PASS
 	label.text = ''
+	
 	return label
 
 

@@ -83,11 +83,17 @@ func _next_screen():
 func display_language_choice():
 	for lang in TE.all_languages:
 		var btn = Button.new()
+		
 		btn.text = lang.full_name()
+		if lang.icon_path != '':
+			btn.icon = load('%s/%s' % [lang.path, lang.icon_path]) as Texture2D
+		
 		btn.set_h_size_flags(Control.SIZE_SHRINK_CENTER) 
 		btn.connect('pressed', _language_selected.bind(lang))
 		
 		$LanguageOptions.add_child(btn)
+	
+	$LanguageOptions.get_child(0).grab_focus()
 
 
 func _language_selected(selected: Lang):

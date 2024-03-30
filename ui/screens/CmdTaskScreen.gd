@@ -13,5 +13,5 @@ func _ready():
 	
 	await get_tree().process_frame
 	
-	var return_code = task.call() as int
-	TE.quit_game(return_code)
+	var return_code = task.call()
+	TE.quit_game(return_code as int)

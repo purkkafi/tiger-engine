@@ -15,7 +15,14 @@ static func handle_args() -> Variant:
 		match args[i]:
 			'--run-tests':
 				instead = cmd_task_screen.instantiate()
-				instead.task = func(): return TestRunner.run_tests()
+				instead.task = TestRunner.run_tests
+			'--extract-language':
+				i += 1
+				var lang: String = args[i]
+				i += 1
+				var to: String = args[i]
+				instead = cmd_task_screen.instantiate()
+				instead.task = CmdArgs._extract_language.bind(lang, to)
 			'--debug', '-d':
 				TE._force_debug = true
 			'--no-debug':
@@ -30,12 +37,14 @@ static func handle_args() -> Variant:
 				i += 1
 				var lang: String = args[i]
 				instead = cmd_task_screen.instantiate()
-				instead.task = func(): return _word_count(lang)
+				instead.task = _word_count.bind(lang)
 			'--help', '-h':
 				print("""
 					supported arguments:
 					--run-tests
 						run the engine's unit & integration tests and quit
+					--extract-language <lang> <target>
+						creates translation project, extracting the given language to the target folder
 					-d, --debug
 						force enable the engine's debug mode (by default enabled if Godot's is)
 					--no-debug
@@ -114,3 +123,86 @@ static func _word_count(lang: String) -> int:
 	print('\n%-*s   %d' % [max_len, 'TOTAL', total])
 	
 	return 0
+
+
+static func _extract_language(lang_id: String, where: String) -> int:
+	var base_dir_path: String = 'res://' if OS.has_feature('editor') else OS.get_executable_path().get_base_dir()
+	var base_dir: DirAccess = DirAccess.open(base_dir_path)
+	if base_dir == null:
+		printerr('Cannot open current folder')
+		return 1
+	
+	if base_dir.make_dir_recursive(where) != OK:
+		printerr("Cannot create target directory '%s'" % where)
+		return 1
+	
+	var to_dir_path: String = base_dir_path + '/' + where
+	var to_dir: DirAccess = DirAccess.open(to_dir_path)
+	
+	if len(to_dir.get_files()) != 0 or len(to_dir.get_directories()) != 0:
+		printerr("Target directory '%s' is non-empty" % where)
+		return 1
+	
+	# save project.godot
+	var project_template: FileAccess = FileAccess.open('res://tiger-engine/resources/tr_project.godot_template.txt', FileAccess.READ)
+	var project: FileAccess = FileAccess.open(to_dir_path + '/project.godot', FileAccess.WRITE)
+	project.store_string(project_template.get_as_text().replace('[[NAME]]', '"' + TE.localize.game_title + ' (translation)"'))
+	
+	# save export_presets.cfg
+	var export_presets_template: FileAccess = FileAccess.open('res://tiger-engine/resources/tr_export_presets.cfg_template.txt', FileAccess.READ)
+	var export_presets: FileAccess = FileAccess.open(to_dir_path + '/export_presets.cfg', FileAccess.WRITE)
+	export_presets.store_string(export_presets_template.get_as_text())
+	
+	# save README.txt
+	var readme_template: FileAccess = FileAccess.open('res://tiger-engine/resources/tr_README.txt', FileAccess.READ)
+	var readme: FileAccess = FileAccess.open(to_dir_path + '/README.txt', FileAccess.WRITE)
+	readme.store_string(readme_template.get_as_text().replace('[[NAME]]', TE.localize.game_title).replace('[[LANG]]', lang_id))
+	
+	var to_lang_path: String = to_dir_path + '/assets/lang/' + lang_id
+	to_dir.make_dir_recursive(to_lang_path)
+	var to_lang: DirAccess = DirAccess.open(to_lang_path)
+	
+	var from_lang_path: String = 'res://assets/lang/' + lang_id
+	var files = _crawl_lang_dir(from_lang_path, '', to_lang)
+	if files == null:
+		printerr("Cannot load language: '%s'" % lang_id)
+		return 1
+	
+	for file in files as Array[String]:
+		match file.get_extension():
+			'tef':
+				var from: FileAccess = FileAccess.open(from_lang_path + file, FileAccess.READ)
+				var to: FileAccess = FileAccess.open(to_lang_path + file, FileAccess.WRITE)
+				to.store_string(from.get_as_text())
+			'import':
+				if !file.ends_with('.png.import'):
+					printerr("Currently only imported .png is supported, got '%s'" % file)
+					continue
+				var tex: Texture2D = load(from_lang_path + file.trim_suffix('.import')) as Texture2D
+				tex.get_image().save_png(to_lang_path + file.trim_suffix('.import'))
+				
+			'png':
+				pass # stray PNGs may be found if running from editor
+			_:
+				printerr("Bad file, expected .tef or .png: %s" % file)
+	
+	print("Exported translation project to '%s'" % to_dir_path)
+	return 0
+
+
+# crawls 'base_folder' recursively, returning all found files as relative paths,
+# and creates corresponding subfolders in 'create_dirs_in'
+static func _crawl_lang_dir(base_folder: String, path: String, create_dirs_in: DirAccess) -> Variant:
+	var access: DirAccess = DirAccess.open(base_folder + '/' + path)
+	if access == null:
+		return null
+	
+	var files: Array[String] = []
+	for file in access.get_files():
+		files.append(path + '/' + file)
+	
+	for subdir in access.get_directories():
+		create_dirs_in.make_dir_recursive((path + '/' + subdir).trim_prefix('/'))
+		files.append_array(_crawl_lang_dir(base_folder, path + '/' + subdir, create_dirs_in))
+	
+	return files

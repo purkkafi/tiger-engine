@@ -138,7 +138,7 @@ static func load_from_file() -> Variant:
 	var file: FileAccess = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	
 	if file == null:
-		return file.get_error()
+		return FileAccess.get_open_error()
 	
 	var json = JSON.new()
 	if json.parse(file.get_as_text()) != OK:

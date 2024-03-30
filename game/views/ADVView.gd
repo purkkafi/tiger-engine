@@ -12,6 +12,7 @@ var default_speaker_panel_bg_color: Color = Color.TRANSPARENT
 
 func _ready():
 	label = create_label()
+	
 	box.add_child(label)
 	
 	connect('game_paused', _game_paused)
