@@ -9,13 +9,13 @@ var localize: Localize = null
 var savefile: Savefile = null
 var settings: Settings = null
 var seen_blocks: SeenBlocks = null
-var persistent: Persistent = Persistent.load_from_file()
 # game config files, set by this object
 var defs: Definitions = load('res://assets/definitions.tef')
+var persistent: Persistent = Persistent.load_from_file()
 var opts: Options = null
 # the current scene, stored here for convenience
 var current_scene: Node = null
-# array of all recognized languages, set by TEInitScreen
+# array containing all available languages
 var all_languages: Array[Lang] = []
 # if set to a bool, force enables or disables debug mode
 var _force_debug = null
@@ -41,6 +41,8 @@ signal unlockable_unlocked(_namespace: String, id: String)
 # – 'bbcode': the text in bbcode
 # – 'icon' (optional): path to icon
 signal toast_notification(toast: Dictionary)
+# fired when a translation package is loaded
+signal languages_changed
 
 
 # standard errors
@@ -60,9 +62,31 @@ func _ready():
 	if opts == null:
 		opts = Options.new()
 	
+	# attempt to load known translation packs
+	var remove: Array[String] = []
+	for tp in persistent.translation_packages:
+		var ok: bool = ProjectSettings.load_resource_pack(tp, false)
+		if not ok:
+			remove.append(tp)
+			log_warning("Translation package '%s' was not found and will be removed from cache" % tp)
+	
+	# remove the bad ones that couldn't be loaded
+	if len(remove) != 0:
+		for bad_package in remove:
+			persistent.translation_packages.erase(bad_package)
+		persistent.save_to_file()
+	
+	# detect available languages
+	detect_languages()
+	
+	get_tree().get_root().connect('files_dropped', _load_translation_package)
+	
 	# set current scene to be the initial scene
 	var root = get_tree().root
 	current_scene = root.get_child(root.get_child_count() - 1)
+	
+	# disable auto quit to save various game files with quit_game()
+	get_tree().set_auto_accept_quit(false)
 
 
 # sets the scene to the given scene and calls callback afterwards
@@ -85,6 +109,47 @@ func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 	else:
 		get_tree().root.remove_child(old_scene)
 		after.call(old_scene)
+
+
+# detects all available languages by crawling the filesystem
+# sorts them alphabetically, besides the one matching the user's locale,
+# which is placed first (if any)
+# returns whether new languages were discovered (i.e. an asset pack has been loaded)
+func detect_languages() -> bool:
+	var before: Array[Lang] = all_languages.duplicate()
+	
+	var lang_path = 'res://assets/lang'
+	
+	var langs_folder := DirAccess.open(lang_path)
+	if langs_folder == null:
+		push_error('cannot open langs folder')
+		return false
+	
+	var found: Array[Lang] = []
+	for folder in langs_folder.get_directories():
+		var lang: Lang = load(lang_path + '/' + folder + '/lang.tef')
+		lang.id = folder
+		lang.path = lang_path + '/' + folder
+		
+		found.append(lang)
+
+	# sort found languages, preferring the one matching user's locale
+	var locale = OS.get_locale_language()
+	var preferred = null
+	
+	for lang in found:
+		if lang.id == locale:
+			preferred = lang
+			found.remove_at(found.find(lang))
+	
+	found.sort_custom(func(lang1: Lang, lang2: Lang): return lang2.name > lang1.name)
+	
+	if preferred != null:
+		found.insert(0, preferred)
+	
+	all_languages = found
+	
+	return all_languages != before
 
 
 # switches the language by loading files associated with it and configures
@@ -176,9 +241,15 @@ func is_large_gui():
 	return is_mobile()
 
 
-# exits the game
+func _notification(what): # override default exit behavior
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		quit_game(0)
+
+
+# exits the game safely
 func quit_game(exit_code=0):
 	seen_blocks.write_to_disk()
+	persistent.save_to_file()
 	await get_tree().process_frame
 	get_tree().quit(exit_code)
 
@@ -210,3 +281,17 @@ func _redraw_all(node: Node):
 	
 	if node is CanvasItem:
 		node.queue_redraw()
+
+
+func _load_translation_package(files: Array[String]):
+	for file in files:
+		if not ProjectSettings.load_resource_pack(file, false):
+			log_error(TE.Error.FILE_ERROR, "Could not load language package: '%s'" % file)
+	
+	if detect_languages():
+		emit_signal('languages_changed')
+		
+		for file in files:
+			if file not in persistent.translation_packages:
+				persistent.translation_packages.append(file)
+		persistent.save_to_file()

@@ -39,7 +39,7 @@ func get_tef_files_in(path):
 func test_uistrings_translations():
 	var keys: Dictionary = {}
 	var all_keys: Array = []
-	var languages = TEInitScreen.get_languages()
+	var languages = TE.all_languages
 	
 	for lang in languages:
 		var localize: Localize = Localize.of_lang(lang.id)

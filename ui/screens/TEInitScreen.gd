@@ -12,8 +12,8 @@ var instead_scene: Variant
 func _ready():
 	instead_scene = CmdArgs.handle_args()
 	
-	# queue title screen for loading
-	Assets.noncached.queue(TE.opts.title_screen)
+	# rebuild UI if the user drops in a language pack
+	TE.connect('languages_changed', display_language_choice)
 	
 	# set initial window settings
 	self.color = TETheme.background_color
@@ -22,14 +22,6 @@ func _ready():
 	# load default theme or use an empty theme if not specified
 	if TE.opts.default_theme != null:
 		TETheme.set_theme(TE.opts.default_theme)
-	
-	# load translation package from the file 'translation.zip' if it exists
-	if FileAccess.file_exists('res://translation.zip'):
-		var result = ProjectSettings.load_resource_pack('res://translation.zip', true)
-		TE.log_info('translation package loaded, ok: ' + str(result))
-	
-	# read language options
-	TE.all_languages = TEInitScreen.get_languages()
 	
 	# setup events for keyboard shortcuts
 	for shortcut in Settings.KEYBOARD_SHORTCUTS.keys():
@@ -59,8 +51,14 @@ func _ready():
 		# the file being from an older version of the game
 		TE.settings.save_to_file()
 		TE.settings.change_settings()
-		_next_screen.call_deferred()
-	else:
+		
+		if TE.language == null:
+			# couldn't load language, possibly as a result of it being in
+			# a since-deleted language pack
+			display_language_choice.call_deferred()
+		else:
+			_next_screen.call_deferred()
+	else: # settings file not found
 		# setup default settings and show the user the language choice
 		TE.settings = Settings.default_settings()
 		display_language_choice.call_deferred()
@@ -81,10 +79,19 @@ func _next_screen():
 
 
 func display_language_choice():
+	# refresh list if displaying after user drops in translation package
+	var previously_focused: String = ''
+	for child in $LanguageOptions.get_children():
+		if child.has_focus():
+			previously_focused = child.get_meta('lang_id')
+		$LanguageOptions.remove_child(child)
+		child.queue_free()
+	
 	for lang in TE.all_languages:
 		var btn = Button.new()
 		
 		btn.text = lang.full_name()
+		btn.set_meta('lang_id', lang.id)
 		if lang.icon_path != '':
 			btn.icon = load('%s/%s' % [lang.path, lang.icon_path]) as Texture2D
 		
@@ -93,7 +100,20 @@ func display_language_choice():
 		
 		$LanguageOptions.add_child(btn)
 	
-	$LanguageOptions.get_child(0).grab_focus()
+	# grab focus, defaulting to the top entry
+	if previously_focused == '':
+		$LanguageOptions.get_child(0).grab_focus()
+	else:
+		for btn in $LanguageOptions.get_children():
+			if btn.get_meta('lang_id') == previously_focused:
+				btn.grab_focus()
+	
+	# set all to equal width
+	var max_size: int = -1
+	for btn in $LanguageOptions.get_children():
+		max_size = max(max_size, btn.size.x)
+	for btn in $LanguageOptions.get_children():
+		btn.custom_minimum_size.x = max_size
 
 
 func _language_selected(selected: Lang):
@@ -101,43 +121,3 @@ func _language_selected(selected: Lang):
 	TE.settings.lang_id = selected.id
 	TE.settings.save_to_file()
 	_next_screen()
-
-
-# returns all defined languages
-# if user's locale matches a language, it's returned first;
-# the rest are sorted alphabetically
-static func get_languages() -> Array[Lang]:
-	var lang_path = 'res://assets/lang'
-	
-	var langs_folder := DirAccess.open(lang_path)
-	if langs_folder == null:
-		push_error('cannot open langs folder')
-		return []
-	
-	var found: Array[Lang] = []
-	for folder in langs_folder.get_directories():
-		var lang: Lang = load(lang_path + '/' + folder + '/lang.tef')
-		lang.id = folder
-		lang.path = lang_path + '/' + folder
-		
-		found.append(lang)
-
-	# sort found languages, preferring the one matching user's locale
-	var locale = OS.get_locale_language()
-	var preferred = null
-	
-	for lang in found:
-		if lang.id == locale:
-			preferred = lang
-			found.remove_at(found.find(lang))
-	
-	found.sort_custom(Callable(TEInitScreen, '_sort_language'))
-	
-	if preferred != null:
-		found.insert(0, preferred)
-	
-	return found
-
-
-static func _sort_language(lang1: Lang, lang2: Lang) -> bool:
-	return lang2.name > lang1.name

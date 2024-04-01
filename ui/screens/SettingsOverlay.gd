@@ -49,13 +49,8 @@ func _initialize_overlay():
 	dyn_text_speed.button_pressed = TE.settings.dynamic_text_speed
 	skip_unseen_text.button_pressed = TE.settings.skip_unseen_text
 	
-	var selected_lang_index = null
-	for i in len(TE.all_languages):
-		var lang = TE.all_languages[i]
-		lang_options.add_item(lang.full_name(), i)
-		if lang == TE.language:
-			selected_lang_index = i
-	lang_options.selected = selected_lang_index
+	_refresh_language_options()
+	TE.connect('languages_changed', _refresh_language_options)
 	
 	# language setting can be disabled when overlay is created in-game
 	if language_disabled:
@@ -89,6 +84,25 @@ func _initialize_overlay():
 	dyslexic_font.button_pressed = TE.settings.dyslexic_font
 	
 	save_exit.grab_focus()
+
+
+func _refresh_language_options():
+	var selected_lang_index = null
+	
+	# needed if refreshing when the user drops in a translation package
+	lang_options.clear()
+	
+	for i in len(TE.all_languages):
+		var lang: Lang = TE.all_languages[i]
+		lang_options.add_item(lang.full_name(), i)
+		
+		if lang.icon_path != '':
+			lang_options.set_item_icon(i, load(lang.path + '/' + lang.icon_path) as Texture2D)
+		
+		if lang == TE.language:
+			selected_lang_index = i
+	
+	lang_options.selected = selected_lang_index
 
 
 func disable_language():

@@ -8,6 +8,8 @@ class_name Persistent extends RefCounted
 # and cannot be unlocked with unlock()
 # do not access directly, use unlock()
 var _unlocked: Dictionary = {}
+# absolute file paths of previously loaded translation packages
+var translation_packages: Array[String] = []
 # game-specific data
 var custom: Dictionary = {}
 
@@ -67,8 +69,15 @@ static func load_from_file() -> Persistent:
 		return Persistent.new()
 	
 	var instance: Persistent = Persistent.new()
-	instance._unlocked = json.data['_unlocked']
-	instance.custom = json.data['custom']
+	
+	# all fields optional
+	if '_unlocked' in json.data:
+		instance._unlocked = json.data['_unlocked']
+	if 'custom' in json.data:
+		instance.custom = json.data['custom']
+	if 'translation_packages' in json.data:
+		instance.translation_packages.append_array(json.data['translation_packages'])
+	
 	return instance
 
 
@@ -82,5 +91,6 @@ func save_to_file() -> void:
 	
 	file.store_line(JSON.stringify({
 		'_unlocked': _unlocked,
+		'translation_packages': translation_packages,
 		'custom': custom
 	}, '  '))
