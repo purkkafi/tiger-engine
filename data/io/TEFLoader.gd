@@ -193,30 +193,38 @@ func _resolve_definitions(tree: Tag):
 			
 			'unlockable':
 				var id: String = node.get_string_at(0)
-				var trigger: Tag = node.get_tag_at(1)
+				var triggers: Array = []
 				
-				if trigger == null:
-					push_error("trigger required for unlockable: %s" % id)
+				if node.length() == 2:
+					triggers = node.get_tags_at(1)
+				elif node.length() > 2:
+					push_error('unlockable should be given 1–2 arguments: %s' % id)
 				
 				defs.unlockables.append(id)
 				
-				match trigger.name:
-					'from_start':
-						defs.unlocked_from_start.append(id)
-					'manual':
-						pass
-					'by_song':
-						var song_id: String = trigger.get_string()
-						if song_id not in defs.unlocked_by_song:
-							defs.unlocked_by_song[song_id] = []
-						defs.unlocked_by_song[song_id].append(id)
-					'by_img':
-						var img_id: String = trigger.get_string()
-						if img_id not in defs.unlocked_by_img:
-							defs.unlocked_by_img[img_id] = []
-						defs.unlocked_by_img[img_id].append(id)
-					_:
-						push_error('unknown trigger for unlockable %s: %s' % [id, trigger.name])
+				for trigger in triggers:
+					match trigger.name:
+						'from_start':
+							defs.unlocked_from_start.append(id)
+						'manual':
+							pass
+						'by_song':
+							var song_id: String = trigger.get_string()
+							if song_id not in defs.unlocked_by_song:
+								defs.unlocked_by_song[song_id] = []
+							defs.unlocked_by_song[song_id].append(id)
+						'by_img':
+							var img_id: String = trigger.get_string()
+							if img_id not in defs.unlocked_by_img:
+								defs.unlocked_by_img[img_id] = []
+							defs.unlocked_by_img[img_id].append(id)
+						'by_other':
+							var other_id: String = trigger.get_string()
+							if other_id not in defs.automatically_unlocks:
+								defs.automatically_unlocks[other_id] = []
+							defs.automatically_unlocks[other_id].append(id)
+						_:
+							push_error('unknown trigger for unlockable %s: %s' % [id, trigger.name])
 			
 			'speaker':
 				var speaker: Definitions.SpeakerDef = Definitions.SpeakerDef.new()

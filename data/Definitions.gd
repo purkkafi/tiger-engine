@@ -24,6 +24,8 @@ var unlocked_from_start: Array[String] = []
 var unlocked_by_song: Dictionary = {}
 # map of img ids to Array of unlockable ids unlocked when the image is shown
 var unlocked_by_img: Dictionary = {}
+# map of unlockable ids to Array of other unlockables they silently & automatically unlock
+var automatically_unlocks: Dictionary = {}
 # map of speaker ids to Speaker objects
 var speakers: Dictionary = {}
 # map of color ids to Color objects

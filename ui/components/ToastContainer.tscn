@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3 uid="uid://cdstpj7eud5op"]
+
+[ext_resource type="Script" path="res://tiger-engine/ui/components/ToastContainer.gd" id="1_po3pj"]
+
+[node name="ToastContainer" type="MarginContainer"]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+script = ExtResource("1_po3pj")
+
+[node name="ToastPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ToastPanel"
+
+[node name="HBox" type="HBoxContainer" parent="ToastPanel"]
+layout_mode = 2
+
+[node name="ToastIcon" type="TextureRect" parent="ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 5
+
+[node name="ToastText" type="RichTextLabel" parent="ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+fit_content = true
+
+[node name="ToastClose" type="Button" parent="ToastPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"ToastClose"
+flat = true

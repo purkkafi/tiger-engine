@@ -26,7 +26,7 @@ func unlock(unlockable_id: String, no_toasts: bool = false):
 		return
 	
 	if not unlockable_id in _unlocked:
-		_unlocked[unlockable_id] = true
+		_unlock_recursively(unlockable_id)
 		TE.log_info('unlocked %s' % unlockable_id)
 		
 		if ':' in unlockable_id:
@@ -46,6 +46,16 @@ func unlock(unlockable_id: String, no_toasts: bool = false):
 			TE.log_error(TE.Error.ENGINE_ERROR, 'unlockable not namespaced: %s' % unlockable_id)
 		
 		save_to_file()
+
+
+# internally unlocks given unlockable & others depending on it
+func _unlock_recursively(unlockable_id: String):
+	_unlocked[unlockable_id] = true
+	
+	if unlockable_id in TE.defs.automatically_unlocks:
+		for dependent in TE.defs.automatically_unlocks[unlockable_id]:
+			if not dependent in _unlocked:
+				_unlock_recursively(dependent)
 
 
 # returns whether the given unlockable is unlocked
