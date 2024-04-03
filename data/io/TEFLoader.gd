@@ -193,7 +193,10 @@ func _resolve_definitions(tree: Tag):
 			
 			'unlockable':
 				var id: String = node.get_string_at(0)
-				var trigger: Tag = node.get_tag_at(1) 
+				var trigger: Tag = node.get_tag_at(1)
+				
+				if trigger == null:
+					push_error("trigger required for unlockable: %s" % id)
 				
 				defs.unlockables.append(id)
 				
