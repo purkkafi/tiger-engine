@@ -366,6 +366,8 @@ func _resolve_options(tree: Tag):
 				opts.default_theme = node.get_string()
 			'bug_report_url':
 				opts.bug_report_url = node.get_string()
+			'ingame_custom_controls':
+				opts.ingame_custom_controls = node.get_string()
 			_:
 				push_error('unknown option: %s' % [node])
 	

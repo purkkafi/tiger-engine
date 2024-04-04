@@ -22,7 +22,7 @@ func _adjust_toast_size():
 	)
 
 
-func _process(delta):
+func _process(_delta):
 	if len(toast_queue) != 0 and not self.visible:
 		show_toast(toast_queue.pop_front())
 

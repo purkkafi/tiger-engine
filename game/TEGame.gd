@@ -18,6 +18,7 @@ var debug_mode: DebugMode = DebugMode.NONE # active debug overlay
 var focus_now: WeakRef # control that last had focus
 var tabbing: bool = false # whether user is navigating buttons by tabbing
 var focus_before_overlay: Control # the Control that had focus before an overlay was spawned
+var custom_controls: Variant = null # custom controls or null if not specified
 
 
 enum DebugMode { NONE, AUDIO, SPRITES }
@@ -50,6 +51,18 @@ func _ready():
 	# no hide button on desktop
 	if not TE.is_mobile():
 		%MobileHideContainer.visible = false
+	else: # else, style it
+		var hide_icon = get_theme_icon('mobile_hide', 'Global')
+		if hide_icon != null:
+			%MobileHide.icon = hide_icon
+		else:
+			%MobileHide.text = 'H'
+	
+	# add custom controls, if specified
+	if TE.opts.ingame_custom_controls != null:
+		custom_controls = load(TE.opts.ingame_custom_controls).instantiate()
+		custom_controls.game = self
+		add_child(custom_controls)
 	
 	# fill default values of variables
 	var var_names: Array[String] = []
@@ -377,6 +390,8 @@ func _gui_input(event):
 func before_overlay():
 	overlay_active = true
 	self.focus_mode = Control.FOCUS_NONE
+	if custom_controls != null:
+		custom_controls.set_disabled(true)
 	$VNControls.set_buttons_disabled(true)
 	focus_before_overlay = focus_now.get_ref()
 
@@ -384,6 +399,8 @@ func before_overlay():
 func after_overlay():
 	overlay_active = false
 	self.focus_mode = Control.FOCUS_ALL
+	if custom_controls != null:
+		custom_controls.set_disabled(false)
 	$VNControls.set_buttons_disabled(false)
 	if tabbing:
 		focus_before_overlay.grab_focus()
@@ -593,6 +610,8 @@ func toggle_user_hide():
 	@warning_ignore("shadowed_variable_base_class")
 	var show: bool = not $VNControls.visible
 	$VNControls.visible = show
+	if custom_controls != null:
+		custom_controls.visible = show
 	# modulate instead because visibility messes with the input events
 	%MobileHideContainer.modulate = Color.WHITE if show else Color.TRANSPARENT
 	
