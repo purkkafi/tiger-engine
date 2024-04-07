@@ -168,8 +168,17 @@ func add_shadow(to_node: Node):
 	
 	TE.current_scene.add_child(shadow)
 	to_node.connect('tree_exited', _remove_shadow.bind(shadow))
+	
+	TETheme.anim_shadow_in.call(shadow)
 
 
 func _remove_shadow(shadow: ColorRect):
+	var tween = TETheme.anim_shadow_out.call(shadow)
+	if tween == null:
+		_do_remove_shadow(shadow)
+	else:
+		tween.tween_callback(_do_remove_shadow.bind(shadow))
+
+func _do_remove_shadow(shadow: ColorRect):
 	shadow.get_parent().remove_child.call_deferred(shadow)
 	shadow.queue_free()

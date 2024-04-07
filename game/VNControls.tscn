@@ -18,13 +18,13 @@ layout_mode = 0
 theme_type_variation = &"VNControlsPanel"
 
 [node name="Scroll" type="ScrollContainer" parent="Panel"]
+clip_contents = false
 layout_mode = 2
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 3
 
 [node name="HBox" type="HBoxContainer" parent="Panel/Scroll"]
 unique_name_in_owner = true
-clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
