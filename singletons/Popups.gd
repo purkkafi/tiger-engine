@@ -173,11 +173,14 @@ func add_shadow(to_node: Node):
 
 
 func _remove_shadow(shadow: ColorRect):
-	var tween = TETheme.anim_shadow_out.call(shadow)
-	if tween == null:
-		_do_remove_shadow(shadow)
-	else:
-		tween.tween_callback(_do_remove_shadow.bind(shadow))
+	if shadow.is_inside_tree():
+		var tween = TETheme.anim_shadow_out.call(shadow)
+		if tween != null:
+			tween.tween_callback(_do_remove_shadow.bind(shadow))
+			return
+	
+	_do_remove_shadow(shadow)
+
 
 func _do_remove_shadow(shadow: ColorRect):
 	shadow.get_parent().remove_child.call_deferred(shadow)
