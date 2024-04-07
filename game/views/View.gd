@@ -202,7 +202,7 @@ func next_line(loading_from_save: bool = false) -> void:
 		if not loading_from_save:
 			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
 		
-		_display_line(line + TE.opts.line_end_string(), speaker)
+		_display_line(line + line_end_string(), speaker)
 	
 	line_index += 1
 	next_effect.reset()
@@ -616,3 +616,12 @@ func reset_speedup():
 	speedup = Speedup.NORMAL
 	state = State.READY_TO_PROCEED
 	advance_held = 0
+
+
+# returns the string put at the end of each line
+func line_end_string() -> String:
+	var symbol_font = get_theme_font('line_end_symbol', 'Global')
+	if symbol_font == null:
+		return '[next] ▶[/next]'
+	else:
+		return '[next] [font=%s]▶[/font][/next]' % symbol_font.resource_path

@@ -82,7 +82,7 @@ func _display_line(line: String, _speaker: Speaker = null):
 	# remove the '[next] ▶[/next]' from previous paragraph
 	if paragraphs.get_child_count() > 0 and paragraphs.get_child(-1) is RichTextLabel:
 		var old_par: RichTextLabel = paragraphs.get_child(-1)
-		old_par.text = old_par.text.replace(TE.opts.line_end_string(), '')
+		old_par.text = old_par.text.replace(line_end_string(), '')
 		# it may have been centered so remove leftover tags
 		old_par.text = old_par.text.replace('[center][/center]', '')
 	
@@ -141,7 +141,7 @@ func _parse_custom_tag_line(_line: String, tag_bbcode: RegExMatch, loading_from_
 	if not loading_from_save:
 		TETheme.anim_full_image_in.call(rect)
 	
-	_display_line('[center]%s[/center]' % TE.opts.line_end_string())
+	_display_line('[center]%s[/center]' % line_end_string())
 
 
 func _set_full_img_size(img: TextureRect):

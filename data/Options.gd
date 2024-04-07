@@ -21,13 +21,3 @@ var default_theme: Variant = null
 var bug_report_url: Variant = null
 # path to scene (String) containing custom controls that will shop up in-game
 var ingame_custom_controls: Variant = null
-# font where the '▶' symbol at the end of each line will be retrieved from
-var line_end_symbol_font: Variant = null
-
-
-# returns the string put at the end of each line
-func line_end_string() -> String:
-	if line_end_symbol_font == null:
-		return '[next] ▶[/next]'
-	else:
-		return '[next] [font=%s]▶[/font][/next]' % line_end_symbol_font
