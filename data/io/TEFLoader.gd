@@ -368,6 +368,8 @@ func _resolve_options(tree: Tag):
 				opts.bug_report_url = node.get_string()
 			'ingame_custom_controls':
 				opts.ingame_custom_controls = node.get_string()
+			'line_end_symbol_font':
+				opts.line_end_symbol_font = node.get_string()
 			_:
 				push_error('unknown option: %s' % [node])
 	

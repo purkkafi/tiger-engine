@@ -32,7 +32,6 @@ const LINE_SWITCH_COOLDOWN: float = 0.1 # cooldown for moving to next line on sp
 const SKIP_TWEEN_SCALE: float = 10.0 # factor to multiply tweening speed with
 const SPEEDUP_THRESHOLD_FAST: float = 0.25 # treshold to start speeding up
 const SPEEDUP_THRESHOLD_FASTER: float = 1.15 # treshold to start speeding up faster
-const LINE_END = '[next] ▶[/next]' # text to insert at the end of every line
 const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	' ' : 0, '\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
@@ -203,7 +202,7 @@ func next_line(loading_from_save: bool = false) -> void:
 		if not loading_from_save:
 			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
 		
-		_display_line(line + LINE_END, speaker)
+		_display_line(line + TE.opts.line_end_string(), speaker)
 	
 	line_index += 1
 	next_effect.reset()
