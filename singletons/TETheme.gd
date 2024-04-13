@@ -123,6 +123,10 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 		# convert every theme font to OpenDyslexic equivalent
 		for tp in current_theme.get_type_list():
 			for fn in current_theme.get_font_list(tp):
+				# do not replace line end symbol font
+				if tp == 'Global' and fn == 'line_end_symbol':
+					continue
+				
 				var theme_font: String = current_theme.get_font(fn, tp).resource_path
 				var to_style: FontStyle
 				
