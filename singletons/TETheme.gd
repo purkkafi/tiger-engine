@@ -21,11 +21,18 @@ var anim_overlay_out: Callable = NO_ANIM
 var anim_shadow_in: Callable = NO_ANIM
 var anim_shadow_out: Callable = NO_ANIM
 var anim_full_image_in: Callable = NO_ANIM
+# script that holds font-related data
+var font_data = null
 
 
 # signal emitted when the variable current_theme is changed
 # clients can connect to this to reinitialize themselves if they need to
 signal theme_changed
+
+
+enum FontStyle {
+	NORMAL, BOLD, ITALIC, BOLD_ITALIC
+}
 
 
 # changes the base theme
@@ -64,6 +71,14 @@ func set_theme(theme_id: String):
 		anim_shadow_out = NO_ANIM
 		anim_full_image_in = NO_ANIM
 	
+	if font_data != null:
+		self.remove_child(font_data)
+	
+	font_data = _resolve_font_data(theme_id)
+	
+	if font_data != null:
+		self.add_child(font_data)
+	
 	background_color = _base_theme.get_color('background_color', 'Global')
 	shadow_color = _base_theme.get_color('shadow_color', 'Global')
 	default_text_color = _base_theme.get_color('font_color', 'Label')
@@ -95,29 +110,39 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 		is_dyslexic_font = force_dyslexic_font
 	
 	if is_dyslexic_font:
-		var regular = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
-		var bold = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold.otf')
-		var italic = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
-		var bold_italic = load('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold-Italic.otf')
+		var od_regular = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
+		var od_bold = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold.otf')
+		var od_italic = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
+		var od_bold_italic = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold-Italic.otf')
 		
 		if current_theme.has_default_font():
-			current_theme.default_font = regular
+			current_theme.default_font = od_regular
 		if current_theme.has_default_font_size():
 			current_theme.default_font_size = int(current_theme.default_font_size * 0.75)
 		
+		# convert every theme font to OpenDyslexic equivalent
 		for tp in current_theme.get_type_list():
 			for fn in current_theme.get_font_list(tp):
-				var normal: String = current_theme.get_font(fn, tp).resource_path.to_lower()
+				var theme_font: String = current_theme.get_font(fn, tp).resource_path
+				var to_style: FontStyle
 				
-				if ('bold' in fn and 'italic' in fn) or ('bold' in normal and 'italic' in normal):
-					current_theme.set_font(fn, tp, bold_italic)
-				elif 'italic' in fn or 'italic' in normal:
-					current_theme.set_font(fn, tp, italic)
-				elif 'bold' in fn or 'bold' in normal:
-					current_theme.set_font(fn, tp, bold)
+				if font_data != null:
+					to_style = font_data.get_font_style(theme_font)
 				else:
-					current_theme.set_font(fn, tp, regular)
+					to_style = FontStyle.NORMAL
+				
+				match to_style:
+					FontStyle.BOLD_ITALIC:
+						current_theme.set_font(fn, tp, od_bold_italic)
+					FontStyle.ITALIC:
+						current_theme.set_font(fn, tp, od_italic)
+					FontStyle.BOLD:
+						current_theme.set_font(fn, tp, od_bold)
+					_:
+						current_theme.set_font(fn, tp, od_regular)
 			
+			# reduce font size to make up for the fact that OpenDyslexic tends to take more space
+			# TODO: configuring this should be allowed, it's kind of hacky
 			for fs in current_theme.get_font_size_list(tp):
 				var size: int = current_theme.get_font_size(fs, tp)
 				current_theme.set_font_size(fs, tp, int(size * 0.75))
@@ -163,3 +188,11 @@ func _resolve_animations(id: String) -> Variant:
 # applies the given settings to the theme
 func force_change_settings(gui_scale: Settings.GUIScale, dyslexic_font: bool):
 	_apply_variations(gui_scale, dyslexic_font)
+
+
+func _resolve_font_data(id: String) -> Variant:
+	var path = 'res://assets/themes/%s/font_data.gd' % id
+	if FileAccess.file_exists(path):
+		return (load(path) as GDScript).new()
+	return null
+
