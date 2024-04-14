@@ -19,6 +19,7 @@ var focus_now: WeakRef # control that last had focus
 var tabbing: bool = false # whether user is navigating buttons by tabbing
 var focus_before_overlay: Control # the Control that had focus before an overlay was spawned
 var custom_controls: Variant = null # custom controls or null if not specified
+var user_hiding: bool = false # whether user is hiding game UI with H key
 
 
 enum DebugMode { NONE, AUDIO, SPRITES }
@@ -47,16 +48,6 @@ func _ready():
 	$VNControls.btn_skip.connect('pressed', _skip)
 	$VNControls.btn_settings.connect('pressed', _settings)
 	$VNControls.btn_quit.connect('pressed', _quit)
-	
-	# no hide button on desktop
-	if not TE.is_mobile():
-		%MobileHideContainer.visible = false
-	else: # else, style it
-		var hide_icon = get_theme_icon('mobile_hide', 'Global')
-		if hide_icon != null:
-			%MobileHide.icon = hide_icon
-		else:
-			%MobileHide.text = 'H'
 	
 	# add custom controls, if specified
 	if TE.opts.ingame_custom_controls != null:
@@ -607,23 +598,21 @@ func get_custom_data(key: String):
 
 # toggles whether VNControls and the view are hidden
 func toggle_user_hide():
-	@warning_ignore("shadowed_variable_base_class")
-	var show: bool = not $VNControls.visible
-	$VNControls.visible = show
+	user_hiding = not user_hiding
+	
+	$VNControls.visible = !user_hiding
 	if custom_controls != null:
-		custom_controls.visible = show
-	# modulate instead because visibility messes with the input events
-	%MobileHideContainer.modulate = Color.WHITE if show else Color.TRANSPARENT
+		custom_controls.set_hidden(user_hiding)
 	
 	var hidable_view_control = $View.get_hidable_control()
 	if hidable_view_control != null:
 		if hidable_view_control is Control:
-			hidable_view_control.visible = show
+			hidable_view_control.visible = !user_hiding
 		elif hidable_view_control is Array:
 			for ctrl in hidable_view_control:
-				ctrl.visible = show
+				(ctrl as Control).visible = !user_hiding
 		else:
-			TE.log_error(TE.Error.ENGINE_ERROR, "toggle_hide() given '%s', not Control or Array" % hidable_view_control)
+			TE.log_error(TE.Error.ENGINE_ERROR, "View.get_hidable_control() returned '%s', not Control or Array" % hidable_view_control)
 
 
 func toggle_debug_mode():
