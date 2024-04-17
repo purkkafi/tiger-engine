@@ -6,6 +6,9 @@ class_name CutsceneView extends View
 var path: String = '' # the full path to the scene
 var cutscene: Node2D
 var is_finished: bool
+var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
+var waiting_for_input: bool = true
+var anim_player: AnimationPlayer
 
 
 func parse_options(tags: Array[Tag]):
@@ -13,13 +16,15 @@ func parse_options(tags: Array[Tag]):
 		match tag.name:
 			'path':
 				path = tag.get_string()
+			'wait_input':
+				wait_input = tag.get_string() == 'true'
 			_:
 				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown argument for CutsceneView: %s' % tag)
 
 
 func initialize(_ctxt: InitContext):
 	cutscene = Assets.noncached.get_resource(path).instantiate()
-	var anim_player = cutscene.get_node('AnimationPlayer')
+	anim_player = cutscene.get_node('AnimationPlayer') as AnimationPlayer
 	
 	if anim_player == null:
 		TE.log_error(TE.Error.FILE_ERROR, 'root of cutscene "%s" does not have an AnimationPlayer as child' % path)
@@ -37,7 +42,24 @@ func check_finished():
 
 
 func _waiting_custom_condition() -> bool:
-	return !is_finished
+	if wait_input:
+		return waiting_for_input
+	else:
+		return !is_finished
+
+
+# hook into game_advanced to detech user input
+func game_advanced(delta: float):
+	super.game_advanced(delta)
+	if is_finished:
+		waiting_for_input = false
+
+
+func _process(_delta):
+	# if 'wait_input' is true, allow skipping entire animation with speedup
+	if wait_input and self.speedup == Speedup.FASTER:
+		is_finished = true
+		waiting_for_input = false
 
 
 func _current_label():
@@ -50,16 +72,19 @@ func get_skip_mode():
 
 func skip_pressed():
 	is_finished = true
+	wait_input = false
 
 
 func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
 	savestate['cutscene_path'] = path
+	savestate['wait_input'] = wait_input
 	return savestate
 
 
 func from_state(savestate: Dictionary):
 	path = savestate['cutscene_path']
+	wait_input = savestate['wait_input']
 	super.from_state(savestate)
 
 
