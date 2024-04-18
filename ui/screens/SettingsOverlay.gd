@@ -40,6 +40,7 @@ func _initialize_overlay():
 			window_options.selected = WM_FULLSCREEN
 		else:
 			window_options.selected = WM_WINDOWED
+		window_options.get_popup().transparent_bg = true
 	
 	music_volume.value = TE.settings.music_volume
 	music_volume.connect('value_changed', Callable(Settings, 'change_music_volume'))
@@ -57,6 +58,7 @@ func _initialize_overlay():
 	# language setting can be disabled when overlay is created in-game
 	if language_disabled:
 		lang_options.disabled = true
+	lang_options.get_popup().transparent_bg = true
 	
 	# hide button settings on mobile
 	if TE.is_mobile():
@@ -83,6 +85,7 @@ func _initialize_overlay():
 		key_buttons.append(button)
 	
 	gui_scale.selected = TE.settings.gui_scale
+	gui_scale.get_popup().transparent_bg = true
 	dyslexic_font.button_pressed = TE.settings.dyslexic_font
 	
 	save_exit.grab_focus()
