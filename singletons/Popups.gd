@@ -13,6 +13,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
+	popup.transparent_bg = true
 	popup.get_ok_button().text = TE.localize.general_ok
 	
 	var margins: MarginContainer = MarginContainer.new()
@@ -39,10 +40,12 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	popup.unresizable = true
 	popup.title = TE.localize['general_warning']
 	popup.exclusive = true
+	popup.transparent_bg = true
 	popup.get_ok_button().text = TE.localize['general_ok']
 	popup.get_cancel_button().text = TE.localize['general_cancel']
 	
 	var margins: MarginContainer = MarginContainer.new()
+	margins.custom_minimum_size = Vector2(600, 0)
 	var label: Label = Label.new()
 	label.text = msg
 	margins.add_child(label)

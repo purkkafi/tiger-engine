@@ -23,6 +23,7 @@ layout_mode = 2
 
 [node name="SettingsLabel" type="Label" parent="Margins/VBox/TopRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"Header"
 text = "%settings_title%"
 
@@ -35,30 +36,38 @@ layout_mode = 2
 size_flags_vertical = 3
 follow_focus = true
 
-[node name="Sections" type="VBoxContainer" parent="Margins/VBox/Scroll"]
+[node name="OverlayContent" type="PanelContainer" parent="Margins/VBox/Scroll"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_type_variation = &"OverlayContent"
 
-[node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+[node name="Sections" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsSections"
+
+[node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Video"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video"]
 layout_mode = 2
 
-[node name="VideoHeader" type="Label" parent="Margins/VBox/Scroll/Sections/Video/VBox"]
+[node name="VideoHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox"]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_video%"
 
-[node name="WindowModeContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Video/VBox"]
+[node name="WindowModeContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer"]
+[node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
 layout_mode = 2
 text = "%settings_window_mode%"
 
-[node name="WindowOptions" type="OptionButton" parent="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer"]
+[node name="WindowOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_window_mode_tooltip%"
@@ -68,26 +77,26 @@ popup/item_0/id = 0
 popup/item_1/text = "%settings_window_windowed%"
 popup/item_1/id = 1
 
-[node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+[node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Audio"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio"]
 layout_mode = 2
 
-[node name="AudioHeader" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox"]
+[node name="AudioHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox"]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_audio%"
 
-[node name="VolGrid" type="GridContainer" parent="Margins/VBox/Scroll/Sections/Audio/VBox"]
+[node name="VolGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox"]
 layout_mode = 2
 columns = 2
 
-[node name="MusicVolume" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+[node name="MusicVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
 layout_mode = 2
 text = "%settings_music_volume%"
 
-[node name="MusicVolSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+[node name="MusicVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -96,11 +105,11 @@ tooltip_text = "%settings_music_volume_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="SFXVolume" type="Label" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+[node name="SFXVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
 layout_mode = 2
 text = "%settings_sfx_volume%"
 
-[node name="SFXVolSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Audio/VBox/VolGrid"]
+[node name="SFXVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -109,26 +118,26 @@ tooltip_text = "%settings_sfx_volume_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="Text" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+[node name="Text" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Text"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text"]
 layout_mode = 2
 
-[node name="TextLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="TextLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_text%"
 
-[node name="TextSpeed" type="GridContainer" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="TextSpeed" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 layout_mode = 2
 columns = 2
 
-[node name="TextSpeedLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox/TextSpeed"]
+[node name="TextSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
 layout_mode = 2
 text = "%settings_text_speed%"
 
-[node name="TextSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/Sections/Text/VBox/TextSpeed"]
+[node name="TextSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -137,69 +146,69 @@ tooltip_text = "%settings_text_speed_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_dynamic_text_speed_tooltip%"
 text = "%settings_dynamic_text_speed%"
 
-[node name="SkipUnseenText" type="CheckBox" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="SkipUnseenText" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_skip_unseen_text_tooltip%"
 text = "%settings_skip_unseen_text%"
 
-[node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Text/VBox"]
+[node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 layout_mode = 2
 
-[node name="LanguageLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Text/VBox/Language"]
+[node name="LanguageLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language"]
 layout_mode = 2
 text = "%settings_language%"
 
-[node name="LangOptions" type="OptionButton" parent="Margins/VBox/Scroll/Sections/Text/VBox/Language"]
+[node name="LangOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_language_tooltip%"
 
-[node name="Keys" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+[node name="Keys" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Keys"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys"]
 layout_mode = 2
 
-[node name="KeysLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Keys/VBox"]
+[node name="KeysLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_keys%"
 
-[node name="KeysGrid" type="GridContainer" parent="Margins/VBox/Scroll/Sections/Keys/VBox"]
+[node name="KeysGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 columns = 2
 
-[node name="Accessibility" type="MarginContainer" parent="Margins/VBox/Scroll/Sections"]
+[node name="Accessibility" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/Sections/Accessibility"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility"]
 layout_mode = 2
 
-[node name="AccessibiltyLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox"]
+[node name="AccessibiltyLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_accessibility%"
 
-[node name="GUIScaleContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox"]
+[node name="GUIScaleContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="GUIScaleLabel" type="Label" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox/GUIScaleContainer"]
+[node name="GUIScaleLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer"]
 layout_mode = 2
 text = "%settings_gui_scale%"
 
-[node name="GUIScale" type="OptionButton" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox/GUIScaleContainer"]
+[node name="GUIScale" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_gui_scale_tooltip%"
@@ -209,10 +218,10 @@ popup/item_0/id = 0
 popup/item_1/text = "%settings_gui_scale_large%"
 popup/item_1/id = 1
 
-[node name="DyslexicFontContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox"]
+[node name="DyslexicFontContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
 layout_mode = 2
 
-[node name="DyslexicFont" type="CheckButton" parent="Margins/VBox/Scroll/Sections/Accessibility/VBox/DyslexicFontContainer"]
+[node name="DyslexicFont" type="CheckButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/DyslexicFontContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_dyslexic_font_tooltip%"
@@ -236,9 +245,9 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "%settings_save_exit%"
 
-[connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Video/VBox/WindowModeContainer/WindowOptions" to="." method="_window_mode_selected"]
-[connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Text/VBox/Language/LangOptions" to="." method="_language_selected"]
-[connection signal="item_selected" from="Margins/VBox/Scroll/Sections/Accessibility/VBox/GUIScaleContainer/GUIScale" to="." method="_gui_scale_selected"]
-[connection signal="toggled" from="Margins/VBox/Scroll/Sections/Accessibility/VBox/DyslexicFontContainer/DyslexicFont" to="." method="_dyslexic_font_toggled"]
+[connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer/WindowOptions" to="." method="_window_mode_selected"]
+[connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language/LangOptions" to="." method="_language_selected"]
+[connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer/GUIScale" to="." method="_gui_scale_selected"]
+[connection signal="toggled" from="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/DyslexicFontContainer/DyslexicFont" to="." method="_dyslexic_font_toggled"]
 [connection signal="pressed" from="Margins/VBox/BottomRow/Discard" to="." method="_discard"]
 [connection signal="pressed" from="Margins/VBox/BottomRow/SaveExit" to="." method="_save_exit"]

@@ -31,6 +31,8 @@ var key_buttons: Array[Button] = []
 
 
 func _initialize_overlay():
+	size_to_small()
+	
 	if TE.is_mobile(): # no fullscreen setting on mobile
 		video_section.get_parent().remove_child(video_section)
 	else:

@@ -6,6 +6,8 @@ var gamelog: Log = null # set this to the log before spawning the overlay
 
 
 func _initialize_overlay():
+	size_to_small()
+	
 	var text: String = ''
 	
 	for line in gamelog.lines:

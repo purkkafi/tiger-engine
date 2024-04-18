@@ -32,6 +32,28 @@ func _ready():
 	shadow = Overlay.add_shadow(self)
 
 
+# sets size to small overlay, if defined in theme
+func size_to_small():
+	if has_theme_constant('small_overlay_width', 'Global'):
+		self.size = Vector2(
+			get_theme_constant('small_overlay_width', 'Global'),
+			get_theme_constant('small_overlay_height', 'Global')
+		)
+		
+		self.position = (get_parent_area_size() - self.size) / 2
+
+
+# sets size to large overlay, if defined in theme
+func size_to_large():
+	if has_theme_constant('large_overlay_width', 'Global'):
+		self.size = Vector2(
+			get_theme_constant('large_overlay_width', 'Global'),
+			get_theme_constant('large_overlay_height', 'Global')
+		)
+		
+		self.position = (get_parent_area_size() - self.size) / 2
+
+
 # subclasses should override this to initialize the overlay
 # called from _ready()
 func _initialize_overlay():

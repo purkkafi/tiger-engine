@@ -23,6 +23,7 @@ layout_mode = 2
 
 [node name="LogLabel" type="Label" parent="Margins/VBox/TopRow"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"Header"
 text = "%log_title%"
 
@@ -34,7 +35,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Text" type="RichTextLabel" parent="Margins/VBox/Margins"]
+[node name="OverlayContent" type="PanelContainer" parent="Margins/VBox/Margins"]
+layout_mode = 2
+theme_type_variation = &"OverlayContent"
+
+[node name="Text" type="RichTextLabel" parent="Margins/VBox/Margins/OverlayContent"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
