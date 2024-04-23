@@ -26,6 +26,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	
 	TE.current_scene.add_child(popup)
 	popup.popup_centered_clamped()
+	edit.context_menu_enabled = false # causes rendering issues in popup window
 	edit.grab_focus()
 	
 	popup.connect('canceled', _remove_popup.bind(popup))
