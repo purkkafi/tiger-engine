@@ -104,6 +104,7 @@ func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 	get_tree().set_current_scene(new_scene)
 	
 	if free_old:
+		get_tree().root.remove_child(old_scene)
 		old_scene.queue_free()
 		after.call()
 	else:
@@ -248,8 +249,10 @@ func _notification(what): # override default exit behavior
 
 # exits the game safely
 func quit_game(exit_code=0):
-	seen_blocks.write_to_disk()
+	if seen_blocks != null:
+		seen_blocks.write_to_disk()
 	persistent.save_to_file()
+	
 	await get_tree().process_frame
 	get_tree().quit(exit_code)
 

@@ -88,11 +88,11 @@ static func _word_count(lang: String) -> int:
 	var file: String = folder.get_next()
 	var counts: Dictionary = {}
 	
-	# construct GameContext to support variables
+	# construct VariableContext to support variables
 	var var_names: Array[String] = []
 	var_names.append_array(TE.defs.variables.keys())
 	var var_def_values: Array[Variant] = var_names.map(func(v): return TE.defs.variables[v])
-	var game_ctxt: GameContext = GameContext.new(var_names, var_def_values)
+	var game_ctxt: VariableContext = VariableContext.new(var_names, var_def_values)
 	
 	while file != '':
 		var path = '%s%s' % [folder_path, file]

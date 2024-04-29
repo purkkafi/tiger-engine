@@ -7,7 +7,7 @@ class_name TEGame extends Control
 var vm: TEScriptVM # virtual machine that runs the game script
 var rollback: Rollback # stores save states for Back button
 var gamelog: Log # the game log
-var context: GameContext # stores in-game variables
+var context: InGameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
 var advancing: bool = false # whether game is being advanced by mouse or keys
 var overlay_active: bool = false # whether there is an overlay and game should be paused
@@ -63,7 +63,7 @@ func _ready():
 		var_names.append(_var)
 		var_values.append(TE.defs.variables[_var])
 	
-	context = GameContext.new(var_names, var_values)
+	context = InGameContext.new(var_names, var_values, self)
 	
 	# initial View
 	_replace_view(TE.defs.view_registry['adv'].instantiate())
@@ -635,3 +635,7 @@ func update_debug_mode_text():
 			%DebugMsg.text = Audio.debug_text()
 		DebugMode.SPRITES:
 			%DebugMsg.text = $VNStage._sprite_debug_msg()
+
+
+func stage() -> VNStage:
+	return $VNStage

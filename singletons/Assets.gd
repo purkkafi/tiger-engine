@@ -146,7 +146,8 @@ class Cache:
 		cache.append(new_entry)
 		# remove oldest entry if too large
 		if len(cache) > size:
-			cache.pop_front()
+			var discarded = cache.pop_front()
+			print('discarded', discarded)
 	
 	
 	# queues a resource for loading in the background and adds it to

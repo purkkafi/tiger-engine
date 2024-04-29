@@ -385,6 +385,14 @@ func clear():
 		_remove_sprite(sprite)
 
 
+func bg() -> Node:
+	return $BG
+
+
+func fg() -> Node:
+	return $FG
+
+
 func _sprite_debug_msg() -> String:
 	var msg: String = ''
 	for sprite in $Sprites.get_children():
