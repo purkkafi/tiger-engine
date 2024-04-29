@@ -10,16 +10,40 @@ const TRANSPARENT: Color = Color(0, 0, 0, 0)
 
 # transitions to a new background with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_background(new_id: String, transition: String, tween: Tween) -> Tween:
-	bg_id = new_id
-	return _set_layer($BG, _get_layer_node(new_id), TE.defs.transition(transition), tween, false)
+func set_background(new: Variant, transition: String, tween: Tween) -> Tween:
+	var to_state = null
+	
+	if new is String:
+		bg_id = new
+	else: # is Dictionary
+		bg_id = new['id']
+		to_state = new['state']
+	
+	var result = _set_layer($BG, _get_layer_node(bg_id), TE.defs.transition(transition), tween, false)
+	
+	if to_state != null:
+		$BG.set_state(to_state)
+	
+	return result
 
 
 # transitions to a new foreground with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_foreground(new_id: String, transition: String, tween: Tween) -> Tween:
-	fg_id = new_id
-	return _set_layer($FG, _get_layer_node(new_id), TE.defs.transition(transition), tween, true)
+func set_foreground(new: Variant, transition: String, tween: Tween) -> Tween:
+	var to_state = null
+	
+	if new is String:
+		fg_id = new
+	else: # is Dictionary
+		fg_id = new['id']
+		to_state = new['state']
+	
+	var result = _set_layer($FG, _get_layer_node(new), TE.defs.transition(transition), tween, true)
+	
+	if to_state != null:
+		$FG.set_state(to_state)
+	
+	return result
 
 
 # loads a suitable back/foreground Node based on the given id
@@ -308,9 +332,11 @@ func get_state() -> Dictionary:
 			'id' : sprite.id,
 			'state' : sprite.get_sprite_state()
 		})
+	
+	@warning_ignore("incompatible_ternary")
 	return {
-		'bg' : bg_id,
-		'fg' : fg_id,
+		'bg' : { 'id': bg_id, 'state': $BG.get_state() } if $BG is StatefulLayer else bg_id,
+		'fg' : { 'id': fg_id, 'state': $FG.get_state() } if $FG is StatefulLayer else fg_id,
 		'sprites' : sprites
 	}
 
