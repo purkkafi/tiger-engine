@@ -18,6 +18,21 @@ class_name VNControls extends Control
 func _ready():
 	hbox.add_theme_constant_override('separation', get_theme_constant('separation', 'VNControlsPanel'))
 	
+	if 'game_back_icon' in TE.localize.strings:
+		btn_back.icon = load(TE.localize.game_back_icon)
+	if 'game_save_icon' in TE.localize.strings:
+		btn_save.icon = load(TE.localize.game_save_icon)
+	if 'game_load_icon' in TE.localize.strings:
+		btn_load.icon = load(TE.localize.game_load_icon)
+	if 'game_log_icon' in TE.localize.strings:
+		btn_log.icon = load(TE.localize.game_log_icon)
+	if 'game_skip_icon' in TE.localize.strings:
+		btn_skip.icon = load(TE.localize.game_skip_icon)
+	if 'game_settings_icon' in TE.localize.strings:
+		btn_settings.icon = load(TE.localize.game_settings_icon)
+	if 'game_quit_icon' in TE.localize.strings:
+		btn_quit.icon = load(TE.localize.game_quit_icon)
+	
 	adjust_size()
 
 
