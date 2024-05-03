@@ -160,7 +160,8 @@ class SpeakerDef extends RefCounted:
 	var bg_color: Color = Color.TRANSPARENT
 	var name_color: Color = Color.TRANSPARENT
 	# default to the empty string, which should be treated as unset
-	var variation: String = ''
+	var label_variation: String = ''
+	var textbox_variation: String = ''
 	
 	
 	# validates this Speaker and returns a non-empty error message if it is invalid

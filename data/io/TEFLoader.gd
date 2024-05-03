@@ -250,8 +250,10 @@ func _resolve_definitions(tree: Tag):
 							speaker.bg_color = Color(tag.get_string())
 						'name_color':
 							speaker.name_color = Color(tag.get_string())
-						'variation':
-							speaker.variation = tag.get_string()
+						'label_variation':
+							speaker.label_variation = tag.get_string()
+						'textbox_variation':
+							speaker.textbox_variation = tag.get_string()
 						_:
 							push_error('unknown value in speaker definition: %s' % tag)
 				
