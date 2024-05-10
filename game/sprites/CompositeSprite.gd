@@ -24,6 +24,10 @@ static var EMPTY_CASE: EmptyCase = EmptyCase.new()
 # constant instances
 static var TRUE_PREDICATE: TruePredicate = TruePredicate.new()
 static var SHOW_AS_CURRENT: Tag = Tag.new('as', [])
+# matches everything before the last ':' character
+static var BEFORE_LAST_COLON = RegEx.create_from_string('(.+):')
+# matches everything after the last ':' character
+static var AFTER_LAST_COLON = RegEx.create_from_string('.*:(.+)')
 
 
 func _init(_resource: SpriteResource):
@@ -134,6 +138,25 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 		else:
 			TE.log_error(TE.Error.FILE_ERROR,
 				'invalid attribute value (expected empty tag or nested attribute): %s' % tag)
+	
+	# generate ghost values for unambiguous inner values
+	var inner_values: Array[String] = []
+	for attr in attributes[attr_id]:
+		if attr is String and ':' in attr:
+			inner_values.append(attr)
+	
+	var final_parts: Dictionary = {}
+	for inner_value in inner_values:
+		var final_part = AFTER_LAST_COLON.search(inner_value).strings[1]
+		
+		if final_part not in final_parts:
+			final_parts[final_part] = []
+		
+		final_parts[final_part].append(inner_value)
+	
+	for final_part in final_parts:
+		if len(final_parts[final_part]) == 1:
+			attributes[attr_id].append(_shorthand_value(final_part, final_parts[final_part][0]))
 
 
 func enter_stage(initial_state: Variant = null):
@@ -243,14 +266,19 @@ class Layer extends RefCounted:
 		
 		var cases: Array = []
 		
-		for case in _case_tags:
-			if case.name == 'case':
-				cases.append(Case.of_tag(case, sprite))
-			else:
-				TE.log_error(TE.Error.FILE_ERROR,
-					"illegal layer component '%s'" % case.name)
-		
-		root_case = Case.new(CompositeSprite.TRUE_PREDICATE, cases, sprite)
+		if len(_case_tags) == 1 and _case_tags[0].name == 'always':
+			var always_value: String = _case_tags[0].get_string()
+			root_case = Case.new(CompositeSprite.TRUE_PREDICATE, always_value, sprite)
+			
+		else: # normal cases
+			for case in _case_tags:
+				if case.name == 'case':
+					cases.append(Case.of_tag(case, sprite))
+				else:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"illegal layer component '%s'" % case.name)
+			
+			root_case = Case.new(CompositeSprite.TRUE_PREDICATE, cases, sprite)
 	
 	
 	# returns whether every case is valid
@@ -376,7 +404,11 @@ func _parse_predicate(string: String) -> Predicate:
 
 
 func _ghost_value(of: String) -> Dictionary:
-	return { 'ghost': true, 'value': of }
+	return { 'type': 'ghost', 'value': of }
+
+
+func _shorthand_value(value: String, shorthand_for: String) -> Dictionary:
+	return { 'type': 'shorthand', 'value': value, 'shorthand_for': shorthand_for }
 
 
 # a logical predicate about the sprite's state with some operations
@@ -412,12 +444,8 @@ class TruePredicate extends Predicate:
 # the context of the given CompositeSprite
 class EqPredicate extends Predicate:
 	var attribute: String = ''
-	var value: Variant = '' # String or ghost value dict
+	var value: Variant = '' # String or ghost/shorthand value dict
 	var sprite: CompositeSprite
-	
-	
-	# matches everything before the last ':' character
-	var BEFORE_LAST_COLON = RegEx.create_from_string('(.+):')
 	
 	
 	func _init(_attr: String, _val: Variant, forSprite: CompositeSprite):
@@ -427,18 +455,15 @@ class EqPredicate extends Predicate:
 		
 		var partial_value: String = _val
 		var value_is_valid: bool = false
-		while true:
-			if partial_value in forSprite.attributes[_attr]:
+		
+		for attr_value in forSprite.attributes[_attr]:
+			if attr_value is String and attr_value == _val:
 				value_is_valid = true
+				self.value = _val
 				break
-			if forSprite._ghost_value(partial_value) in forSprite.attributes[_attr]:
+			if attr_value is Dictionary and attr_value['value'] == _val:
 				value_is_valid = true
-				_val = forSprite._ghost_value(partial_value)
-				break
-			
-			if partial_value.find(':') != -1:
-				partial_value = BEFORE_LAST_COLON.search(partial_value).strings[1]
-			else:
+				self.value = attr_value
 				break
 		
 		if not value_is_valid:
@@ -447,14 +472,22 @@ class EqPredicate extends Predicate:
 		
 		self.sprite = forSprite
 		self.attribute = _attr
-		self.value = _val
 	
 	
 	func evaluate() -> bool:
 		if value is String: # check for exact match
 			return sprite.state[attribute] == value
-		else: # ghost value, check that state starts with it
-			return sprite.state[attribute].begins_with(value['value'])
+		else:
+			match (value as Dictionary)['type']:
+				'ghost':
+					# ghost value, check that state starts with it
+					return sprite.state[attribute].begins_with(value['value'])
+				'shorthand':
+					# shorthand, check state matches what it's shorthand for
+					return sprite.state[attribute] == value['shorthand_for']
+				_:
+					push_error('assertion error: value has unknown type: %s' % value)
+					return false
 	
 	
 	func apply():

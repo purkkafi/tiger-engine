@@ -392,6 +392,10 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	# crop every image to remove transparent border, saving margin info
 	var margins: Array = []
 	for i in len(images):
+		if !images[i] is Image:
+			push_error("file '%s' should be imported as Image to improve performance" % images[i].resource_path)
+			images[i] = (images[i] as Texture2D).get_image()
+		
 		var image: Image = images[i]
 		var used_rect: Rect2i = image.get_used_rect()
 		
