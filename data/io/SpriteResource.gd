@@ -5,7 +5,7 @@ class_name SpriteResource extends Resource
 
 # the tag read from sprite.tef
 var tag: Tag = null
-# ImageTexture containing the atlas the TextureAtlases refer to
-var atlas: ImageTexture
+# texture containing the atlas the TextureAtlases refer to
+var atlas: Texture2D
 # map of file paths relative to the sprite folder to TextureAtlas instances
 var textures: Dictionary = {}

@@ -453,7 +453,6 @@ class EqPredicate extends Predicate:
 			TE.log_error(TE.Error.FILE_ERROR, "invalid attribute id: '%s'" % _attr)
 			return
 		
-		var partial_value: String = _val
 		var value_is_valid: bool = false
 		
 		for attr_value in forSprite.attributes[_attr]:

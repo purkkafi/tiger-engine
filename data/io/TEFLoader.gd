@@ -382,76 +382,29 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	var dir_path: String = path.trim_suffix('/sprite.tef')
 	
 	sprite.tag = sprite_tef
-	var files: Dictionary = {}
 	
-	_load_sprite_folder(dir_path, '', files)
+	var te_sprite_atlas_path: String = '%s/sprite.atlas' % dir_path
+	var te_sprite_atlas: TESpriteAtlas = load(te_sprite_atlas_path)
+	var sprite_id: String = TESpriteAtlasImporter.SPRITE_ID_FROM_SOURCE_FILE.search(te_sprite_atlas_path).strings[1]
+	var sheet_texture: Texture2D = load('%s/%s.png' % [TESpriteAtlasImporter.ATLAS_FOLDER, sprite_id])
 	
-	# TODO explicitly filter images instead of assuming all files are
-	var images = files.values()
+	var file_names: Array = te_sprite_atlas.file_names
+	var points: Array = te_sprite_atlas.points
+	var sizes: Array = te_sprite_atlas.sizes
+	var margins: Array = te_sprite_atlas.margins
+	var sprite_size: Vector2i = te_sprite_atlas.sprite_size
 	
-	# crop every image to remove transparent border, saving margin info
-	var margins: Array = []
-	for i in len(images):
-		if !images[i] is Image:
-			push_error("file '%s' should be imported as Image to improve performance" % images[i].resource_path)
-			images[i] = (images[i] as Texture2D).get_image()
+	
+	for i in len(file_names):
+		var atlas_tex = AtlasTexture.new()
 		
-		var image: Image = images[i]
-		var used_rect: Rect2i = image.get_used_rect()
-		
-		margins.append(Rect2(used_rect.position,
-			image.get_size() - used_rect.size
-		))
-		
-		images[i] = image.get_region(used_rect)
+		atlas_tex.region = Rect2(points[i], sizes[i])
+		atlas_tex.margin = margins[i]
+		sprite.textures[file_names[i]] = atlas_tex
 	
-	
-	var file_names: Array = files.keys().duplicate()
-	var sizes: Array = images.map(func(img: Image): return img.get_size())
-	
-	var atlas_data: Dictionary = Geometry2D.make_atlas(sizes)
-	var atlas: Image = Image.create(atlas_data['size'][0], atlas_data['size'][1], false, Image.FORMAT_RGBA8)
-	
-	for i in len(images):
-		var image: Image = images[i]
-		image.decompress()
-		image.convert(Image.FORMAT_RGBA8)
-		
-		var point: Vector2 = atlas_data['points'][i]
-		
-		atlas.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), point)
-		
-		var texture = AtlasTexture.new()
-		texture.region = Rect2(point, image.get_size())
-		texture.margin = margins[i]
-		sprite.textures[file_names[i]] = texture
-	
-	atlas.fix_alpha_edges() # need to do this or it looks bad
-	sprite.atlas = ImageTexture.create_from_image(atlas)
+	sprite.atlas = sheet_texture
 	
 	for texture in sprite.textures.values():
 		texture.atlas = sprite.atlas
 	
 	return sprite
-
-
-# recursively load resources in sprite folder
-func _load_sprite_folder(path: String, prefix: String, files: Dictionary):
-	var dir_access: DirAccess = DirAccess.open(path)
-	
-	for file in dir_access.get_files():
-		# ignore the sprite.tef file
-		if file == 'sprite.tef':
-			continue
-		
-		# TODO: this is a hack
-		# assume '.import' files correspond with a resource we want to load
-		if file.ends_with('import'):
-			var resource: String = file.rstrip('.import')
-			var resource_id = resource if prefix == '' else '%s/%s' % [prefix, resource]
-			files[resource_id] = load(path + '/' + resource)
-	
-	for subdir in dir_access.get_directories():
-		var subpath: String = '%s/%s' % [path, subdir]
-		var subprefix: String = subdir if prefix == '' else '%s/%s' % [prefix, subdir]
-		_load_sprite_folder(subpath, subprefix, files)
