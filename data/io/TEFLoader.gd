@@ -376,6 +376,10 @@ func _resolve_options(tree: Tag):
 	return opts
 
 
+static var SPRITE_ID_FROM_SOURCE_FILE = RegEx.create_from_string('sprites/(.+)/sprite.atlas')
+static var ATLAS_FOLDER: String = 'res://assets/generated/atlas'
+
+
 # resolves a folder containing a sprite.tef file into a SpriteResource
 func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	var sprite: SpriteResource = SpriteResource.new()
@@ -385,14 +389,13 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 	
 	var te_sprite_atlas_path: String = '%s/sprite.atlas' % dir_path
 	var te_sprite_atlas: TESpriteAtlas = load(te_sprite_atlas_path)
-	var sprite_id: String = TESpriteAtlasImporter.SPRITE_ID_FROM_SOURCE_FILE.search(te_sprite_atlas_path).strings[1]
-	var sheet_texture: Texture2D = load('%s/%s.png' % [TESpriteAtlasImporter.ATLAS_FOLDER, sprite_id])
+	var sprite_id: String = SPRITE_ID_FROM_SOURCE_FILE.search(te_sprite_atlas_path).strings[1]
+	var sheet_texture: Texture2D = load('%s/%s.png' % [ATLAS_FOLDER, sprite_id])
 	
 	var file_names: Array = te_sprite_atlas.file_names
 	var points: Array = te_sprite_atlas.points
 	var sizes: Array = te_sprite_atlas.sizes
 	var margins: Array = te_sprite_atlas.margins
-	var sprite_size: Vector2i = te_sprite_atlas.sprite_size
 	
 	
 	for i in len(file_names):

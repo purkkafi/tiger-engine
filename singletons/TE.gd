@@ -43,6 +43,8 @@ signal unlockable_unlocked(_namespace: String, id: String)
 signal toast_notification(toast: Dictionary)
 # fired when a translation package is loaded
 signal languages_changed
+# fired when the game displays the next line of text
+signal game_next_line
 
 
 # standard errors

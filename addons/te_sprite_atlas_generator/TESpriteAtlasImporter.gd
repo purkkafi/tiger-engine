@@ -1,5 +1,5 @@
 @tool
-class_name TESpriteAtlasImporter extends EditorImportPlugin
+extends EditorImportPlugin
 
 
 static var ATLAS_FOLDER: String = 'res://assets/generated/atlas'
