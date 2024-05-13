@@ -38,7 +38,7 @@ func set_foreground(new: Variant, transition: String, tween: Tween) -> Tween:
 		fg_id = new['id']
 		to_state = new['state']
 	
-	var result = _set_layer($FG, _get_layer_node(new), TE.defs.transition(transition), tween, true)
+	var result = _set_layer($FG, _get_layer_node(fg_id), TE.defs.transition(transition), tween, true)
 	
 	if to_state != null:
 		$FG.set_state(to_state)
@@ -82,6 +82,7 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 		new_layer.position = Vector2(0, 0)
 	new_layer.name = 'New' + layer.name
 	layer.add_sibling(new_layer)
+	layer.set_meta('transitioning_into', new_layer)
 	
 	# skip tween in this case
 	if transition.duration == 0:
@@ -412,10 +413,14 @@ func clear():
 
 
 func bg() -> Node:
+	if $BG.has_meta('transitioning_into'):
+		return $BG.get_meta('transitioning_into')
 	return $BG
 
 
 func fg() -> Node:
+	if $FG.has_meta('transitioning_into'):
+		return $FG.get_meta('transitioning_into')
 	return $FG
 
 
