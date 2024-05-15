@@ -8,6 +8,10 @@ var attributes: Dictionary = {}
 # the state; dict of attribute ids to current values
 var state: Dictionary = {}
 var layers: Array[Layer] = []
+# viewport that parents the parts of the sprite & its container
+# (used to make transparency work properly)
+var container: SubViewportContainer
+var viewport: SubViewport
 # dict of shorthand ids to Arrays of Predicates
 var shorthands: Dictionary = {}
 var resource: SpriteResource
@@ -32,6 +36,16 @@ static var AFTER_LAST_COLON = RegEx.create_from_string('.*:(.+)')
 
 func _init(_resource: SpriteResource):
 	self.resource = _resource
+	
+	# set up viewport and container
+	container = SubViewportContainer.new()
+	container.size = resource.size
+	container.stretch = true
+	self.add_child(container)
+	
+	viewport = SubViewport.new()
+	viewport.transparent_bg = true
+	container.add_child(viewport)
 	
 	for tag in resource.tag.get_tags():
 		match tag.name:
@@ -160,11 +174,12 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 
 
 func enter_stage(initial_state: Variant = null):
+	self.container.position.y = _stage_size().y * y_offset
+	self.container.scale = Vector2(sprite_scale, sprite_scale)
+	
 	for layer in layers:
 		layer.rect = TextureRect.new()
-		add_child(layer.rect)
-		layer.rect.position.y = _stage_size().y * y_offset
-		layer.rect.scale = Vector2(sprite_scale, sprite_scale)
+		viewport.add_child(layer.rect)
 	
 	if initial_state != null:
 		show_as(initial_state)

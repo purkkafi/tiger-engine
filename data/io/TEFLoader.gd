@@ -406,6 +406,7 @@ func _resolve_sprite(path: String, sprite_tef: Tag) -> SpriteResource:
 		sprite.textures[file_names[i]] = atlas_tex
 	
 	sprite.atlas = sheet_texture
+	sprite.size = te_sprite_atlas.sprite_size
 	
 	for texture in sprite.textures.values():
 		texture.atlas = sprite.atlas

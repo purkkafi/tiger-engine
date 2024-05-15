@@ -9,3 +9,5 @@ var tag: Tag = null
 var atlas: Texture2D
 # map of file paths relative to the sprite folder to TextureAtlas instances
 var textures: Dictionary = {}
+# the size of the sprite
+var size: Vector2i = Vector2i(0, 0)
