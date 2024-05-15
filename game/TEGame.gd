@@ -283,6 +283,23 @@ func _unhide_ui():
 	$View.modulate.a = 1.0
 
 
+func _unhandled_key_input(event):
+	if event.is_action_pressed('game_screenshot', false, true):
+		take_user_screenshot()
+	
+	# hide when key pressed
+	if event.is_action_pressed('game_hide', false, true) and not user_hiding:
+		toggle_user_hide()
+	
+	# show when key released
+	if event.is_action_released('game_hide', true) and user_hiding:
+		toggle_user_hide()
+	
+	if event.is_action_pressed('debug_toggle', false, true) and TE.is_debug():
+		toggle_debug_mode()
+		update_debug_mode_text()
+
+
 func _process(delta):
 	# alert on script errors
 	while len(vm.errors) != 0:
@@ -304,17 +321,6 @@ func _process(delta):
 	
 	if focus_now.get_ref() == null: # return focus to TEGame if it was lost
 		grab_focus()
-	
-	if Input.is_action_just_pressed('game_screenshot', true):
-		take_user_screenshot()
-	
-	# hide is active while the key is being held down
-	if Input.is_action_just_pressed('game_hide', true) or Input.is_action_just_released('game_hide', true):
-		toggle_user_hide()
-	
-	if Input.is_action_just_pressed('debug_toggle', true) and TE.is_debug():
-		toggle_debug_mode()
-		update_debug_mode_text()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	
