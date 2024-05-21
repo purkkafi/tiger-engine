@@ -157,6 +157,11 @@ func next_blocking():
 	
 	# if any instruction activated the tween, handle it
 	if tween != null:
+		
+		# dummy callback so that Godot doesn't complain about an empty tween
+		# if we're only doing instanteous things
+		tween.parallel().tween_callback(func(): pass)
+		
 		$View.wait_tween(tween)
 		
 		# make sure to hide ui even if HideUI instruction was not present
@@ -385,6 +390,8 @@ func _gui_input(event):
 
 
 func before_overlay():
+	TE.emit_signal('overlay_opened')
+	
 	overlay_active = true
 	self.focus_mode = Control.FOCUS_NONE
 	if custom_controls != null:
@@ -394,6 +401,8 @@ func before_overlay():
 
 
 func after_overlay():
+	TE.emit_signal('overlay_closed')
+	
 	overlay_active = false
 	self.focus_mode = Control.FOCUS_ALL
 	if custom_controls != null:

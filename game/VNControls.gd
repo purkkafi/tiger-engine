@@ -20,18 +20,32 @@ func _ready():
 	
 	if 'game_back_icon' in TE.localize.strings:
 		btn_back.icon = load(TE.localize.game_back_icon)
+		btn_back.text = ''
+		btn_back.tooltip_text = TE.localize.game_back
 	if 'game_save_icon' in TE.localize.strings:
 		btn_save.icon = load(TE.localize.game_save_icon)
+		btn_save.text = ''
+		btn_save.tooltip_text = TE.localize.game_save
 	if 'game_load_icon' in TE.localize.strings:
 		btn_load.icon = load(TE.localize.game_load_icon)
+		btn_load.text = ''
+		btn_load.tooltip_text = TE.localize.game_load
 	if 'game_log_icon' in TE.localize.strings:
 		btn_log.icon = load(TE.localize.game_log_icon)
+		btn_log.text = ''
+		btn_log.tooltip_text = TE.localize.game_log
 	if 'game_skip_icon' in TE.localize.strings:
 		btn_skip.icon = load(TE.localize.game_skip_icon)
+		btn_skip.text = ''
+		btn_skip.tooltip_text = TE.localize.game_skip
 	if 'game_settings_icon' in TE.localize.strings:
 		btn_settings.icon = load(TE.localize.game_settings_icon)
+		btn_settings.text = ''
+		btn_settings.tooltip_text = TE.localize.game_settings
 	if 'game_quit_icon' in TE.localize.strings:
 		btn_quit.icon = load(TE.localize.game_quit_icon)
+		btn_quit.text = ''
+		btn_quit.tooltip_text = TE.localize.game_quit
 	
 	adjust_size()
 

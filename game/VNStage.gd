@@ -64,6 +64,9 @@ func _get_layer_node(id: String) -> Node:
 			for unlockable in TE.defs.unlocked_by_img[id]:
 				TE.persistent.unlock(unlockable)
 		
+		if id not in TE.defs.imgs:
+			TE.log_error(TE.Error.FILE_ERROR, "Layer object not found: '%s'" % id)
+		
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene
 			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/img')

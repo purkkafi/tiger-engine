@@ -45,6 +45,10 @@ signal toast_notification(toast: Dictionary)
 signal languages_changed
 # fired when the game displays the next line of text
 signal game_next_line
+# user has opened an in-game overlay, i.e. the settings screen; everything should pause
+signal overlay_opened
+# user has closed the in-game overlay
+signal overlay_closed
 
 
 # standard errors

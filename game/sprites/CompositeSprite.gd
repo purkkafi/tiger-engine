@@ -348,7 +348,17 @@ class Case extends RefCounted:
 			return
 		
 		@warning_ignore("shadowed_variable")
-		var predicate: Predicate = _sprite._parse_predicate(from_tag.get_string_at(0))
+		var predicate: Predicate
+		if from_tag.get_string_at(0) != null:
+			predicate = _sprite._parse_predicate(from_tag.get_string_at(0))
+		elif from_tag.get_tag_at(0) != null:
+			if from_tag.get_tag_at(0).name == 'default':
+				predicate = CompositeSprite.TRUE_PREDICATE
+			else:
+				TE.log_error(TE.Error.FILE_ERROR, "unknown predicate: '%s'" % from_tag.get_tag_at(0).name)
+		else:
+			TE.log_error(TE.Error.FILE_ERROR, "expected predicate to be valid string or \\default, got '%s'" % from_tag)
+		
 		@warning_ignore("shadowed_variable")
 		var content: Variant
 		

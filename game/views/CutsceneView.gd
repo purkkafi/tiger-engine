@@ -9,6 +9,7 @@ var is_finished: bool
 var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
+var was_playing_before_pause: bool
 
 
 func parse_options(tags: Array[Tag]):
@@ -31,9 +32,23 @@ func initialize(_ctxt: InitContext):
 	
 	anim_player.connect('animation_finished', func(_unused): check_finished())
 	
+	TE.overlay_opened.connect(_pause_on_overlay)
+	TE.overlay_closed.connect(_resume_after_overlay)
+	
 	Audio.play_song('', 0) # stop previous song, if any
 	add_child(cutscene)
 	game.save_rollback()
+
+
+func _pause_on_overlay():
+	was_playing_before_pause = anim_player.is_playing()
+	if was_playing_before_pause:
+		anim_player.pause()
+
+
+func _resume_after_overlay():
+	if was_playing_before_pause:
+		anim_player.play()
 
 
 func check_finished():
