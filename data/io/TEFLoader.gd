@@ -305,6 +305,8 @@ func _parse_sound_definition(defs: Definitions, node: Tag):
 			match option.name:
 				'meta':
 					_parse_meta(id, option, defs.sound_metadata)
+				'volume':
+					defs.sound_custom_volumes[id] = float(option.get_string())
 				_:
 					push_error('unknown option in sound definition: %s' % option)
 	
@@ -370,6 +372,8 @@ func _resolve_options(tree: Tag):
 				opts.bug_report_url = node.get_string()
 			'ingame_custom_controls':
 				opts.ingame_custom_controls = node.get_string()
+			'register_effect':
+				opts.effects_registry[node.get_string_at(0)] = node.get_string_at(1)
 			_:
 				push_error('unknown option: %s' % [node])
 	

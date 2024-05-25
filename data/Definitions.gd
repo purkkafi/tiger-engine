@@ -15,6 +15,7 @@ var song_custom_volumes: Dictionary = {}
 var song_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
+var sound_custom_volumes: Dictionary = {} # custom volumes in range [0, 1]
 var sound_metadata: Dictionary = {} # metadata specified with \meta{}
 # array of ids of unlockables
 var unlockables: Array[String] = []
@@ -87,6 +88,13 @@ func unlockables_in_namespace(prefix: String) -> Array[String]:
 func song_volume(song_id: String) -> float:
 	if song_id in song_custom_volumes:
 		return song_custom_volumes[song_id]
+	return 1.0
+
+
+# like song_volume()but for sounds
+func sound_volume(sound_id: String):
+	if sound_id in sound_custom_volumes:
+		return sound_custom_volumes[sound_id]
 	return 1.0
 
 

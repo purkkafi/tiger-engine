@@ -120,6 +120,7 @@ func play_sound(id: String):
 			TE.log_warning("looping enabled for sound '%s'" % id)
 	
 	$SoundPlayer.stream = sound
+	$SoundPlayer.volume_db = linear_to_db(TE.defs.sound_volume(id))
 	$SoundPlayer.play()
 
 

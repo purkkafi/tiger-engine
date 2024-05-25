@@ -7,6 +7,7 @@ var path: String = '' # the full path to the scene
 var cutscene: Node2D
 var is_finished: bool
 var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
+var stop_music: bool = true # if true, previous song is stopped
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
 var was_playing_before_pause: bool
@@ -19,6 +20,8 @@ func parse_options(tags: Array[Tag]):
 				path = tag.get_string()
 			'wait_input':
 				wait_input = tag.get_string() == 'true'
+			'stop_music':
+				stop_music = tag.get_string() == 'true'
 			_:
 				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown argument for CutsceneView: %s' % tag)
 
@@ -35,7 +38,8 @@ func initialize(_ctxt: InitContext):
 	TE.overlay_opened.connect(_pause_on_overlay)
 	TE.overlay_closed.connect(_resume_after_overlay)
 	
-	Audio.play_song('', 0) # stop previous song, if any
+	if stop_music:
+		Audio.play_song('', 0) # stop previous song, if any
 	add_child(cutscene)
 	game.save_rollback()
 

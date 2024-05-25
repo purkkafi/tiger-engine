@@ -152,6 +152,9 @@ func next_blocking():
 			'ControlExpr':
 				ControlExpr.exec(ins.string, context)
 			
+			'Effect':
+				tween = $VNStage.handle_effects(ins.target, ins.apply, ins.remove, tween)
+			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	

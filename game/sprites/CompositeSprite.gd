@@ -7,6 +7,9 @@ class_name CompositeSprite extends VNSprite
 var attributes: Dictionary = {}
 # the state; dict of attribute ids to current values
 var state: Dictionary = {}
+# additional state
+# whether sprite is rendered as flipped horizontally
+var flipped: bool = false
 var layers: Array[Layer] = []
 # viewport that parents the parts of the sprite & its container
 # (used to make transparency work properly)
@@ -15,10 +18,20 @@ var viewport: SubViewport
 # dict of shorthand ids to Arrays of Predicates
 var shorthands: Dictionary = {}
 var resource: SpriteResource
-var sprite_scale: float = 1.0
 
+# factor size is multiplied by
+var sprite_scale: float = 1.0
 # downwad vertical displacement of the sprite as a % of stage height
 var y_offset: float = 0.0
+
+
+# properties to be used by Effects
+var offset: Vector2 = Vector2(0, 0):
+	set(new_offset):
+		container.position = Vector2(
+			new_offset.x,
+			new_offset.y + _stage_size().y * y_offset
+		)
 
 
 # debug rect disabled
@@ -130,6 +143,8 @@ func _init(_resource: SpriteResource):
 		if attr not in state:
 			TE.log_error(TE.Error.FILE_ERROR, "attribute '%s' has no possible values" % attr)
 	
+	#
+	
 	# remove invalid layers to reduce runtime errors
 	# errors should already be reported during parsing
 	layers = layers.filter(func(l: Layer): return l._is_valid())
@@ -188,15 +203,31 @@ func enter_stage(initial_state: Variant = null):
 
 
 func show_as(tag: Tag):
-	for cmd in tag.get_strings():
-		if cmd in shorthands:
-			for effect in shorthands[cmd]:
-				if effect._is_valid():
-					effect.apply()
-		else: # is raw predicate
-			var predicate: Predicate = _parse_predicate(cmd)
-			if predicate._is_valid():
-				predicate.apply()
+	for cmd in tag.get_values():
+		if cmd is Tag:
+			match cmd.name:
+				'flip':
+					if len(cmd.args) == 0:
+						flipped = not flipped
+					elif cmd.get_string() == 'true':
+						flipped = true
+					elif cmd.get_string() == 'false':
+						flipped = false
+					else:
+						TE.log_error(TE.Error.FILE_ERROR,
+							"\\flip needs to be given bool or nothing, got '%s'" % cmd)
+				_:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"unknown tag in \\as of CompositeSprite: '%s'" % cmd.name)
+		else: # cmd is String
+			if cmd in shorthands:
+				for effect in shorthands[cmd]:
+					if effect._is_valid():
+						effect.apply()
+			else: # is raw predicate
+				var predicate: Predicate = _parse_predicate(cmd)
+				if predicate._is_valid():
+					predicate.apply()
 	
 	var layer_size = null
 	
@@ -231,14 +262,30 @@ func show_as(tag: Tag):
 		sprite_scale * layer_size.x,
 		sprite_scale * layer_size.y
 	)
+	
+	if flipped:
+		viewport.canvas_transform = Transform2D.FLIP_X.translated(Vector2(viewport.size.x, 0))
+	else:
+		viewport.canvas_transform = Transform2D.IDENTITY
 
 
+# additional state is serialized as special keys prefixed with '\'
 func get_sprite_state() -> Variant:
-	return state.duplicate()
+	var _state = state.duplicate()
+	
+	_state['\\flipped'] = flipped
+	
+	return _state
 
 
 func set_sprite_state(_state: Variant):
 	state = _state.duplicate()
+	
+	for key in state.keys():
+		if key == '\\flipped':
+			flipped = state[key] as bool
+			state.erase(key)
+	
 	show_as(SHOW_AS_CURRENT)
 
 

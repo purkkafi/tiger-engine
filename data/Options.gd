@@ -21,3 +21,5 @@ var default_theme: Variant = null
 var bug_report_url: Variant = null
 # path to scene (String) containing custom controls that will shop up in-game
 var ingame_custom_controls: Variant = null
+# dict of effect ids to paths of scripts
+var effects_registry: Dictionary = {}
