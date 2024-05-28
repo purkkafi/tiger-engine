@@ -11,6 +11,7 @@ var vcenter: bool = false
 var outline_size: float = 0
 var outline_color: Variant = null # Color or null
 var text_color: Variant = null # Color or null
+var type_variation: String = 'NVLView' # theme type variation to fetch measurements from
 
 
 # indent that appears at the start of lines after the first
@@ -44,9 +45,9 @@ func initialize(_ctxt: InitContext):
 
 func adjust_size(controls: VNControls):
 	var controls_height = controls.size.y if controls != null else 0.0
-	var top_margin: float = get_theme_constant('top_margin', 'NVLView')
-	var bottom_margin: float = get_theme_constant('bottom_margin', 'NVLView')
-	var width: float = get_theme_constant('width', 'NVLView')
+	var top_margin: float = get_theme_constant('top_margin', type_variation)
+	var bottom_margin: float = get_theme_constant('bottom_margin', type_variation)
+	var width: float = get_theme_constant('width', type_variation)
 	
 	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin

@@ -11,6 +11,7 @@ var stop_music: bool = true # if true, previous song is stopped
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
 var was_playing_before_pause: bool
+var pause_position: float
 
 
 func parse_options(tags: Array[Tag]):
@@ -47,11 +48,14 @@ func initialize(_ctxt: InitContext):
 func _pause_on_overlay():
 	was_playing_before_pause = anim_player.is_playing()
 	if was_playing_before_pause:
+		pause_position = anim_player.current_animation_position
 		anim_player.pause()
 
 
 func _resume_after_overlay():
 	if was_playing_before_pause:
+		anim_player.seek(0)
+		anim_player.advance(pause_position)
 		anim_player.play()
 
 

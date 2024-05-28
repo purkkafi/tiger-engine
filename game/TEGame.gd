@@ -419,6 +419,7 @@ func _quit():
 	before_overlay()
 	
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
+	popup.wrap_controls = true
 	
 	popup.get_ok_button().text = TE.localize.general_quit
 	popup.get_ok_button().theme_type_variation = 'DangerButton'
@@ -427,6 +428,19 @@ func _quit():
 	popup.connect('canceled', _quit_cancel_pressed)
 	popup.connect('confirmed', TE.quit_game)
 	popup.connect('custom_action', _quit_to_title_pressed)
+	
+	
+	# HORRIBLE HACK: set min_size to an approximation manually because Godot didn't want to
+	# resize the dialog automatically for some reason
+	var min_width: float = 40
+	var panel_style: StyleBox = get_theme_stylebox('panel', 'PanelContainer')
+	min_width += panel_style.get_margin(SIDE_LEFT) + panel_style.get_margin(SIDE_RIGHT)
+	for popup_child in popup.get_children(true):
+		if popup_child is HBoxContainer:
+			for btn in popup_child.get_children():
+				min_width += btn.size.x
+				min_width += get_theme_constant('separation', 'HBoxContainer')
+	popup.min_size = Vector2(min_width, 10)
 	
 	popup.popup_centered()
 
