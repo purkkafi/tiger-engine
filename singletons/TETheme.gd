@@ -104,7 +104,6 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 		_copy_default_values(current_theme, _large_theme)
 	
 	# applies OpenDyslexic
-	# also reduces font size of everything by 25 % because the font takes more space to display
 	var is_dyslexic_font = TE.settings != null and TE.settings.dyslexic_font
 	if force_dyslexic_font != null:
 		is_dyslexic_font = force_dyslexic_font
@@ -118,6 +117,11 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 		var od_size_factor: float = 1.0
 		if font_data != null:
 			od_size_factor = font_data.opendyslexic_size_factor()
+			
+			var extra_space = font_data.opendyslexic_extra_space() if 'opendyslexic_extra_space' in font_data else 0
+			for fnt in [od_regular, od_bold, od_italic, od_bold_italic]:
+				fnt.set_extra_spacing(0, TextServer.SPACING_TOP, extra_space)
+				fnt.set_extra_spacing(0, TextServer.SPACING_BOTTOM, extra_space)
 		
 		if current_theme.has_default_font():
 			current_theme.default_font = od_regular
@@ -202,4 +206,3 @@ func _resolve_font_data(id: String) -> Variant:
 	if FileAccess.file_exists(path):
 		return (load(path) as GDScript).new()
 	return null
-
