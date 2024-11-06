@@ -79,6 +79,17 @@ func get_value():
 	return value
 
 
+# returns the arguments as an array containing String and Tag instances or null
+func get_values():
+	var arr: Array[Variant] = []
+	for arg in args:
+		if len(arg) == 1 and arg[0] is String or arg[0] is Tag:
+			arr.append(arg[0])
+		else:
+			return null
+	return arr
+
+
 # returns the single String or Tag at the given argument or null
 func get_value_at(index: int):
 	if index >= len(args) or len(args[index]) != 1 or (!args[index][0] is String and !args[index][0] is Tag):

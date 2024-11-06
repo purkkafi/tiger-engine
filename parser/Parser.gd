@@ -20,7 +20,7 @@ func parse(_tokens: Array[Lexer.Token]):
 	
 	# consume tokens as long as there are more to parse & do transformations on them
 	while index < len(self.tokens):
-		var value = _parse_value()
+		var value = _parse_value('parsing root')
 		if value == null:
 			return null
 		tree.append(value)
@@ -77,7 +77,7 @@ func _fix_tree(nodes: Array[Variant]) -> Array[Variant]:
 	return new_nodes
 
 
-func _parse_value():
+func _parse_value(error_context: String):
 	match tokens[index].type:
 		Lexer.TokenType.TAG:
 			return _parse_tag()
@@ -91,7 +91,7 @@ func _parse_value():
 		Lexer.TokenType.RAW_STRING:
 			return _parse_control_tag()
 		_:
-			error_message = 'syntax error: expected value, got %s at %s' % [str(tokens[index]), tokens[index].where()]
+			error_message = 'syntax error: expected value, got %s at %s while %s' % [str(tokens[index]), tokens[index].where(), error_context]
 			return null
 
 
@@ -121,7 +121,7 @@ func _parse_tag():
 					return null
 				
 				while tokens[index].type != Lexer.TokenType.BRACE_CLOSE:
-					var value = _parse_value()
+					var value = _parse_value("'%s' (%s)" % [name, tokens[index].where()])
 					if value == null:
 						return null
 					

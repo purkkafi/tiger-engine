@@ -558,6 +558,51 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				else:
 					ins.append(TEScript.IJmp.new(to))
 			
+			'effect':
+				if len(tag.args) != 2:
+					error('expected \\effect to be of form \\effect{<target>}{<effects>}, got %d args' % len(tag.args))
+					continue
+				
+				var target = tag.get_value_at(0)
+				if target is String:
+					pass # OK as is
+				elif target is Tag:
+					match target.name:
+						'bg':
+							target = '\\bg'
+						'fg':
+							target = '\\fg'
+						'stage':
+							target = '\\stage'
+						'sprites':
+							target = '\\sprites'
+						_:
+							error('expected \\effect to have valid target, got %s' % target)
+							continue
+				else:
+					error('expected \\effect to have valid target, got %s' % tag)
+					continue
+				
+				var apply: Array[String] = []
+				var remove: Array[String] = []
+				
+				for arg in tag.get_tags_at(1):
+					var effect_id = arg.get_string()
+					if effect_id == null:
+						error('expected \\effect argument to be string, got %s' % arg)
+						continue
+					
+					match (arg as Tag).name:
+						'apply':
+							apply.append(arg.get_string())
+						'remove':
+							remove.append(arg.get_string())
+						_:
+							error('expected \\effect argument to be \\apply or \\remove, got %s' % arg)
+							continue
+				
+				ins.append(TEScript.IEffect.new(target, apply, remove))
+			
 			_:
 				# interpret as the declaration of a View
 				# TODO think about how to implement this properly

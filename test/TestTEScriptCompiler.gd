@@ -557,3 +557,42 @@ func test_jmp_rejects_malformed_destination():
 		errors('\\jmp{a:b:c}'),
 		[ 'bad \\jmp destination \'a:b:c\' in \\jmp[["a:b:c"]]' ]
 	)
+
+
+func test_effect():
+	assert_equals(
+		instructions('\\effect{T}{ \\apply{A1} \\apply{A2} \\remove{R1} \\remove{R2} }'),
+		[ TEScript.IEffect.new('T', ['A1', 'A2'], ['R1', 'R2']) ]
+	)
+
+
+func test_effect_requires_2_args():
+	assert_equals(
+		errors('\\effect{T}'), ['expected \\effect to be of form \\effect{<target>}{<effects>}, got 1 args']
+	)
+	
+	assert_equals(
+		errors('\\effect{T}{}{}'), ['expected \\effect to be of form \\effect{<target>}{<effects>}, got 3 args']
+	)
+
+
+func test_effect_special_targets():
+	assert_equals(
+		instructions('\\effect{\\stage}{}'), [ TEScript.IEffect.new('\\stage', [], []) ]
+	)
+	
+	assert_equals(
+		instructions('\\effect{\\sprites}{}'), [ TEScript.IEffect.new('\\sprites', [], []) ]
+	)
+	
+	assert_equals(
+		instructions('\\effect{\\bg}{}'), [ TEScript.IEffect.new('\\bg', [], []) ]
+	)
+	
+	assert_equals(
+		instructions('\\effect{\\fg}{}'), [ TEScript.IEffect.new('\\fg', [], []) ]
+	)
+	
+	assert_equals(
+		errors('\\effect{\\bad}{}'), [ 'expected \\effect to have valid target, got \\bad[]' ]
+	)

@@ -46,7 +46,6 @@ func warning_dialog(msg: String) -> ConfirmationDialog:
 	popup.get_cancel_button().text = TE.localize['general_cancel']
 	
 	var margins: MarginContainer = MarginContainer.new()
-	margins.custom_minimum_size = Vector2(600, 0)
 	var label: Label = Label.new()
 	label.text = msg
 	margins.add_child(label)

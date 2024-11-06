@@ -60,10 +60,14 @@ func _display_line(line: String, speaker: Speaker = null):
 	if speaker != null:
 		speaker_panel.visible = true
 		speaker_name.text = speaker.name
-		box.theme_type_variation = 'ADVViewWithSpeaker'
 		
-		if speaker.variation != '':
-			speaker_panel.theme_type_variation = speaker.variation
+		if speaker.textbox_variation != '':
+			box.theme_type_variation = speaker.textbox_variation
+		else:
+			box.theme_type_variation = 'ADVViewWithSpeaker'
+		
+		if speaker.label_variation != '':
+			speaker_panel.theme_type_variation = speaker.label_variation
 		else:
 			speaker_panel.theme_type_variation = 'ADVSpeaker'
 		

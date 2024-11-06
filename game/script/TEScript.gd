@@ -318,3 +318,27 @@ class IJmp extends BaseInstruction:
 	
 	func _to_string() -> String:
 		return 'jmp %s %s' % [to, in_file]
+
+
+class IEffect extends BaseInstruction:
+	const name: String = 'Effect'
+	# target of the effect, can be:
+	# – \stage, \fg, \bg, \sprites
+	# – a sprite id
+	var target: String
+	var apply: Array[String]
+	var remove: Array[String]
+	
+	
+	func _init(_target: String, _apply: Array[String], _remove: Array[String]):
+		self.target = _target
+		self.apply = _apply
+		self.remove = _remove
+	
+	
+	func repeat_id() -> String:
+		return 'Effect_%s' % [target]
+	
+	
+	func _to_string() -> String:
+		return 'target %s apply %s remove %s' % [target, apply, remove]

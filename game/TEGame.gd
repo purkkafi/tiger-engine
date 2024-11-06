@@ -7,7 +7,7 @@ class_name TEGame extends Control
 var vm: TEScriptVM # virtual machine that runs the game script
 var rollback: Rollback # stores save states for Back button
 var gamelog: Log # the game log
-var context: GameContext # stores in-game variables
+var context: InGameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
 var advancing: bool = false # whether game is being advanced by mouse or keys
 var overlay_active: bool = false # whether there is an overlay and game should be paused
@@ -63,7 +63,7 @@ func _ready():
 		var_names.append(_var)
 		var_values.append(TE.defs.variables[_var])
 	
-	context = GameContext.new(var_names, var_values)
+	context = InGameContext.new(var_names, var_values, self)
 	
 	# initial View
 	_replace_view(TE.defs.view_registry['adv'].instantiate())
@@ -152,11 +152,19 @@ func next_blocking():
 			'ControlExpr':
 				ControlExpr.exec(ins.string, context)
 			
+			'Effect':
+				tween = $VNStage.handle_effects(ins.target, ins.apply, ins.remove, tween)
+			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
 	# if any instruction activated the tween, handle it
 	if tween != null:
+		
+		# dummy callback so that Godot doesn't complain about an empty tween
+		# if we're only doing instanteous things
+		tween.parallel().tween_callback(func(): pass)
+		
 		$View.wait_tween(tween)
 		
 		# make sure to hide ui even if HideUI instruction was not present
@@ -283,6 +291,23 @@ func _unhide_ui():
 	$View.modulate.a = 1.0
 
 
+func _unhandled_key_input(event):
+	if event.is_action_pressed('game_screenshot', false, true):
+		take_user_screenshot()
+	
+	# hide when key pressed
+	if event.is_action_pressed('game_hide', false, true) and not user_hiding:
+		toggle_user_hide()
+	
+	# show when key released
+	if event.is_action_released('game_hide', true) and user_hiding:
+		toggle_user_hide()
+	
+	if event.is_action_pressed('debug_toggle', false, true) and TE.is_debug():
+		toggle_debug_mode()
+		update_debug_mode_text()
+
+
 func _process(delta):
 	# alert on script errors
 	while len(vm.errors) != 0:
@@ -304,17 +329,6 @@ func _process(delta):
 	
 	if focus_now.get_ref() == null: # return focus to TEGame if it was lost
 		grab_focus()
-	
-	if Input.is_action_just_pressed('game_screenshot', true):
-		take_user_screenshot()
-	
-	# hide is active while the key is being held down
-	if Input.is_action_just_pressed('game_hide', true) or Input.is_action_just_released('game_hide', true):
-		toggle_user_hide()
-	
-	if Input.is_action_just_pressed('debug_toggle', true) and TE.is_debug():
-		toggle_debug_mode()
-		update_debug_mode_text()
 	
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	
@@ -379,6 +393,8 @@ func _gui_input(event):
 
 
 func before_overlay():
+	TE.emit_signal('overlay_opened')
+	
 	overlay_active = true
 	self.focus_mode = Control.FOCUS_NONE
 	if custom_controls != null:
@@ -388,6 +404,8 @@ func before_overlay():
 
 
 func after_overlay():
+	TE.emit_signal('overlay_closed')
+	
 	overlay_active = false
 	self.focus_mode = Control.FOCUS_ALL
 	if custom_controls != null:
@@ -401,6 +419,7 @@ func _quit():
 	before_overlay()
 	
 	var popup = Popups.warning_dialog(TE.localize['game_quit_game'])
+	popup.wrap_controls = true
 	
 	popup.get_ok_button().text = TE.localize.general_quit
 	popup.get_ok_button().theme_type_variation = 'DangerButton'
@@ -409,6 +428,19 @@ func _quit():
 	popup.connect('canceled', _quit_cancel_pressed)
 	popup.connect('confirmed', TE.quit_game)
 	popup.connect('custom_action', _quit_to_title_pressed)
+	
+	
+	# HORRIBLE HACK: set min_size to an approximation manually because Godot didn't want to
+	# resize the dialog automatically for some reason
+	var min_width: float = 40
+	var panel_style: StyleBox = get_theme_stylebox('panel', 'PanelContainer')
+	min_width += panel_style.get_margin(SIDE_LEFT) + panel_style.get_margin(SIDE_RIGHT)
+	for popup_child in popup.get_children(true):
+		if popup_child is HBoxContainer:
+			for btn in popup_child.get_children():
+				min_width += btn.size.x
+				min_width += get_theme_constant('separation', 'HBoxContainer')
+	popup.min_size = Vector2(min_width, 10)
 	
 	popup.popup_centered()
 
@@ -635,3 +667,7 @@ func update_debug_mode_text():
 			%DebugMsg.text = Audio.debug_text()
 		DebugMode.SPRITES:
 			%DebugMsg.text = $VNStage._sprite_debug_msg()
+
+
+func stage() -> VNStage:
+	return $VNStage

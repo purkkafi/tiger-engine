@@ -7,14 +7,31 @@ class_name CompositeSprite extends VNSprite
 var attributes: Dictionary = {}
 # the state; dict of attribute ids to current values
 var state: Dictionary = {}
+# additional state
+# whether sprite is rendered as flipped horizontally
+var flipped: bool = false
 var layers: Array[Layer] = []
+# viewport that parents the parts of the sprite & its container
+# (used to make transparency work properly)
+var container: SubViewportContainer
+var viewport: SubViewport
 # dict of shorthand ids to Arrays of Predicates
 var shorthands: Dictionary = {}
 var resource: SpriteResource
-var sprite_scale: float = 1.0
 
+# factor size is multiplied by
+var sprite_scale: float = 1.0
 # downwad vertical displacement of the sprite as a % of stage height
 var y_offset: float = 0.0
+
+
+# properties to be used by Effects
+var offset: Vector2 = Vector2(0, 0):
+	set(new_offset):
+		container.position = Vector2(
+			new_offset.x,
+			new_offset.y + _stage_size().y * y_offset
+		)
 
 
 # debug rect disabled
@@ -24,10 +41,24 @@ static var EMPTY_CASE: EmptyCase = EmptyCase.new()
 # constant instances
 static var TRUE_PREDICATE: TruePredicate = TruePredicate.new()
 static var SHOW_AS_CURRENT: Tag = Tag.new('as', [])
+# matches everything before the last ':' character
+static var BEFORE_LAST_COLON = RegEx.create_from_string('(.+):')
+# matches everything after the last ':' character
+static var AFTER_LAST_COLON = RegEx.create_from_string('.*:(.+)')
 
 
 func _init(_resource: SpriteResource):
 	self.resource = _resource
+	
+	# set up viewport and container
+	container = SubViewportContainer.new()
+	container.size = resource.size
+	container.stretch = true
+	self.add_child(container)
+	
+	viewport = SubViewport.new()
+	viewport.transparent_bg = true
+	container.add_child(viewport)
 	
 	for tag in resource.tag.get_tags():
 		match tag.name:
@@ -112,6 +143,8 @@ func _init(_resource: SpriteResource):
 		if attr not in state:
 			TE.log_error(TE.Error.FILE_ERROR, "attribute '%s' has no possible values" % attr)
 	
+	#
+	
 	# remove invalid layers to reduce runtime errors
 	# errors should already be reported during parsing
 	layers = layers.filter(func(l: Layer): return l._is_valid())
@@ -134,14 +167,34 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 		else:
 			TE.log_error(TE.Error.FILE_ERROR,
 				'invalid attribute value (expected empty tag or nested attribute): %s' % tag)
+	
+	# generate ghost values for unambiguous inner values
+	var inner_values: Array[String] = []
+	for attr in attributes[attr_id]:
+		if attr is String and ':' in attr:
+			inner_values.append(attr)
+	
+	var final_parts: Dictionary = {}
+	for inner_value in inner_values:
+		var final_part = AFTER_LAST_COLON.search(inner_value).strings[1]
+		
+		if final_part not in final_parts:
+			final_parts[final_part] = []
+		
+		final_parts[final_part].append(inner_value)
+	
+	for final_part in final_parts:
+		if len(final_parts[final_part]) == 1:
+			attributes[attr_id].append(_shorthand_value(final_part, final_parts[final_part][0]))
 
 
 func enter_stage(initial_state: Variant = null):
+	self.container.position.y = _stage_size().y * y_offset
+	self.container.scale = Vector2(sprite_scale, sprite_scale)
+	
 	for layer in layers:
 		layer.rect = TextureRect.new()
-		add_child(layer.rect)
-		layer.rect.position.y = _stage_size().y * y_offset
-		layer.rect.scale = Vector2(sprite_scale, sprite_scale)
+		viewport.add_child(layer.rect)
 	
 	if initial_state != null:
 		show_as(initial_state)
@@ -150,15 +203,31 @@ func enter_stage(initial_state: Variant = null):
 
 
 func show_as(tag: Tag):
-	for cmd in tag.get_strings():
-		if cmd in shorthands:
-			for effect in shorthands[cmd]:
-				if effect._is_valid():
-					effect.apply()
-		else: # is raw predicate
-			var predicate: Predicate = _parse_predicate(cmd)
-			if predicate._is_valid():
-				predicate.apply()
+	for cmd in tag.get_values():
+		if cmd is Tag:
+			match cmd.name:
+				'flip':
+					if len(cmd.args) == 0:
+						flipped = not flipped
+					elif cmd.get_string() == 'true':
+						flipped = true
+					elif cmd.get_string() == 'false':
+						flipped = false
+					else:
+						TE.log_error(TE.Error.FILE_ERROR,
+							"\\flip needs to be given bool or nothing, got '%s'" % cmd)
+				_:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"unknown tag in \\as of CompositeSprite: '%s'" % cmd.name)
+		else: # cmd is String
+			if cmd in shorthands:
+				for effect in shorthands[cmd]:
+					if effect._is_valid():
+						effect.apply()
+			else: # is raw predicate
+				var predicate: Predicate = _parse_predicate(cmd)
+				if predicate._is_valid():
+					predicate.apply()
 	
 	var layer_size = null
 	
@@ -193,14 +262,30 @@ func show_as(tag: Tag):
 		sprite_scale * layer_size.x,
 		sprite_scale * layer_size.y
 	)
+	
+	if flipped:
+		viewport.canvas_transform = Transform2D.FLIP_X.translated(Vector2(viewport.size.x, 0))
+	else:
+		viewport.canvas_transform = Transform2D.IDENTITY
 
 
+# additional state is serialized as special keys prefixed with '\'
 func get_sprite_state() -> Variant:
-	return state.duplicate()
+	var _state = state.duplicate()
+	
+	_state['\\flipped'] = flipped
+	
+	return _state
 
 
 func set_sprite_state(_state: Variant):
 	state = _state.duplicate()
+	
+	for key in state.keys():
+		if key == '\\flipped':
+			flipped = state[key] as bool
+			state.erase(key)
+	
 	show_as(SHOW_AS_CURRENT)
 
 
@@ -243,14 +328,19 @@ class Layer extends RefCounted:
 		
 		var cases: Array = []
 		
-		for case in _case_tags:
-			if case.name == 'case':
-				cases.append(Case.of_tag(case, sprite))
-			else:
-				TE.log_error(TE.Error.FILE_ERROR,
-					"illegal layer component '%s'" % case.name)
-		
-		root_case = Case.new(CompositeSprite.TRUE_PREDICATE, cases, sprite)
+		if len(_case_tags) == 1 and _case_tags[0].name == 'always':
+			var always_value: String = _case_tags[0].get_string()
+			root_case = Case.new(CompositeSprite.TRUE_PREDICATE, always_value, sprite)
+			
+		else: # normal cases
+			for case in _case_tags:
+				if case.name == 'case':
+					cases.append(Case.of_tag(case, sprite))
+				else:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"illegal layer component '%s'" % case.name)
+			
+			root_case = Case.new(CompositeSprite.TRUE_PREDICATE, cases, sprite)
 	
 	
 	# returns whether every case is valid
@@ -305,7 +395,17 @@ class Case extends RefCounted:
 			return
 		
 		@warning_ignore("shadowed_variable")
-		var predicate: Predicate = _sprite._parse_predicate(from_tag.get_string_at(0))
+		var predicate: Predicate
+		if from_tag.get_string_at(0) != null:
+			predicate = _sprite._parse_predicate(from_tag.get_string_at(0))
+		elif from_tag.get_tag_at(0) != null:
+			if from_tag.get_tag_at(0).name == 'default':
+				predicate = CompositeSprite.TRUE_PREDICATE
+			else:
+				TE.log_error(TE.Error.FILE_ERROR, "unknown predicate: '%s'" % from_tag.get_tag_at(0).name)
+		else:
+			TE.log_error(TE.Error.FILE_ERROR, "expected predicate to be valid string or \\default, got '%s'" % from_tag)
+		
 		@warning_ignore("shadowed_variable")
 		var content: Variant
 		
@@ -376,7 +476,11 @@ func _parse_predicate(string: String) -> Predicate:
 
 
 func _ghost_value(of: String) -> Dictionary:
-	return { 'ghost': true, 'value': of }
+	return { 'type': 'ghost', 'value': of }
+
+
+func _shorthand_value(value: String, shorthand_for: String) -> Dictionary:
+	return { 'type': 'shorthand', 'value': value, 'shorthand_for': shorthand_for }
 
 
 # a logical predicate about the sprite's state with some operations
@@ -412,12 +516,8 @@ class TruePredicate extends Predicate:
 # the context of the given CompositeSprite
 class EqPredicate extends Predicate:
 	var attribute: String = ''
-	var value: Variant = '' # String or ghost value dict
+	var value: Variant = '' # String or ghost/shorthand value dict
 	var sprite: CompositeSprite
-	
-	
-	# matches everything before the last ':' character
-	var BEFORE_LAST_COLON = RegEx.create_from_string('(.+):')
 	
 	
 	func _init(_attr: String, _val: Variant, forSprite: CompositeSprite):
@@ -425,20 +525,16 @@ class EqPredicate extends Predicate:
 			TE.log_error(TE.Error.FILE_ERROR, "invalid attribute id: '%s'" % _attr)
 			return
 		
-		var partial_value: String = _val
 		var value_is_valid: bool = false
-		while true:
-			if partial_value in forSprite.attributes[_attr]:
+		
+		for attr_value in forSprite.attributes[_attr]:
+			if attr_value is String and attr_value == _val:
 				value_is_valid = true
+				self.value = _val
 				break
-			if forSprite._ghost_value(partial_value) in forSprite.attributes[_attr]:
+			if attr_value is Dictionary and attr_value['value'] == _val:
 				value_is_valid = true
-				_val = forSprite._ghost_value(partial_value)
-				break
-			
-			if partial_value.find(':') != -1:
-				partial_value = BEFORE_LAST_COLON.search(partial_value).strings[1]
-			else:
+				self.value = attr_value
 				break
 		
 		if not value_is_valid:
@@ -447,14 +543,22 @@ class EqPredicate extends Predicate:
 		
 		self.sprite = forSprite
 		self.attribute = _attr
-		self.value = _val
 	
 	
 	func evaluate() -> bool:
 		if value is String: # check for exact match
 			return sprite.state[attribute] == value
-		else: # ghost value, check that state starts with it
-			return sprite.state[attribute].begins_with(value['value'])
+		else:
+			match (value as Dictionary)['type']:
+				'ghost':
+					# ghost value, check that state starts with it
+					return sprite.state[attribute].begins_with(value['value'])
+				'shorthand':
+					# shorthand, check state matches what it's shorthand for
+					return sprite.state[attribute] == value['shorthand_for']
+				_:
+					push_error('assertion error: value has unknown type: %s' % value)
+					return false
 	
 	
 	func apply():

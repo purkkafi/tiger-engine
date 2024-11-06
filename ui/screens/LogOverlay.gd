@@ -8,6 +8,8 @@ var gamelog: Log = null # set this to the log before spawning the overlay
 func _initialize_overlay():
 	size_to_small()
 	
+	%Text.get_v_scroll_bar().custom_step = 3 * TETheme.current_theme.default_font_size
+	
 	var text: String = ''
 	
 	for line in gamelog.lines:

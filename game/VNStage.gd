@@ -5,21 +5,59 @@ class_name VNStage extends Node
 
 var bg_id: String = ''
 var fg_id: String = ''
+var active_effects: Array[ActiveEffect] = []
 const TRANSPARENT: Color = Color(0, 0, 0, 0)
+
+
+# an effect currently active on some stage object
+class ActiveEffect:
+	var target: String
+	var id: String
+	var effect: Effect
+	
+	
+	func _init(_target: String, _id: String):
+		target = _target
+		id = _id
+		effect = load(TE.opts.effects_registry[id]).new()
 
 
 # transitions to a new background with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_background(new_id: String, transition: String, tween: Tween) -> Tween:
-	bg_id = new_id
-	return _set_layer($BG, _get_layer_node(new_id), TE.defs.transition(transition), tween, false)
+func set_background(new: Variant, transition: String, tween: Tween) -> Tween:
+	var to_state = null
+	
+	if new is String:
+		bg_id = new
+	else: # is Dictionary
+		bg_id = new['id']
+		to_state = new['state']
+	
+	var result = _set_layer($BG, _get_layer_node(bg_id), TE.defs.transition(transition), tween, false)
+	
+	if to_state != null:
+		$BG.set_state(to_state)
+	
+	return result
 
 
 # transitions to a new foreground with the given transition
 # a Tween can be given to do so in parallel; otherwise, a new one is created
-func set_foreground(new_id: String, transition: String, tween: Tween) -> Tween:
-	fg_id = new_id
-	return _set_layer($FG, _get_layer_node(new_id), TE.defs.transition(transition), tween, true)
+func set_foreground(new: Variant, transition: String, tween: Tween) -> Tween:
+	var to_state = null
+	
+	if new is String:
+		fg_id = new
+	else: # is Dictionary
+		fg_id = new['id']
+		to_state = new['state']
+	
+	var result = _set_layer($FG, _get_layer_node(fg_id), TE.defs.transition(transition), tween, true)
+	
+	if to_state != null:
+		$FG.set_state(to_state)
+	
+	return result
 
 
 # loads a suitable back/foreground Node based on the given id
@@ -40,6 +78,9 @@ func _get_layer_node(id: String) -> Node:
 			for unlockable in TE.defs.unlocked_by_img[id]:
 				TE.persistent.unlock(unlockable)
 		
+		if id not in TE.defs.imgs:
+			TE.log_error(TE.Error.FILE_ERROR, "Layer object not found: '%s'" % id)
+		
 		var path: String = TE.defs.imgs[id]
 		if path.ends_with('.tscn'): # is animation scene
 			var scene: PackedScene = Assets.imgs.get_resource(path, 'res://assets/img')
@@ -58,6 +99,7 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 		new_layer.position = Vector2(0, 0)
 	new_layer.name = 'New' + layer.name
 	layer.add_sibling(new_layer)
+	layer.set_meta('transitioning_into', new_layer)
 	
 	# skip tween in this case
 	if transition.duration == 0:
@@ -243,6 +285,10 @@ func exit_sprite(id: String, with: Variant, tween: Tween) -> Tween:
 
 func _remove_sprite(sprite: VNSprite):
 	$Sprites.remove_child(sprite)
+	
+	# remove effects affecting this sprite
+	active_effects = active_effects.filter(func(ae: ActiveEffect): return ae.target != sprite.id)
+	
 	sprite.queue_free()
 
 
@@ -308,10 +354,20 @@ func get_state() -> Dictionary:
 			'id' : sprite.id,
 			'state' : sprite.get_sprite_state()
 		})
+	
+	var effects: Array = []
+	for active_effect in active_effects:
+		effects.append({
+			'target': active_effect.target,
+			'id': active_effect.id
+		})
+	
+	@warning_ignore("incompatible_ternary")
 	return {
-		'bg' : bg_id,
-		'fg' : fg_id,
-		'sprites' : sprites
+		'bg': { 'id': bg_id, 'state': $BG.get_state() } if $BG is StatefulLayer else bg_id,
+		'fg': { 'id': fg_id, 'state': $FG.get_state() } if $FG is StatefulLayer else fg_id,
+		'sprites': sprites,
+		'effects': effects
 	}
 
 
@@ -325,6 +381,10 @@ func get_node_cache() -> Dictionary:
 	}
 	remove_child($BG)
 	remove_child($FG)
+	
+	for ae in active_effects:
+		ae.effect.remove(get_effect_target(ae.target), null)
+		cache['effect:%s:%s' % [ae.id, ae.target]] = ae
 	
 	for sprite in $Sprites.get_children():
 		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite
@@ -370,9 +430,25 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		sprite.set_sprite_state(sprite_data['state'])
 		sprite.move_to(sprite_data['x'], sprite_data['y'], sprite_data['zoom'], sprite_data['order'], Definitions.INSTANT)
 	
+	# TODO backwards compatibility, remove at some point
+	if 'effects' not in state:
+		state['effects'] = []
+	
+	for effect_data in state['effects']:
+		var effect_from_cache = 'effect:%s:%s' % [effect_data['id'], effect_data['target']]
+		var ae: ActiveEffect
+		
+		if effect_from_cache in node_cache:
+			ae = node_cache[effect_from_cache]
+		else:
+			ae = ActiveEffect.new(effect_data['target'], effect_data['id'])
+		
+		ae.effect.apply(get_effect_target(ae.target), null)
+		active_effects.append(ae)
+	
 	# free unused cache objects
 	for cached_obj in node_cache.values():
-		if (cached_obj as Node).get_parent() == null:
+		if cached_obj is Node and (cached_obj as Node).get_parent() == null:
 			cached_obj.queue_free()
 
 
@@ -383,6 +459,55 @@ func clear():
 	
 	for sprite in $Sprites.get_children():
 		_remove_sprite(sprite)
+
+
+func bg() -> Node:
+	if $BG.has_meta('transitioning_into'):
+		return $BG.get_meta('transitioning_into')
+	return $BG
+
+
+func fg() -> Node:
+	if $FG.has_meta('transitioning_into'):
+		return $FG.get_meta('transitioning_into')
+	return $FG
+
+
+func get_effect_target(target_descriptor: String) -> CanvasItem:
+	match target_descriptor:
+		'\\stage':
+			push_error('effects on \\stage NYI')
+			return null
+		'\\bg':
+			return bg()
+		'\\fg':
+			return fg()
+		'\\sprites':
+			return %Sprites
+		_:
+			return find_sprite(target_descriptor)
+
+
+func handle_effects(target_descriptor: String, apply_effects: Array[String], remove_effects: Array[String], tween: Tween) -> Tween:
+	if tween == null:
+		tween = create_tween()
+	
+	for apply in apply_effects:
+		var ae = ActiveEffect.new(target_descriptor, apply)
+		active_effects.append(ae)
+		tween = ae.effect.apply(get_effect_target(ae.target), tween)
+	
+	var removed_effects: Array = []
+	for remove in remove_effects:
+		for ae in active_effects:
+			if ae.target == target_descriptor and ae.id == remove:
+				tween = ae.effect.remove(get_effect_target(ae.target), tween)
+				removed_effects.append(ae)
+	
+	for removed in removed_effects:
+		active_effects.erase(removed)
+	
+	return tween
 
 
 func _sprite_debug_msg() -> String:

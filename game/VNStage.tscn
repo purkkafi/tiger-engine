@@ -19,6 +19,7 @@ offset_bottom = 1080.0
 color = Color(1, 0, 1, 0)
 
 [node name="Sprites" type="Control" parent="."]
+unique_name_in_owner = true
 anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0

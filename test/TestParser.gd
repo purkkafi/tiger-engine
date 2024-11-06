@@ -127,7 +127,7 @@ func test_stray_brace():
 	
 	assert_equals(
 		parser.error_message,
-		'syntax error: expected value, got BRACE_OPEN at <test>:1'
+		'syntax error: expected value, got BRACE_OPEN at <test>:1 while parsing root'
 	)
 
 

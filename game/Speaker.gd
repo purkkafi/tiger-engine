@@ -5,7 +5,8 @@ class_name Speaker extends RefCounted
 var name: String # the name
 var name_color: Color # color of the speaker box
 var bg_color: Color # background color of the speaker box
-var variation: String # theme type variation of the speaker box
+var textbox_variation: String # theme type variation of the ADV mode text box
+var label_variation: String # theme type variation of the speaker label
 var log_color: Color # color in the log
 
 
@@ -39,7 +40,8 @@ static func resolve(declaration: String, ctxt: ControlExpr.BaseContext) -> Speak
 		resolved_name,
 		def.name_color,
 		def.bg_color,
-		def.variation,
+		def.label_variation,
+		def.textbox_variation,
 		_get_log_color(def)
 	)
 
@@ -53,9 +55,10 @@ static func _get_log_color(def: Definitions.SpeakerDef):
 	return TETheme.default_text_color
 
 
-func _init(_name: String, _name_color: Color, _bg_color: Color, _variation: String, _log_color: Color):
+func _init(_name: String, _name_color: Color, _bg_color: Color, _label_variation: String, _textbox_variation: String, _log_color: Color):
 	self.name = _name
 	self.name_color = _name_color
 	self.bg_color = _bg_color
-	self.variation = _variation
+	self.label_variation = _label_variation
+	self.textbox_variation = _textbox_variation
 	self.log_color = _log_color

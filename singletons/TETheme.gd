@@ -44,6 +44,7 @@ func set_theme(theme_id: String):
 	# load animations, which are funcs in 'animations.gd' in theme folder
 	if animations != null:
 		self.remove_child(animations)
+		animations.queue_free()
 	
 	animations = _resolve_animations(theme_id)
 	
@@ -73,6 +74,7 @@ func set_theme(theme_id: String):
 	
 	if font_data != null:
 		self.remove_child(font_data)
+		font_data.queue_free()
 	
 	font_data = _resolve_font_data(theme_id)
 	

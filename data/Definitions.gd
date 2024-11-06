@@ -15,6 +15,7 @@ var song_custom_volumes: Dictionary = {}
 var song_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
+var sound_custom_volumes: Dictionary = {} # custom volumes in range [0, 1]
 var sound_metadata: Dictionary = {} # metadata specified with \meta{}
 # array of ids of unlockables
 var unlockables: Array[String] = []
@@ -90,6 +91,13 @@ func song_volume(song_id: String) -> float:
 	return 1.0
 
 
+# like song_volume()but for sounds
+func sound_volume(sound_id: String):
+	if sound_id in sound_custom_volumes:
+		return sound_custom_volumes[sound_id]
+	return 1.0
+
+
 # returns the corresponding color or null if the given value does not represent one
 # a valid color can be:
 # – the id of a color definition
@@ -160,7 +168,8 @@ class SpeakerDef extends RefCounted:
 	var bg_color: Color = Color.TRANSPARENT
 	var name_color: Color = Color.TRANSPARENT
 	# default to the empty string, which should be treated as unset
-	var variation: String = ''
+	var label_variation: String = ''
+	var textbox_variation: String = ''
 	
 	
 	# validates this Speaker and returns a non-empty error message if it is invalid
