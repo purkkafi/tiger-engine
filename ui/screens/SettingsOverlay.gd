@@ -19,7 +19,7 @@ var language_disabled: bool = false
 @onready var skip_unseen_text: CheckBox = %SkipUnseenText
 @onready var lang_options: OptionButton = %LangOptions
 @onready var keys_section: MarginContainer = %Keys
-@onready var keys_grid: GridContainer = %KeysGrid
+@onready var keys_flow: HFlowContainer = %KeysFlow
 @onready var gui_scale_container: HBoxContainer = %GUIScaleContainer
 @onready var gui_scale: OptionButton = %GUIScale
 @onready var dyslexic_font: CheckButton = %DyslexicFont
@@ -71,9 +71,13 @@ func _initialize_overlay():
 		if key.begins_with('debug') and not TE.is_debug():
 			continue
 		
+		var hbox: HBoxContainer = HBoxContainer.new()
+		hbox.custom_minimum_size = Vector2(get_theme_constant('min_width', 'SettingsKeysFlow'), 0)
+		
 		var label: Label = Label.new()
 		label.text = '%key_' + key +'%'
-		keys_grid.add_child(label)
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hbox.add_child(label)
 		
 		var button: Button = Button.new()
 		button.set_meta('key_id', key)
@@ -83,8 +87,10 @@ func _initialize_overlay():
 		button.set_meta('ctrl_held', false)
 		_update_key_button_text(button)
 		button.connect('pressed', _key_button_pressed.bind(button))
-		keys_grid.add_child(button)
+		hbox.add_child(button)
 		key_buttons.append(button)
+		
+		keys_flow.add_child(hbox)
 	
 	gui_scale.selected = TE.settings.gui_scale
 	gui_scale.get_popup().transparent_bg = true

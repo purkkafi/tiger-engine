@@ -183,10 +183,10 @@ layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_keys%"
 
-[node name="KeysGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
+[node name="KeysFlow" type="HFlowContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 2
+theme_type_variation = &"SettingsKeysFlow"
 
 [node name="Accessibility" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 layout_mode = 2

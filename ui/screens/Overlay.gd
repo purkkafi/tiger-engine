@@ -34,6 +34,7 @@ func _ready():
 
 # sets size to small overlay, if defined in theme
 func size_to_small():
+	await get_tree().process_frame
 	if has_theme_constant('small_overlay_width', 'Global'):
 		self.size = Vector2(
 			get_theme_constant('small_overlay_width', 'Global'),
@@ -45,6 +46,7 @@ func size_to_small():
 
 # sets size to large overlay, if defined in theme
 func size_to_large():
+	await get_tree().process_frame
 	if has_theme_constant('large_overlay_width', 'Global'):
 		self.size = Vector2(
 			get_theme_constant('large_overlay_width', 'Global'),
