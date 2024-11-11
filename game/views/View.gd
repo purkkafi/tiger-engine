@@ -401,6 +401,7 @@ func create_label() -> RichTextLabel:
 	label.bbcode_enabled = true
 	label.mouse_filter = Control.MOUSE_FILTER_PASS
 	label.text = ''
+	label.clip_contents = false
 	label.theme_type_variation = 'GameTextLabel'
 	
 	return label
