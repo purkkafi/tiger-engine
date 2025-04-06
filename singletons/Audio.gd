@@ -12,8 +12,10 @@ var local_volume: float = 1.0
 
 
 # emitted with the song id when a song is played
+@warning_ignore("unused_signal")
 signal song_played
 # emitted when audio is paused with id of current song & whether paused or unapaused
+@warning_ignore("unused_signal")
 signal song_paused
 
 

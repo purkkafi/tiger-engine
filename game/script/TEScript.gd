@@ -320,25 +320,28 @@ class IJmp extends BaseInstruction:
 		return 'jmp %s %s' % [to, in_file]
 
 
-class IEffect extends BaseInstruction:
-	const name: String = 'Effect'
+class IVfx extends BaseInstruction:
+	const name: String = 'Vfx'
+	# name of registered vfx
+	var vfx: String
 	# target of the effect, can be:
 	# – \stage, \fg, \bg, \sprites
 	# – a sprite id
-	var target: String
-	var apply: Array[String]
-	var remove: Array[String]
+	var to: String
+	# id to refer created vfx instance by; optional for non-persistent fvx
+	var _as: Variant
 	
 	
-	func _init(_target: String, _apply: Array[String], _remove: Array[String]):
-		self.target = _target
-		self.apply = _apply
-		self.remove = _remove
+	
+	func _init(_vfx: String, _to: String, __as: Variant):
+		self.vfx = _vfx
+		self.to = _to
+		self._as = __as
 	
 	
 	func repeat_id() -> String:
-		return 'Effect_%s' % [target]
+		return 'Vfx_%s_%s' % [vfx, _as]
 	
 	
 	func _to_string() -> String:
-		return 'target %s apply %s remove %s' % [target, apply, remove]
+		return 'vfx %s to %s as %s' % [vfx, to, _as]

@@ -3,6 +3,7 @@ class_name TETest extends RefCounted
 
 
 # emitted on failed assertions
+@warning_ignore("unused_signal")
 signal test_failed
 
 

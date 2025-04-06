@@ -27,6 +27,7 @@ var font_data = null
 
 # signal emitted when the variable current_theme is changed
 # clients can connect to this to reinitialize themselves if they need to
+@warning_ignore("unused_signal")
 signal theme_changed
 
 

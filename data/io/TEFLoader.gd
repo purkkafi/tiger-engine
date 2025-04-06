@@ -372,8 +372,8 @@ func _resolve_options(tree: Tag):
 				opts.bug_report_url = node.get_string()
 			'ingame_custom_controls':
 				opts.ingame_custom_controls = node.get_string()
-			'register_effect':
-				opts.effects_registry[node.get_string_at(0)] = node.get_string_at(1)
+			'register_vfx':
+				opts.vfx_registry[node.get_string_at(0)] = node.get_string_at(1)
 			_:
 				push_error('unknown option: %s' % [node])
 	

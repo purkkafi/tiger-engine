@@ -28,14 +28,14 @@ func compile(script: String) -> TEScriptCompiler:
 func compiled_scripts(script: String) -> Dictionary:
 	var compiler = compile(script)
 	if compiler.has_errors():
-		push_error('errors in script: %s' % compiler.errors)
+		push_error('errors in script: %s' % [compiler.errors])
 	return compiler.scripts
 
 
 func instructions(script: String) -> Array[Variant]:
 	var compiler = compile(script)
 	if compiler.has_errors():
-		push_error('errors in script: %s' % compiler.errors)
+		push_error('errors in script: %s' % [compiler.errors])
 	return compiler.scripts['test'].instructions
 
 
@@ -559,40 +559,46 @@ func test_jmp_rejects_malformed_destination():
 	)
 
 
-func test_effect():
+func test_vfx():
 	assert_equals(
-		instructions('\\effect{T}{ \\apply{A1} \\apply{A2} \\remove{R1} \\remove{R2} }'),
-		[ TEScript.IEffect.new('T', ['A1', 'A2'], ['R1', 'R2']) ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{target} }'),
+		[ TEScript.IVfx.new('vfx_id', 'target', 'id') ]
 	)
 
 
-func test_effect_requires_2_args():
+func test_vfx_requires_2_args():
 	assert_equals(
-		errors('\\effect{T}'), ['expected \\effect to be of form \\effect{<target>}{<effects>}, got 1 args']
+		errors('\\vfx{vfx_id}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got 1 args']
 	)
 	
 	assert_equals(
-		errors('\\effect{T}{}{}'), ['expected \\effect to be of form \\effect{<target>}{<effects>}, got 3 args']
+		errors('\\vfx{vfx_idID}{}{}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got 3 args']
 	)
 
 
-func test_effect_special_targets():
+func test_vfx_args_mandatory():
 	assert_equals(
-		instructions('\\effect{\\stage}{}'), [ TEScript.IEffect.new('\\stage', [], []) ]
+		errors('\\vfx{vfx_id}{ \\as{as} }'), ['expected \\vfx to specify \\to, got \\vfx[[\"vfx_id\"], [\\as[[\"as\"]]]]']
+	)
+
+
+func test_vfx_targets():
+	assert_equals(
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\stage} }'), [ TEScript.IVfx.new('vfx_id', '\\stage', 'id') ]
 	)
 	
 	assert_equals(
-		instructions('\\effect{\\sprites}{}'), [ TEScript.IEffect.new('\\sprites', [], []) ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\bg} }'), [ TEScript.IVfx.new('vfx_id', '\\bg', 'id') ]
 	)
 	
 	assert_equals(
-		instructions('\\effect{\\bg}{}'), [ TEScript.IEffect.new('\\bg', [], []) ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\fg} }'), [ TEScript.IVfx.new('vfx_id', '\\fg', 'id') ]
 	)
 	
 	assert_equals(
-		instructions('\\effect{\\fg}{}'), [ TEScript.IEffect.new('\\fg', [], []) ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\sprites} }'), [ TEScript.IVfx.new('vfx_id', '\\sprites', 'id') ]
 	)
 	
 	assert_equals(
-		errors('\\effect{\\bad}{}'), [ 'expected \\effect to have valid target, got \\bad[]' ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{sprite_id} }'), [ TEScript.IVfx.new('vfx_id', 'sprite_id', 'id') ]
 	)

@@ -8,6 +8,7 @@ var suggestion_provider: Callable = func(): return [] as Array
 var line_edit: LineEdit = LineEdit.new()
 
 
+@warning_ignore("unused_signal")
 signal text_changed(new_text: String)
 
 

@@ -92,8 +92,10 @@ enum PreviousBlocksPolicy {
 
 
 # emitted when pause() is called
+@warning_ignore("unused_signal")
 signal game_paused
 # emitted when a pause ends
+@warning_ignore("unused_signal")
 signal game_unpaused
 
 

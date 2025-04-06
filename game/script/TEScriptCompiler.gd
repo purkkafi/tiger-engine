@@ -371,6 +371,57 @@ func parse_exit(tag: Tag):
 	return TEScript.IExit.new(sprite_id, with)
 
 
+# parses \vfx
+func parse_vfx(tag: Tag):
+	var vfx: String
+	var to: Variant = null
+	var _as: Variant = null
+	
+	if tag.length() != 2:
+		error('expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got %d args' % tag.length())
+		return null
+	
+	if tag.get_string_at(0) != null:
+		vfx = tag.get_string_at(0)
+	else:
+		error('expected vfx id in index 1 of \\vfx, got %s' % tag.get_value_at(0))
+		return null
+	
+	for arg in tag.get_tags_at(1):
+		match arg.name:
+			'as':
+				if arg.get_string() != null:
+					_as = arg.get_string()
+				else:
+					error('expected string for \\as, got %s' % tag)
+			'to':
+				if arg.get_string() != null:
+					to = arg.get_string()
+				elif arg.get_tag() != null:
+					match arg.get_tag().name:
+						'bg':
+							to = '\\bg'
+						'fg':
+							to = '\\fg'
+						'sprites':
+							to = '\\sprites'
+						'stage':
+							to = '\\stage'
+						_:
+							error('unknown special target for \\vfx: %s' % tag)
+				else:
+					error('expected value for \\to, got %s' % tag)
+			_:
+				error("unknown argument '%s' for \\vfx: %s" % [arg.name, tag])
+				return null
+	
+	if to == null:
+		error('expected \\vfx to specify \\to, got %s' % tag)
+		return null
+	
+	return TEScript.IVfx.new(vfx, to, _as)
+
+
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
 	var ins: Array[TEScript.BaseInstruction] = []
 	
@@ -558,50 +609,10 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				else:
 					ins.append(TEScript.IJmp.new(to))
 			
-			'effect':
-				if len(tag.args) != 2:
-					error('expected \\effect to be of form \\effect{<target>}{<effects>}, got %d args' % len(tag.args))
-					continue
-				
-				var target = tag.get_value_at(0)
-				if target is String:
-					pass # OK as is
-				elif target is Tag:
-					match target.name:
-						'bg':
-							target = '\\bg'
-						'fg':
-							target = '\\fg'
-						'stage':
-							target = '\\stage'
-						'sprites':
-							target = '\\sprites'
-						_:
-							error('expected \\effect to have valid target, got %s' % target)
-							continue
-				else:
-					error('expected \\effect to have valid target, got %s' % tag)
-					continue
-				
-				var apply: Array[String] = []
-				var remove: Array[String] = []
-				
-				for arg in tag.get_tags_at(1):
-					var effect_id = arg.get_string()
-					if effect_id == null:
-						error('expected \\effect argument to be string, got %s' % arg)
-						continue
-					
-					match (arg as Tag).name:
-						'apply':
-							apply.append(arg.get_string())
-						'remove':
-							remove.append(arg.get_string())
-						_:
-							error('expected \\effect argument to be \\apply or \\remove, got %s' % arg)
-							continue
-				
-				ins.append(TEScript.IEffect.new(target, apply, remove))
+			'vfx':
+				var parsed = parse_vfx(tag)
+				if parsed != null:
+					ins.append(parsed)
 			
 			_:
 				# interpret as the declaration of a View

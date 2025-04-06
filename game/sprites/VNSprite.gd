@@ -45,6 +45,7 @@ var path: String # path of the sprite folder
 
 
 # signal for stage to rearrange sprites
+@warning_ignore("unused_signal")
 signal draw_order_changed
 
 

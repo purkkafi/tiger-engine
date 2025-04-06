@@ -35,19 +35,25 @@ const SCREEN_HEIGHT = 1080
 
 
 # signal when an unlockable is unlocked
+@warning_ignore("unused_signal")
 signal unlockable_unlocked(_namespace: String, id: String)
 # signal sent when a toast notification is spawned
 # a toast object has these entries:
 # – 'bbcode': the text in bbcode
 # – 'icon' (optional): path to icon
+@warning_ignore("unused_signal")
 signal toast_notification(toast: Dictionary)
 # fired when a translation package is loaded
+@warning_ignore("unused_signal")
 signal languages_changed
 # fired when the game displays the next line of text
+@warning_ignore("unused_signal")
 signal game_next_line
 # user has opened an in-game overlay, i.e. the settings screen; everything should pause
+@warning_ignore("unused_signal")
 signal overlay_opened
 # user has closed the in-game overlay
+@warning_ignore("unused_signal")
 signal overlay_closed
 
 
