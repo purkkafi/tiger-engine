@@ -5,7 +5,25 @@ class_name VNStage extends Node
 
 var bg_id: String = ''
 var fg_id: String = ''
+var active_vfxs: Array[ActiveVfx] = []
 const TRANSPARENT: Color = Color(0, 0, 0, 0)
+
+
+# currently active Vfx instance applied to a specific target 
+class ActiveVfx:
+	var vfx: Vfx
+	var target: String
+	var _as: String
+	
+	
+	func _init(_vfx: Vfx, _target: String, __as: String):
+		self.vfx = _vfx
+		self.target = _target
+		self._as = __as
+	
+	
+	func path() -> String:
+		return vfx.get_script().resource_path
 
 
 # transitions to a new background with the given transition
@@ -362,9 +380,10 @@ func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary
 	
 	# TODO implement
 	if instance.persistent():
-		pass
-	else:
-		pass
+		if not _as is String:
+			TE.log_error(TE.Error.FILE_ERROR, "vfx '%s' is persistent but \\as not specified" % vfx_id)
+			return tween
+		active_vfxs.append(ActiveVfx.new(instance, to, _as))
 	
 	return tween
 
@@ -383,11 +402,21 @@ func get_state() -> Dictionary:
 			'state' : sprite.get_sprite_state()
 		})
 	
+	var active_vfxs_json: Array = []
+	for avfx in active_vfxs:
+		active_vfxs_json.append({
+			'path': avfx.path(),
+			'target': avfx.target,
+			'as': avfx._as,
+			'state': avfx.vfx.get_state()
+		})
+	
 	@warning_ignore("incompatible_ternary")
 	return {
 		'bg': { 'id': bg_id, 'state': $BG.get_state() } if $BG is StatefulLayer else bg_id,
 		'fg': { 'id': fg_id, 'state': $FG.get_state() } if $FG is StatefulLayer else fg_id,
-		'sprites': sprites
+		'sprites': sprites,
+		'vfx': active_vfxs_json
 	}
 
 
@@ -405,6 +434,10 @@ func get_node_cache() -> Dictionary:
 	for sprite in $Sprites.get_children():
 		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite
 		$Sprites.remove_child(sprite)
+	
+	for avfx in active_vfxs:
+		cache['vfx:%s:%s' % [avfx.path(), avfx._as]] = avfx
+		active_vfxs.erase(avfx)
 	
 	return cache
 
@@ -445,6 +478,24 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		
 		sprite.set_sprite_state(sprite_data['state'])
 		sprite.move_to(sprite_data['x'], sprite_data['y'], sprite_data['zoom'], sprite_data['order'], Definitions.INSTANT)
+	
+	for vfx_data in state['vfx']:
+		var vfx_from_cache: String = 'vfx:%s:%s' % [vfx_data['path'], vfx_data.as]
+		var avfx: ActiveVfx
+		
+		# get vfx from cache or create a fresh object
+		if vfx_from_cache in node_cache:
+			avfx = node_cache[vfx_from_cache]
+		else:
+			var vfx: Vfx = load(vfx_data['path']).new() as Vfx
+			avfx = ActiveVfx.new(vfx, vfx_data['target'], vfx_data['as'])
+			
+			var tween = create_tween()
+			vfx.apply(get_vfx_target(avfx.target), vfx_data['state'], tween)
+			tween.tween_callback(func(): pass) # fix potentially empty tween
+			tween.custom_step(INF)
+		
+		active_vfxs.append(avfx)
 	
 	# free unused cache objects
 	for cached_obj in node_cache.values():
