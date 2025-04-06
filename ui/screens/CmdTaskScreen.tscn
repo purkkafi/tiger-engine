@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://uhtir4ucl2ca"]
 
-[ext_resource type="Script" uid="uid://0t6yg2y5pfqg" path="res://tiger-engine/ui/screens/CmdTaskScreen.gd" id="1_n46p3"]
+[ext_resource type="Script" path="res://tiger-engine/ui/screens/CmdTaskScreen.gd" id="1_n46p3"]
 
 [node name="CmdTaskScreen" type="ColorRect"]
 anchors_preset = 15

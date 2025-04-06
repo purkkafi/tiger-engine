@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bnkl36nrkuvax"]
 
-[ext_resource type="Script" uid="uid://c1nhmhavj1g6l" path="res://tiger-engine/game/views/ChoiceView.gd" id="1_3noqm"]
+[ext_resource type="Script" path="res://tiger-engine/game/views/ChoiceView.gd" id="1_3noqm"]
 
 [node name="ChoiceView" type="Control"]
 layout_mode = 3

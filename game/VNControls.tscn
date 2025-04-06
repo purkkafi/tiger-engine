@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dj5b2g3xmpfgs"]
 
-[ext_resource type="Script" uid="uid://cka6yivyvpc7v" path="res://tiger-engine/game/VNControls.gd" id="1_yx6bu"]
+[ext_resource type="Script" path="res://tiger-engine/game/VNControls.gd" id="1_yx6bu"]
 
 [node name="VNControls" type="Control"]
 layout_mode = 3

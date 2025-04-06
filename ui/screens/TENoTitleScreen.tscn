@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://crpdgprm3vw2i"]
 
-[ext_resource type="Script" uid="uid://bhxw778dynnv0" path="res://tiger-engine/ui/screens/TENoTitleScreen.gd" id="1_5xxk3"]
+[ext_resource type="Script" path="res://tiger-engine/ui/screens/TENoTitleScreen.gd" id="1_5xxk3"]
 
 [node name="TENoTitleScreen" type="ColorRect"]
 anchors_preset = 15

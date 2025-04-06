@@ -17,13 +17,7 @@ func _ready():
 	
 	# set initial window settings
 	self.color = TETheme.background_color
-	# minimum window size is set to 1/2 of screen size
-	get_window().min_size = DisplayServer.screen_get_size() / 2
-	# window size on launch is set to 3/4 of screen size to reduce problems on Windows
-	# NOTE: only seems to work if window width/height override are configured
-	# to be smaller in project settings
-	get_window().size = DisplayServer.screen_get_size() * 0.75
-	get_window().move_to_center.call_deferred()
+	get_window().min_size = Vector2i(962, 542)
 	
 	# load default theme or use an empty theme if not specified
 	if TE.opts.default_theme != null:

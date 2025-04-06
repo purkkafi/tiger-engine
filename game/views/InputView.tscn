@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://me5dn6sjda40"]
 
-[ext_resource type="Script" uid="uid://p2ih54abultq" path="res://tiger-engine/game/views/InputView.gd" id="1_moc6u"]
+[ext_resource type="Script" path="res://tiger-engine/game/views/InputView.gd" id="1_moc6u"]
 
 [node name="InputView" type="Control"]
 layout_mode = 3

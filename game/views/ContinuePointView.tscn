@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://8c63myy0pvv0"]
 
-[ext_resource type="Script" uid="uid://c7aw7ht7ukgy8" path="res://tiger-engine/game/views/ContinuePointView.gd" id="1_hatty"]
+[ext_resource type="Script" path="res://tiger-engine/game/views/ContinuePointView.gd" id="1_hatty"]
 
 [node name="ContinuePointView" type="Control"]
 layout_mode = 3

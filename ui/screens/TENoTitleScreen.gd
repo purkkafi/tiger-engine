@@ -6,12 +6,9 @@ func _ready():
 	if DirAccess.dir_exists_absolute('res://assets/scripts/'):
 		var dir: DirAccess = DirAccess.open('res://assets/scripts/')
 		for file in dir.get_files():
-			if not file.ends_with('.tef'):
-				continue
-			
 			var btn: Button = Button.new()
 			btn.text = file
-			btn.connect('pressed', _run_script.bind('res://assets/scripts/' + file))
+			btn.connect('pressed', Callable(self, '_run_script').bind('res://assets/scripts/' + file))
 			$VBox.add_child(btn)
 
 
