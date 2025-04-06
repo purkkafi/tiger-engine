@@ -94,20 +94,21 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 	
 	if tween == null:
 		tween = create_tween()
+		tween.set_parallel(true)
 	
 	new_layer.modulate = Color(1, 1, 1, 0)
-	var tweener: PropertyTweener = tween.parallel().tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
+	var tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
 	tweener.set_ease(transition.ease_type)
 	tweener.set_trans(transition.trans_type)
 	
 	if fade_old:
 		layer.modulate.a = 1.0
-		var old_tweener: PropertyTweener = tween.parallel().tween_property(layer, 'modulate:a', 0.0, transition.duration)
+		var old_tweener: PropertyTweener = tween.tween_property(layer, 'modulate:a', 0.0, transition.duration)
 		old_tweener.set_ease(transition.ease_type)
 		old_tweener.set_trans(transition.trans_type)
 	
 	# schedule replacing the old layer with the new one
-	tween.parallel().tween_callback(Callable(self, '_replace_with').bind(layer, new_layer)).set_delay(transition.duration)
+	tween.chain().tween_callback(_replace_with.bind(layer, new_layer))
 	
 	return tween
 
@@ -159,9 +160,11 @@ func enter_sprite(id: String, _as: Variant, at_x: Variant, at_y: Variant, at_zoo
 	if with != null:
 		if tween == null:
 			tween = create_tween()
+			tween.set_parallel(true)
+			
 		var trans: Definitions.Transition = TE.defs.transition(with as String)
 		sprite.modulate.a = 0.0
-		var tweener = tween.parallel().tween_property(sprite, 'modulate:a', 1.0, trans.duration)
+		var tweener = tween.tween_property(sprite, 'modulate:a', 1.0, trans.duration)
 		tweener.set_ease(trans.ease_type)
 		tweener.set_trans(trans.trans_type)
 		
@@ -197,6 +200,7 @@ func move_sprite(id: String, to_x: Variant, to_y: Variant, to_zoom: Variant, to_
 	else:
 		if tween == null:
 			tween = create_tween()
+			tween.set_parallel(true)
 		with = TE.defs.transition(with)
 	
 	if to_x != null:
@@ -225,6 +229,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	
 	if tween == null:
 		tween = create_tween()
+		tween.set_parallel(true)
 	
 	with = TE.defs.transition(with)
 	
@@ -237,10 +242,10 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	new_sprite.move_to(sprite.horizontal_position, sprite.vertical_position, sprite.zoom, sprite.draw_order, Definitions.INSTANT)
 	
 	new_sprite.modulate.a = 0.0
-	var tweener = tween.parallel().tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
+	var tweener = tween.tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
 	tweener.set_ease(with.ease_type)
 	tweener.set_trans(with.trans_type)
-	tween.parallel().tween_callback(Callable(self, '_finish_sprite_transition').bind(sprite)).set_delay(with.duration)
+	tween.chain().tween_callback(_finish_sprite_transition.bind(sprite))
 	
 	return tween
 
@@ -256,15 +261,16 @@ func exit_sprite(id: String, with: Variant, tween: Tween) -> Tween:
 	var sprite: VNSprite = find_sprite(id)
 	if tween == null:
 		tween = create_tween()
+		tween.set_parallel(true)
 	
 	if with == null:
 		_remove_sprite(sprite)
 	else:
 		with = TE.defs.transition(with as String)
-		var tweener = tween.parallel().tween_property(sprite, 'modulate:a', 0.0, with.duration)
+		var tweener = tween.tween_property(sprite, 'modulate:a', 0.0, with.duration)
 		tweener.set_ease(with.ease_type)
 		tweener.set_trans(with.trans_type)
-		tween.parallel().tween_callback(Callable(self, '_remove_sprite').bind(sprite)).set_delay(with.duration)
+		tween.chain().tween_callback(_remove_sprite.bind(sprite))
 	
 	return tween
 
@@ -342,17 +348,19 @@ func get_vfx_target(target_descriptor: String) -> CanvasItem:
 			return find_sprite(target_descriptor)
 
 
-func add_vfx(vfx_id: String, to: String, _as: Variant, tween: Tween) -> Tween:
+func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary, tween: Tween) -> Tween:
 	if tween == null:
 		tween = create_tween()
+		tween.set_parallel(true)
 	
 	if vfx_id not in TE.opts.vfx_registry:
 		TE.log_error(TE.Error.FILE_ERROR, 'unknown vfx: %s' % vfx_id)
 		return tween
 	
 	var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
-	instance.apply(get_vfx_target(to), {}, tween)
+	instance.apply(get_vfx_target(to), initial_state, tween)
 	
+	# TODO implement
 	if instance.persistent():
 		pass
 	else:

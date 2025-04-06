@@ -376,9 +376,10 @@ func parse_vfx(tag: Tag):
 	var vfx: String
 	var to: Variant = null
 	var _as: Variant = null
+	var initial_state: Dictionary = {}
 	
-	if tag.length() != 2:
-		error('expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got %d args' % tag.length())
+	if tag.length() != 2 and tag.length() != 3:
+		error('expected \\vfx to be of form \\vfx{<vfx id>}{<target>}[{<state>}], got %d args' % tag.length())
 		return null
 	
 	if tag.get_string_at(0) != null:
@@ -415,11 +416,16 @@ func parse_vfx(tag: Tag):
 				error("unknown argument '%s' for \\vfx: %s" % [arg.name, tag])
 				return null
 	
+	if tag.length() == 3:
+		var state_tags: Array = tag.get_tags_at(2)
+		for state_tag in state_tags:
+			initial_state[state_tag.name] = state_tag
+	
 	if to == null:
 		error('expected \\vfx to specify \\to, got %s' % tag)
 		return null
 	
-	return TEScript.IVfx.new(vfx, to, _as)
+	return TEScript.IVfx.new(vfx, to, _as, initial_state)
 
 
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:

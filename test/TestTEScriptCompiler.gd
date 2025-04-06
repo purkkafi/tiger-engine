@@ -561,18 +561,18 @@ func test_jmp_rejects_malformed_destination():
 
 func test_vfx():
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{target} }'),
-		[ TEScript.IVfx.new('vfx_id', 'target', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{target} }{ \\arg{val} }'),
+		[ TEScript.IVfx.new('vfx_id', 'target', 'id', { 'arg': Tag.new('arg', [['val']]) }) ]
 	)
 
 
-func test_vfx_requires_2_args():
+func test_vfx_requires_2_or_3_args():
 	assert_equals(
-		errors('\\vfx{vfx_id}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got 1 args']
+		errors('\\vfx{vfx_id}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<target>}[{<state>}], got 1 args']
 	)
 	
 	assert_equals(
-		errors('\\vfx{vfx_idID}{}{}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<options>}, got 3 args']
+		errors('\\vfx{vfx_idID}{}{}{}'), ['expected \\vfx to be of form \\vfx{<vfx id>}{<target>}[{<state>}], got 4 args']
 	)
 
 
@@ -584,21 +584,21 @@ func test_vfx_args_mandatory():
 
 func test_vfx_targets():
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\stage} }'), [ TEScript.IVfx.new('vfx_id', '\\stage', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\stage} }'), [ TEScript.IVfx.new('vfx_id', '\\stage', 'id', {}) ]
 	)
 	
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\bg} }'), [ TEScript.IVfx.new('vfx_id', '\\bg', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\bg} }'), [ TEScript.IVfx.new('vfx_id', '\\bg', 'id', {}) ]
 	)
 	
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\fg} }'), [ TEScript.IVfx.new('vfx_id', '\\fg', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\fg} }'), [ TEScript.IVfx.new('vfx_id', '\\fg', 'id', {}) ]
 	)
 	
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\sprites} }'), [ TEScript.IVfx.new('vfx_id', '\\sprites', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{\\sprites} }'), [ TEScript.IVfx.new('vfx_id', '\\sprites', 'id', {}) ]
 	)
 	
 	assert_equals(
-		instructions('\\vfx{vfx_id}{ \\as{id} \\to{sprite_id} }'), [ TEScript.IVfx.new('vfx_id', 'sprite_id', 'id') ]
+		instructions('\\vfx{vfx_id}{ \\as{id} \\to{sprite_id} }'), [ TEScript.IVfx.new('vfx_id', 'sprite_id', 'id', {}) ]
 	)

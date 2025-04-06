@@ -112,7 +112,7 @@ func next_blocking():
 		# check that same instruction isn't already active
 		# (the user probably doesn't want to do this)
 		if ins.repeat_id() in repeat_ids:
-			push_error('illegal repeat of instruction %s: already handling' % ins)
+			push_error("illegal repeat of instruction '%s': already handling" % ins)
 		if ins.repeat_id() != '':
 			repeat_ids[ins.repeat_id()] = true
 		
@@ -153,14 +153,13 @@ func next_blocking():
 				ControlExpr.exec(ins.string, context)
 			
 			'Vfx':
-				tween = $VNStage.add_vfx(ins.vfx, ins.to, ins._as, tween)
+				tween = $VNStage.add_vfx(ins.vfx, ins.to, ins._as, ins.initial_state, tween)
 			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
 	# if any instruction activated the tween, handle it
 	if tween != null:
-		
 		# dummy callback so that Godot doesn't complain about an empty tween
 		# if we're only doing instanteous things
 		tween.parallel().tween_callback(func(): pass)
@@ -282,7 +281,8 @@ func update_skip_button():
 func _hide_ui(duration: float, tween: Tween) -> Tween:
 	if tween == null:
 		tween = create_tween()
-	tween.parallel().tween_property($View, 'modulate:a', 0.0, duration)
+		tween.set_parallel(true)
+	tween.tween_property($View, 'modulate:a', 0.0, duration)
 	return tween
 
 

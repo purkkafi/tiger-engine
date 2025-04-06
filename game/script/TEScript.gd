@@ -330,18 +330,21 @@ class IVfx extends BaseInstruction:
 	var to: String
 	# id to refer created vfx instance by; optional for non-persistent fvx
 	var _as: Variant
+	# optional initial state for the vfx, may be empty
+	# maps given tag names to Tag instances
+	var initial_state: Dictionary
 	
 	
-	
-	func _init(_vfx: String, _to: String, __as: Variant):
+	func _init(_vfx: String, _to: String, __as: Variant, _initial_state: Dictionary):
 		self.vfx = _vfx
 		self.to = _to
 		self._as = __as
+		self.initial_state = _initial_state
 	
 	
 	func repeat_id() -> String:
-		return 'Vfx_%s_%s' % [vfx, _as]
+		return 'Vfx_%s_%s' % [vfx, to]
 	
 	
 	func _to_string() -> String:
-		return 'vfx %s to %s as %s' % [vfx, to, _as]
+		return 'vfx %s to %s as %s with %s' % [vfx, to, _as, initial_state]
