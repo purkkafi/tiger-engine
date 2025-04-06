@@ -10,6 +10,12 @@ func _ready():
 			btn.text = file
 			btn.connect('pressed', Callable(self, '_run_script').bind('res://assets/scripts/' + file))
 			$VBox.add_child(btn)
+	
+	# stage editor button
+	var se_btn: Button = Button.new()
+	se_btn.text = 'Stage Editor'
+	se_btn.connect('pressed', func(): TE.switch_scene(preload('res://tiger-engine/engine/StageEditor.tscn').instantiate()))
+	$VBox.add_child(se_btn)
 
 
 func _on_run_pressed():
