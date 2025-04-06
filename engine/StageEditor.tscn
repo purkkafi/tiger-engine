@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://hekxp6y8nfsu"]
 
-[ext_resource type="Script" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
+[ext_resource type="Script" uid="uid://p7vjo070qiok" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
 [ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="1_o0gew"]
 
 [node name="StageEditor" type="Control"]

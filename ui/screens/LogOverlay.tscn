@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bq63q6yj8nts5"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/LogOverlay.gd" id="2_twusl"]
+[ext_resource type="Script" uid="uid://fjal6aluto04" path="res://tiger-engine/ui/screens/LogOverlay.gd" id="2_twusl"]
 
 [node name="Container" type="PanelContainer"]
 anchors_preset = 15

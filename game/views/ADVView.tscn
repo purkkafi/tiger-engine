@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b3rlrbanr73ci"]
 
-[ext_resource type="Script" path="res://tiger-engine/game/views/ADVView.gd" id="1_6oksw"]
+[ext_resource type="Script" uid="uid://blhbjwi20kxtm" path="res://tiger-engine/game/views/ADVView.gd" id="1_6oksw"]
 
 [node name="ADVView" type="Control"]
 layout_mode = 3

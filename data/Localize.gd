@@ -34,8 +34,13 @@ static func of_lang(lang: String):
 	dir.list_dir_begin()
 	while true:
 		var file: String = dir.get_next()
+		
 		if file == '':
 			break
+		
+		if not file.ends_with('.tef'):
+			continue
+		
 		# TODO: this just indiscriminantly merges files, should there be
 		# checks for duplicate localize ids?
 		strings.merge((load(dir_path + '/' + file) as LocalizeResource).content)

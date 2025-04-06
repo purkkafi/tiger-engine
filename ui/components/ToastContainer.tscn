@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cdstpj7eud5op"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/components/ToastContainer.gd" id="1_po3pj"]
+[ext_resource type="Script" uid="uid://conifovuaixtg" path="res://tiger-engine/ui/components/ToastContainer.gd" id="1_po3pj"]
 
 [node name="ToastContainer" type="MarginContainer"]
 visible = false

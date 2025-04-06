@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c85avq4erlxlg"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/SavingOverlay.gd" id="2_o3abm"]
+[ext_resource type="Script" uid="uid://nha0rc2uouyn" path="res://tiger-engine/ui/screens/SavingOverlay.gd" id="2_o3abm"]
 
 [node name="Container" type="PanelContainer"]
 anchors_preset = 15

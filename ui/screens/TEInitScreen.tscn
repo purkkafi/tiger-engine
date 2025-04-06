@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://db3ocmxgmuanl"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/TEInitScreen.gd" id="1_cqq5s"]
+[ext_resource type="Script" uid="uid://ssudd762l6d6" path="res://tiger-engine/ui/screens/TEInitScreen.gd" id="1_cqq5s"]
 
 [node name="TEInitScreen" type="ColorRect"]
 modulate = Color(0.976471, 0.976471, 0.976471, 1)
