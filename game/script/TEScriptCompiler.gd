@@ -419,13 +419,55 @@ func parse_vfx(tag: Tag):
 	if tag.length() == 3:
 		var state_tags: Array = tag.get_tags_at(2)
 		for state_tag in state_tags:
-			initial_state[state_tag.name] = state_tag
+			if state_tag.get_string() != null:
+				initial_state[state_tag.name] = state_tag.get_string()
+			else:
+				error("expected arg '%s' to be string, got %s" % [state_tag.name, tag])
+				return null
 	
 	if to == null:
 		error('expected \\vfx to specify \\to, got %s' % tag)
 		return null
 	
 	return TEScript.IVfx.new(vfx, to, _as, initial_state)
+
+
+# parses \setvfx
+func parse_set_vfx(tag: Tag):
+	var id: String
+	var state: Dictionary = {}
+	
+	if tag.length() != 2:
+		error('expected \\setvfx to be of form \\setvfx{<id>}{<state>}, got %d args: %s' % [tag.length(), tag])
+		return null
+	
+	if tag.get_string_at(0) != null:
+		id = tag.get_string_at(0)
+	else:
+		error('expected id in first arg of \\setvfx, got %s' % tag)
+		return null
+	
+	for arg in tag.get_tags_at(1):
+		if arg.get_string() != null:
+			state[arg.name] = arg.get_string()
+		else:
+			error("expected arg '%s' to be string, got %s" % [arg.name, tag])
+			return null
+	
+	return TEScript.ISetVfx.new(id, state)
+
+
+# parses \clearvfx
+func parse_clear_vfx(tag: Tag):
+	var id: String
+	
+	if tag.get_string() != null:
+		id = tag.get_string()
+	else:
+		error('expected \\clearvfx to be of form \\clearvfx{<id>}, got %s' % tag)
+		return null
+	
+	return TEScript.IClearVfx.new(id)
 
 
 func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
@@ -617,6 +659,16 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 			
 			'vfx':
 				var parsed = parse_vfx(tag)
+				if parsed != null:
+					ins.append(parsed)
+			
+			'setvfx':
+				var parsed = parse_set_vfx(tag)
+				if parsed != null:
+					ins.append(parsed)
+			
+			'clearvfx':
+				var parsed = parse_clear_vfx(tag)
 				if parsed != null:
 					ins.append(parsed)
 			

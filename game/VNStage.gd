@@ -16,14 +16,31 @@ class ActiveVfx:
 	var _as: String
 	
 	
-	func _init(_vfx: Vfx, _target: String, __as: String):
+	func _init(_vfx: Vfx, _target: String, __as: Variant):
 		self.vfx = _vfx
 		self.target = _target
-		self._as = __as
+		self._as = __as if __as is String else ''
 	
 	
 	func path() -> String:
 		return vfx.get_script().resource_path
+	
+	
+	func verify_vfx_arguments(state: Dictionary):
+		var recognized_args = vfx.recognized_arguments()
+		for key in state.keys():
+			if key not in recognized_args:
+				TE.log_error(TE.Error.FILE_ERROR, "Unknown argument '%s' for vfx '%s'" % [key, _as])
+	
+	
+	func apply(_target: CanvasItem, initial_state: Dictionary, tween: Tween) -> Tween:
+		verify_vfx_arguments(initial_state)
+		return vfx.apply(_target, initial_state, tween)
+	
+	
+	func set_state(_target: CanvasItem, new_state: Dictionary, tween: Tween) -> Tween:
+		verify_vfx_arguments(new_state)
+		return vfx.set_state(_target, new_state, tween)
 
 
 # transitions to a new background with the given transition
@@ -366,6 +383,19 @@ func get_vfx_target(target_descriptor: String) -> CanvasItem:
 			return find_sprite(target_descriptor)
 
 
+func find_active_vfx(id: String) -> ActiveVfx:
+	var found: ActiveVfx
+	for avfx in active_vfxs:
+		if avfx._as == id:
+			found = avfx
+			break
+	
+	if found == null:
+		TE.log_error(TE.Error.ENGINE_ERROR, 'vfx not found: %s' % id)
+	
+	return found
+
+
 func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary, tween: Tween) -> Tween:
 	if tween == null:
 		tween = create_tween()
@@ -376,15 +406,36 @@ func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary
 		return tween
 	
 	var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
-	instance.apply(get_vfx_target(to), initial_state, tween)
+	var avfx: ActiveVfx = ActiveVfx.new(instance, to, _as)
+	avfx.apply(get_vfx_target(to), initial_state, tween)
 	
-	# TODO implement
 	if instance.persistent():
 		if not _as is String:
 			TE.log_error(TE.Error.FILE_ERROR, "vfx '%s' is persistent but \\as not specified" % vfx_id)
 			return tween
-		active_vfxs.append(ActiveVfx.new(instance, to, _as))
+		active_vfxs.append(avfx)
 	
+	return tween
+
+
+func set_vfx_state(avfx_id: String, state: Dictionary, tween: Tween) -> Tween:
+	var avfx: ActiveVfx = find_active_vfx(avfx_id)
+	if tween == null:
+		tween = create_tween()
+		tween.set_parallel(true)
+	
+	return avfx.set_state(get_vfx_target(avfx.target), state, tween)
+
+
+func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
+	var avfx: ActiveVfx = find_active_vfx(avfx_id)
+	if tween == null:
+		tween = create_tween()
+		tween.set_parallel(true)
+	
+	avfx.vfx.clear(get_vfx_target(avfx.target), tween)
+	
+	tween.chain().tween_callback(active_vfxs.erase.bind(avfx))
 	return tween
 
 
@@ -482,20 +533,20 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 	for vfx_data in state['vfx']:
 		var vfx_from_cache: String = 'vfx:%s:%s' % [vfx_data['path'], vfx_data.as]
 		var avfx: ActiveVfx
+		var tween = create_tween()
 		
 		# get vfx from cache or create a fresh object
 		if vfx_from_cache in node_cache:
 			avfx = node_cache[vfx_from_cache]
+			avfx.set_state(get_vfx_target(avfx.target), vfx_data['state'], tween)
 		else:
 			var vfx: Vfx = load(vfx_data['path']).new() as Vfx
 			avfx = ActiveVfx.new(vfx, vfx_data['target'], vfx_data['as'])
-			
-			var tween = create_tween()
-			vfx.apply(get_vfx_target(avfx.target), vfx_data['state'], tween)
-			tween.tween_callback(func(): pass) # fix potentially empty tween
-			tween.custom_step(INF)
+			avfx.apply(get_vfx_target(avfx.target), vfx_data['state'], tween)
 		
 		active_vfxs.append(avfx)
+		tween.tween_callback(func(): pass) # fix potentially empty tween
+		tween.custom_step(INF)
 	
 	# free unused cache objects
 	for cached_obj in node_cache.values():

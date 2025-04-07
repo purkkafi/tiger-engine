@@ -602,3 +602,36 @@ func test_vfx_targets():
 	assert_equals(
 		instructions('\\vfx{vfx_id}{ \\as{id} \\to{sprite_id} }'), [ TEScript.IVfx.new('vfx_id', 'sprite_id', 'id', {}) ]
 	)
+
+
+func test_setvfx():
+	assert_equals(
+		instructions('\\setvfx{the_id}{ \\arg1{val1} \\arg2{val2} }'),
+		[ TEScript.ISetVfx.new('the_id', { 'arg1': Tag.new('arg1', [['val1']]), 'arg2': Tag.new('arg2', [['val2']]) }) ]
+	)
+
+
+func test_setvfx_requires_2_args():
+	assert_equals(
+		errors('\\setvfx{just_an_id}'),
+		[ 'expected \\setvfx to be of form \\setvfx{<id>}{<state>}, got 1 args: \\setvfx[["just_an_id"]]' ]
+	)
+	
+	assert_equals(
+		errors('\\setvfx{id}{}{}'),
+		[ 'expected \\setvfx to be of form \\setvfx{<id>}{<state>}, got 3 args: \\setvfx[["id"], [], []]' ]
+	)
+
+
+func test_clearvfx():
+	assert_equals(
+		instructions('\\clearvfx{an_id}'),
+		[ TEScript.IClearVfx.new('an_id') ]
+	)
+
+
+func test_clearvfx_requires_1_arg():
+	assert_equals(
+		errors('\\clearvfx{id}{}'),
+		[ 'expected \\clearvfx to be of form \\clearvfx{<id>}, got \\clearvfx[["id"], []]' ]
+	)

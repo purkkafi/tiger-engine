@@ -28,3 +28,8 @@ func get_state() -> Dictionary:
 func set_state(target: CanvasItem, new_state: Dictionary, tween: Tween) -> Tween:
 	TE.log_error(TE.Error.FILE_ERROR, "Vfx doesn't override 'set_state()'")
 	return null
+
+
+func recognized_arguments() -> Array[String]:
+	TE.log_error(TE.Error.FILE_ERROR, "Vfx doesn't override 'recognized_arguments()'")
+	return []

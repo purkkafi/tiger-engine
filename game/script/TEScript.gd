@@ -331,7 +331,7 @@ class IVfx extends BaseInstruction:
 	# id to refer created vfx instance by; optional for non-persistent fvx
 	var _as: Variant
 	# optional initial state for the vfx, may be empty
-	# maps given tag names to Tag instances
+	# maps given tag names to the strings they contain
 	var initial_state: Dictionary
 	
 	
@@ -347,4 +347,43 @@ class IVfx extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'vfx %s to %s as %s with %s' % [vfx, to, _as, initial_state]
+		return 'vfx %s to %s as %s state %s' % [vfx, to, _as, initial_state]
+
+
+class ISetVfx extends BaseInstruction:
+	const name: String = 'SetVfx'
+	# id of vfx to modify
+	var id: String
+	# state to set
+	var state: Dictionary
+	
+	
+	func _init(_id: String, _state: Dictionary):
+		self.id = _id
+		self.state = _state
+	
+	
+	func repeat_id() -> String:
+		return 'VfxSet_%s' % id
+	
+	
+	func _to_string() -> String:
+		return 'setvfx %s state %s' % [id, state]
+
+
+class IClearVfx extends BaseInstruction:
+	const name: String = 'ClearVfx'
+	# id of vfx to remove
+	var id: String
+	
+	
+	func _init(_id: String):
+		self.id = _id
+	
+	
+	func repeat_id() -> String:
+		return 'VfxClear_%s' % id
+	
+	
+	func _to_string() -> String:
+		return 'clearvfx %s' % [id]

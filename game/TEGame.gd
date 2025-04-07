@@ -155,6 +155,12 @@ func next_blocking():
 			'Vfx':
 				tween = $VNStage.add_vfx(ins.vfx, ins.to, ins._as, ins.initial_state, tween)
 			
+			'SetVfx':
+				tween = $VNStage.set_vfx_state(ins.id, ins.state, tween)
+			
+			'ClearVfx':
+				tween = $VNStage.clear_vfx(ins.id, tween)
+			
 			_:
 				push_error('cannot handle non-blocking instruction: %s' % [ins])
 	
