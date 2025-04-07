@@ -143,7 +143,7 @@ func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition
 		old_tweener.set_trans(transition.trans_type)
 	
 	# schedule replacing the old layer with the new one
-	tween.chain().tween_callback(_replace_with.bind(layer, new_layer))
+	tween.tween_callback(_replace_with.bind(layer, new_layer)).set_delay(transition.duration)
 	
 	return tween
 
@@ -280,7 +280,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	var tweener = tween.tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
 	tweener.set_ease(with.ease_type)
 	tweener.set_trans(with.trans_type)
-	tween.chain().tween_callback(_finish_sprite_transition.bind(sprite))
+	tween.tween_callback(_finish_sprite_transition.bind(sprite)).set_delay(with.duration)
 	
 	return tween
 
@@ -305,7 +305,7 @@ func exit_sprite(id: String, with: Variant, tween: Tween) -> Tween:
 		var tweener = tween.tween_property(sprite, 'modulate:a', 0.0, with.duration)
 		tweener.set_ease(with.ease_type)
 		tweener.set_trans(with.trans_type)
-		tween.chain().tween_callback(_remove_sprite.bind(sprite))
+		tween.tween_callback(_remove_sprite.bind(sprite)).set_delay(with.duration)
 	
 	return tween
 
