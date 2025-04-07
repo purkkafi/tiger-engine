@@ -19,6 +19,8 @@ var rect: TextureRect
 
 
 func _init(_resource: SpriteResource):
+	self.use_parent_material = true
+	
 	resource = _resource
 	
 	for tag in resource.tag.get_tags():
@@ -51,6 +53,7 @@ func enter_stage(initial_state: Variant = null):
 	add_child(rect)
 	rect.position.y = _stage_size().y * y_offset
 	rect.scale = Vector2(sprite_scale, sprite_scale)
+	rect.use_parent_material = true
 	
 	if initial_state != null:
 		show_as(initial_state)
