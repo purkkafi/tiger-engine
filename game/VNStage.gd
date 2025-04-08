@@ -33,11 +33,6 @@ class ActiveVfx:
 				TE.log_error(TE.Error.FILE_ERROR, "Unknown argument '%s' for vfx '%s'" % [key, _as])
 	
 	
-	func apply(_target: CanvasItem, initial_state: Dictionary, tween: Tween) -> Tween:
-		verify_vfx_arguments(initial_state)
-		return vfx.apply(_target, initial_state, tween)
-	
-	
 	func set_state(_target: CanvasItem, new_state: Dictionary, tween: Tween) -> Tween:
 		verify_vfx_arguments(new_state)
 		return vfx.set_state(_target, new_state, tween)
@@ -407,7 +402,7 @@ func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary
 	
 	var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
 	var avfx: ActiveVfx = ActiveVfx.new(instance, to, _as)
-	avfx.apply(get_vfx_target(to), initial_state, tween)
+	avfx.set_state(get_vfx_target(to), initial_state, tween)
 	
 	if instance.persistent():
 		if not _as is String:
@@ -538,13 +533,12 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		# get vfx from cache or create a fresh object
 		if vfx_from_cache in node_cache:
 			avfx = node_cache[vfx_from_cache]
-			avfx.set_state(get_vfx_target(avfx.target), vfx_data['state'], tween)
 		else:
 			var vfx: Vfx = load(vfx_data['path']).new() as Vfx
 			avfx = ActiveVfx.new(vfx, vfx_data['target'], vfx_data['as'])
-			avfx.apply(get_vfx_target(avfx.target), vfx_data['state'], tween)
 		
 		active_vfxs.append(avfx)
+		avfx.set_state(get_vfx_target(avfx.target), vfx_data['state'], tween)
 		tween.tween_callback(func(): pass) # fix potentially empty tween
 		tween.custom_step(INF)
 	
