@@ -33,7 +33,8 @@ func initialize(_ctxt: InitContext):
 	anim_player = cutscene.get_node('AnimationPlayer') as AnimationPlayer
 	
 	if anim_player == null:
-		TE.log_error(TE.Error.FILE_ERROR, 'root of cutscene "%s" does not have an AnimationPlayer as child' % path)
+		TE.log_error(TE.Error.FILE_ERROR,
+			"root of cutscene '%s' does not have an AnimationPlayer as child" % path)
 	
 	anim_player.connect('animation_finished', func(_unused): check_finished())
 	
@@ -48,7 +49,7 @@ func initialize(_ctxt: InitContext):
 			cutscene.set_custom_options(custom_options)
 		else:
 			TE.log_error(TE.Error.SCRIPT_ERROR,
-				'unsupported custom options to cutscene: %s' % custom_options)
+				"unsupported custom options to cutscene '%s%': %s" % [path, custom_options])
 	
 	add_child(cutscene)
 	game.save_rollback()

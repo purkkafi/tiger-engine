@@ -8,7 +8,7 @@ func _ready():
 		for file in dir.get_files():
 			var btn: Button = Button.new()
 			btn.text = file
-			btn.connect('pressed', Callable(self, '_run_script').bind('res://assets/scripts/' + file))
+			btn.connect('pressed', _run_script.bind('res://assets/scripts/' + file))
 			$VBox.add_child(btn)
 	
 	# stage editor button
