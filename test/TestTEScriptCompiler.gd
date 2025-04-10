@@ -562,7 +562,7 @@ func test_jmp_rejects_malformed_destination():
 func test_vfx():
 	assert_equals(
 		instructions('\\vfx{vfx_id}{ \\as{id} \\to{target} }{ \\arg{val} }'),
-		[ TEScript.IVfx.new('vfx_id', 'target', 'id', { 'arg': Tag.new('arg', [['val']]) }) ]
+		[ TEScript.IVfx.new('vfx_id', 'target', 'id', { 'arg': 'val' }) ]
 	)
 
 
@@ -607,7 +607,7 @@ func test_vfx_targets():
 func test_setvfx():
 	assert_equals(
 		instructions('\\setvfx{the_id}{ \\arg1{val1} \\arg2{val2} }'),
-		[ TEScript.ISetVfx.new('the_id', { 'arg1': Tag.new('arg1', [['val1']]), 'arg2': Tag.new('arg2', [['val2']]) }) ]
+		[ TEScript.ISetVfx.new('the_id', { 'arg1': 'val1', 'arg2': 'val2' }) ]
 	)
 
 
