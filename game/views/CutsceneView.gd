@@ -8,6 +8,7 @@ var cutscene: Node2D
 var is_finished: bool
 var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
 var stop_music: bool = true # if true, previous song is stopped
+var custom_options: Dictionary[String, String] = {} # custom options
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
 var was_playing_before_pause: bool
@@ -24,7 +25,7 @@ func parse_options(tags: Array[Tag]):
 			'stop_music':
 				stop_music = tag.get_string() == 'true'
 			_:
-				TE.log_error(TE.Error.SCRIPT_ERROR, 'unknown argument for CutsceneView: %s' % tag)
+				custom_options[tag.name] = tag.get_string()
 
 
 func initialize(_ctxt: InitContext):
@@ -41,6 +42,14 @@ func initialize(_ctxt: InitContext):
 	
 	if stop_music:
 		Audio.play_song('', 0) # stop previous song, if any
+	
+	if len(custom_options) != 0:
+		if 'set_custom_options' in cutscene:
+			cutscene.set_custom_options(custom_options)
+		else:
+			TE.log_error(TE.Error.SCRIPT_ERROR,
+				'unsupported custom options to cutscene: %s' % custom_options)
+	
 	add_child(cutscene)
 	game.save_rollback()
 
@@ -102,12 +111,14 @@ func get_state() -> Dictionary:
 	var savestate: Dictionary = super.get_state()
 	savestate['cutscene_path'] = path
 	savestate['wait_input'] = wait_input
+	savestate['custom_options'] = custom_options
 	return savestate
 
 
 func from_state(savestate: Dictionary):
 	path = savestate['cutscene_path']
 	wait_input = savestate['wait_input']
+	custom_options = savestate['custom_options']
 	super.from_state(savestate)
 
 
