@@ -276,7 +276,22 @@ func _resolve_definitions(tree: Tag):
 				var default_val: Variant = ControlExpr.exec_contextless(ctrl)
 				
 				defs.variables[name] = default_val
+			
+			'text_style':
+				var id: String = node.get_string_at(0)
+				var formatting: Array = node.args[1]
 				
+				var bad_tags: Array[Tag]
+				for part in formatting:
+					if part is Tag and not part.name.is_valid_int():
+						bad_tags.append(part)
+						push_error('text style arguments need to be numeric: \\%s' % part.name)
+				
+				for bad_tag in bad_tags:
+					formatting.erase(bad_tag)
+				
+				defs.text_styles[id] = formatting
+			
 			_:
 				push_error('unknown definition: %s' % [node])
 

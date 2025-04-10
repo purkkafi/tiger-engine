@@ -34,7 +34,7 @@ static func of_lang(lang: String):
 	dir.list_dir_begin()
 	while true:
 		var file: String = dir.get_next()
-		if file == '':
+		if file == '' or file.ends_with('.uid'):
 			break
 		# TODO: this just indiscriminantly merges files, should there be
 		# checks for duplicate localize ids?

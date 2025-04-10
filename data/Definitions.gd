@@ -42,6 +42,10 @@ var view_registry: Dictionary = {}
 # registry of recognized sprite objects
 # dict of sprite object ids to Godot scripts
 var sprite_object_registry: Dictionary = {}
+# registry of recognized text styles
+# dict of text style ids to the replacement formatting,
+# which is an Array of strings and Tag arguments in form \1, \2, etc
+var text_styles: Dictionary[String, Array] = {}
 
 
 const trans_types = {

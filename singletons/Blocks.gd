@@ -3,6 +3,10 @@ extends Node
 # of class resolution problems
 
 
+# meaningless string to mark a used argument to a custom text style
+const USED_ARGUMENT_MARKER: String = '!!!<<[USED_ARGUMENT_MARKER]>>!!!'
+
+
 # a null object representing an empty block
 var EMPTY_BLOCK = Block.new([])
 
@@ -101,7 +105,33 @@ func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null)
 						_:
 							TE.log_error(TE.Error.FILE_ERROR, 'unknown argument for fullimg: %s' % opt.name)
 				parts.push_back(parts.pop_back() + '[fullimg][id]%s[/id][width]%s[/width][/fullimg]' % [id, width])
+			
+			# is user-defined special formatting
+			elif node.name in TE.defs.text_styles:
+				var args: Array[String] = node.get_strings() as Array[String]
+				var formatting: Array = TE.defs.text_styles[node.name]
 				
+				for part in formatting:
+					if part is String:
+						parts.push_back(parts.pop_back() + part)
+					else:
+						var tag: Tag = part as Tag
+						var index: int = tag.name.to_int()
+						
+						if index > len(args):
+							TE.log_error(TE.Error.FILE_ERROR,
+								"text style format error: not enough arguments: %s" % [node])
+							parts.push_back(parts.pop_back() + '\\' + tag.name)
+						else:
+							parts.push_back(parts.pop_back() + args[index-1])
+							args[index-1] = USED_ARGUMENT_MARKER
+				
+				for i in range(len(args)):
+					var arg: String = args[i]
+					if arg != USED_ARGUMENT_MARKER:
+						TE.log_error(TE.Error.FILE_ERROR,
+							"text stype format error: argument %d left unused: %s" % [i+1, node])
+			
 			elif node.name in TE.defs.speakers: # is a speaker declaration?
 				
 				# erase previous empty string, if any
