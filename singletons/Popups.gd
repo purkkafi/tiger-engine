@@ -187,4 +187,4 @@ func _remove_shadow(shadow: ColorRect):
 
 func _do_remove_shadow(shadow: ColorRect):
 	shadow.get_parent().remove_child.call_deferred(shadow)
-	shadow.queue_free()
+	shadow.queue_free.call_deferred()
