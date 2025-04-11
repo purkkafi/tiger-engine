@@ -435,6 +435,8 @@ func _quit():
 	popup.connect('confirmed', TE.quit_game)
 	popup.connect('custom_action', _quit_to_title_pressed)
 	
+	if TE.is_web():
+		popup.get_ok_button().hide()
 	
 	# HORRIBLE HACK: set min_size to an approximation manually because Godot didn't want to
 	# resize the dialog automatically for some reason

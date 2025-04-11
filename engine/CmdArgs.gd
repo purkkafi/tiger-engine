@@ -25,12 +25,10 @@ static func handle_args() -> Variant:
 				instead.task = CmdArgs._extract_language.bind(lang, to)
 			'--debug', '-d':
 				TE._force_debug = true
-			'--no-debug':
-				TE._force_debug = false
 			'--mobile', '-m':
 				TE._force_mobile = true
-			'--no-mobile':
-				TE._force_mobile = false
+			'--web', '-w':
+				TE._force_web = true
 			'--stage-editor', '-se':
 				instead = preload('res://tiger-engine/engine/StageEditor.tscn').instantiate()
 			'--word-count', '-wc':

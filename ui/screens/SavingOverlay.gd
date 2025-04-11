@@ -57,7 +57,7 @@ func _initialize_overlay():
 	# select the correct tab, also loading its content
 	# it will be prepared after animation is finished to prevent lag
 	tabs.current_tab = selected_bank
-	animated_in_callback = Callable(self, '_prepare_initial_tab').bind(selected_bank)
+	animated_in_callback = _prepare_initial_tab.bind(selected_bank)
 	
 	if mode == SavingMode.SAVE:
 		header.text = TE.localize.saving_save
@@ -67,21 +67,24 @@ func _initialize_overlay():
 		TE.log_error(TE.Error.ENGINE_ERROR, 'SavingOverlay must be in mode SAVE or LOAD')
 		return
 	
-	back.connect('pressed', Callable(self, '_back'))
+	back.connect('pressed', _back)
 	back.grab_focus()
 	
 	if additional_navigation:
-		quit_game.connect('pressed',Callable(self, '_quit_game'))
-		to_title.connect('pressed',Callable(self, '_to_title'))
+		to_title.connect('pressed', _to_title)
+	else:
+		to_title.visible = false
+	
+	if additional_navigation and not TE.is_web():
+		quit_game.connect('pressed', _quit_game)
 	else:
 		quit_game.visible = false
-		to_title.visible = false
 
 
 # loads the initially selected tab
 func _prepare_initial_tab(initial_bank: int):
-	tabs.connect('tab_changed', Callable(self, '_load_tab'))
-	tabs.connect('tab_selected', Callable(self, '_rename_tab'))
+	tabs.connect('tab_changed', _load_tab)
+	tabs.connect('tab_selected', _rename_tab)
 	_load_tab(initial_bank)
 
 
@@ -98,7 +101,7 @@ func _rename_tab(index: int):
 		var edit: LineEdit = LineEdit.new()
 		edit.text = TE.savefile.banks[index]['name']
 		var popup: AcceptDialog = Popups.text_entry_dialog(TE.localize.saving_rename_bank, edit)
-		popup.connect('confirmed', Callable(self, '_do_tab_rename').bind(index, edit))
+		popup.connect('confirmed', _do_tab_rename.bind(index, edit))
 	last_clicked_tab = index
 
 
@@ -221,7 +224,7 @@ func _back():
 func _quit_game():
 	if warn_about_progress:
 		var popup = Popups.warning_dialog(TE.localize.saving_progress_lost)
-		popup.get_ok_button().connect('pressed', Callable(self, '_do_quit'))
+		popup.get_ok_button().connect('pressed', _do_quit)
 	else:
 		_do_quit()
 
@@ -233,7 +236,7 @@ func _do_quit():
 func _to_title():
 	if warn_about_progress:
 		var popup = Popups.warning_dialog(TE.localize.saving_progress_lost)
-		popup.get_ok_button().connect('pressed', Callable(self, '_do_title'))
+		popup.get_ok_button().connect('pressed', _do_title)
 	else:
 		_do_title()
 

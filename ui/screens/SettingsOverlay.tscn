@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://uccko4wx3nlu"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/SettingsOverlay.gd" id="2_2w7fv"]
+[ext_resource type="Script" uid="uid://d21e1kkp58w32" path="res://tiger-engine/ui/screens/SettingsOverlay.gd" id="2_2w7fv"]
 
 [node name="SettingsOverlay" type="PanelContainer"]
 anchors_preset = 15
@@ -73,6 +73,7 @@ layout_mode = 2
 tooltip_text = "%settings_window_mode_tooltip%"
 item_count = 2
 popup/item_0/text = "%settings_window_fullscreen%"
+popup/item_0/id = 0
 popup/item_1/text = "%settings_window_windowed%"
 popup/item_1/id = 1
 
@@ -213,6 +214,7 @@ layout_mode = 2
 tooltip_text = "%settings_gui_scale_tooltip%"
 item_count = 2
 popup/item_0/text = "%settings_gui_scale_normal%"
+popup/item_0/id = 0
 popup/item_1/text = "%settings_gui_scale_large%"
 popup/item_1/id = 1
 

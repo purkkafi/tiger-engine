@@ -17,10 +17,12 @@ var opts: Options = null
 var current_scene: Node = null
 # array containing all available languages
 var all_languages: Array[Lang] = []
-# if set to a bool, force enables or disables debug mode
-var _force_debug = null
-# if set to a bool, force enables or disables mobile mode
-var _force_mobile = null
+# whether debug mode should be force-enabled
+var _force_debug: bool = false
+# whether platform should be treated as mobile
+var _force_mobile: bool = false
+# whether platform should be treated as web
+var _force_web: bool = false
 # whether visual debug tools should be drawn
 # toggling forces a global redraw of the current scene
 var draw_debug: bool = false:
@@ -238,20 +240,27 @@ func log_error(type: TE.Error, msg: String, force_crash: bool = false):
 
 
 # returns whether game should act as if running on a mobile platform
-# in addition to running on mobile normally, this is true if the hidden secret
-# pretend_mobile has been set to true
-func is_mobile():
-	if _force_mobile == null:
-		return OS.get_name() == 'Android'
-	return _force_mobile
+# true if it actually is or if '_force_mobile' is true
+func is_mobile() -> bool:
+	if _force_mobile:
+		return true
+	return OS.get_name() == 'Android'
 
 
 # returns whether the game should use large GUI mode
 # this is true if set in settings or if is_mobile() is true when settings aren't available
-func is_large_gui():
+func is_large_gui() -> bool:
 	if settings != null:
 		return settings.gui_scale == Settings.GUIScale.LARGE
 	return is_mobile()
+
+
+# returns whether the game should act as if running on the web
+# true if that is the actual underlying platform or if '_force_web' is true
+func is_web() -> bool:
+	if _force_web:
+		return true
+	return OS.get_name() == 'Web'
 
 
 func _notification(what): # override default exit behavior
@@ -284,9 +293,9 @@ func send_toast_notification(title: String, description: String, icon = null):
 # returns whether in debug mode, which is based on OS.is_debug_build()
 # unless overridden with _force_debug
 func is_debug() -> bool:
-	if _force_debug == null:
-		return OS.is_debug_build()
-	return _force_debug
+	if _force_debug:
+		return true
+	return OS.is_debug_build()
 
 
 # recursively redraws everything
