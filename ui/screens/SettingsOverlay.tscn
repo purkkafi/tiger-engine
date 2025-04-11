@@ -64,6 +64,7 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "%settings_window_mode%"
 
@@ -76,6 +77,11 @@ popup/item_0/text = "%settings_window_fullscreen%"
 popup/item_0/id = 0
 popup/item_1/text = "%settings_window_windowed%"
 popup/item_1/id = 1
+
+[node name="WebFullscreen" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "%settings_window_fullscreen%"
 
 [node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
 layout_mode = 2
@@ -246,6 +252,7 @@ layout_mode = 2
 text = "%settings_save_exit%"
 
 [connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer/WindowOptions" to="." method="_window_mode_selected"]
+[connection signal="pressed" from="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer/WebFullscreen" to="." method="_web_fullscreen_pressed"]
 [connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language/LangOptions" to="." method="_language_selected"]
 [connection signal="item_selected" from="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer/GUIScale" to="." method="_gui_scale_selected"]
 [connection signal="toggled" from="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/DyslexicFontContainer/DyslexicFont" to="." method="_dyslexic_font_toggled"]

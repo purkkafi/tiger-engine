@@ -44,6 +44,13 @@ func _initialize_overlay():
 			window_options.selected = WM_WINDOWED
 		window_options.get_popup().transparent_bg = true
 	
+	# different fullscreen buttons for web & other platforms
+	if TE.is_web():
+		%WindowModeLabel.hide()
+		%WindowOptions.hide()
+	else:
+		%WebFullscreen.hide()
+	
 	music_volume.value = TE.settings.music_volume
 	music_volume.connect('value_changed', Callable(Settings, 'change_music_volume'))
 	
@@ -132,6 +139,10 @@ func _window_mode_selected(selection):
 		Settings.change_fullscreen(true)
 	else:
 		Settings.change_fullscreen(false)
+
+
+func _web_fullscreen_pressed() -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 func _key_button_pressed(btn: Button):

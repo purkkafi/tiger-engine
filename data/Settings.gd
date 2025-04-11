@@ -75,10 +75,14 @@ static func change_sfx_volume(vol_linear: float):
 
 
 static func change_fullscreen(to_fullscreen: bool):
-	var is_fullscreen = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	# NOOP on web because toggling fullscreen doesn't work
+	if TE.is_web():
+		return
+	
+	var is_fullscreen = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	
 	if is_fullscreen != to_fullscreen:
-		var mode = DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN if (to_fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
+		var mode = DisplayServer.WINDOW_MODE_FULLSCREEN if (to_fullscreen) else DisplayServer.WINDOW_MODE_WINDOWED
 		DisplayServer.window_set_mode(mode)
 
 
