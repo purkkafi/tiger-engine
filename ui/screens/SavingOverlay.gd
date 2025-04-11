@@ -2,9 +2,9 @@ class_name SavingOverlay extends Overlay
 
 
 # properties of the thumbnails
-const THUMB_WIDTH = 480
-const THUMB_HEIGHT = 270
-const THUMB_FORMAT = Image.FORMAT_RGB8
+const THUMB_WIDTH: int = 480
+const THUMB_HEIGHT: int = 270
+const THUMB_FORMAT: Image.Format = Image.FORMAT_RGB8
 
 
 var saved_callback: Variant = null # Callable; when saved, called with the new save

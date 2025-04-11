@@ -12,6 +12,11 @@ var shadow: ColorRect
 var animated_in_callback: Callable = func(): pass
 # callback to call when the overlay is closed
 var animating_out_callback: Callable = func(): pass
+# contains OverlaySize if size change has been initiated with size_to_x()
+var requested_size: Variant = null
+
+
+enum OverlaySize { SMALL, LARGE }
 
 
 func _ready():
@@ -20,6 +25,8 @@ func _ready():
 	
 	# then translate it (in this order in case new nodes are added in initialization)
 	TE.localize.translate(self)
+	
+	TETheme.theme_changed.connect(_resize_if_appropriate)
 	
 	# setup animations
 	await get_tree().process_frame
@@ -34,6 +41,7 @@ func _ready():
 
 # sets size to small overlay, if defined in theme
 func size_to_small():
+	requested_size = OverlaySize.SMALL
 	await get_tree().process_frame
 	if has_theme_constant('small_overlay_width', 'Global'):
 		self.size = Vector2(
@@ -46,6 +54,7 @@ func size_to_small():
 
 # sets size to large overlay, if defined in theme
 func size_to_large():
+	requested_size = OverlaySize.LARGE
 	await get_tree().process_frame
 	if has_theme_constant('large_overlay_width', 'Global'):
 		self.size = Vector2(
@@ -54,6 +63,15 @@ func size_to_large():
 		)
 		
 		self.position = (get_parent_area_size() - self.size) / 2
+
+
+# called on theme change; resizes to requested standard size, if any
+func _resize_if_appropriate():
+	match requested_size:
+		OverlaySize.SMALL:
+			size_to_small()
+		OverlaySize.LARGE:
+			size_to_large()
 
 
 # subclasses should override this to initialize the overlay
