@@ -45,14 +45,12 @@ static func handle_args() -> Variant:
 						creates translation project, extracting the given language to the target folder
 					-d, --debug
 						force enable the engine's debug mode (by default enabled if Godot's is)
-					--no-debug
-						force disable the engine's debug mode
 					-m, --mobile
 						force enable mobile mode, i.e. pretend game is run on android
 					--no-mobile
 						force disable mobile mode, i.e. pretend game is run on desktop
-					-wc, --word-count <lang>
-						print block word counts and quit
+					-wc, --word-count <output file>
+						saves word count.json to file
 					-h, --help
 						print this message and quit
 				""".dedent().trim_prefix('\n').trim_suffix('\n')) # this is so ugly lol
@@ -72,15 +70,35 @@ static func handle_args() -> Variant:
 static var IS_WORD: RegEx = RegEx.create_from_string('\\w+')
 
 
-# implements the --word-count cmd option, printing block word counts and quitting
+static func _word_count(out: Variant) -> int:
+	var wc: Dictionary = {}
+	
+	for lang in TE.all_languages:
+		wc[lang.id] = _word_count_lang(lang.id)
+	
+	var output: String = JSON.stringify(wc, '  ')
+	if out == null:
+		print(output)
+	else:
+		var outfile: FileAccess = FileAccess.open(out as String, FileAccess.WRITE_READ)
+		if outfile == null:
+			print(FileAccess.get_open_error())
+			return 1
+		
+		outfile.store_string(output)
+		outfile.close()
+	
+	return 0
+
+
 # TODO: deal with bbcode tags in a more graceful way
-static func _word_count(lang: String) -> int:
-	var folder_path: String = 'assets/lang/%s/text/' % lang
+static func _word_count_lang(lang: String) -> Dictionary:
+	var folder_path: String = 'res://assets/lang/%s/text/' % lang
 	var folder: DirAccess = DirAccess.open(folder_path)
 	
 	if folder == null:
 		push_error('cannot open text folder for language: %s' % lang)
-		return 1
+		return {}
 	
 	folder.list_dir_begin()
 	var file: String = folder.get_next()
@@ -93,34 +111,29 @@ static func _word_count(lang: String) -> int:
 	var game_ctxt: VariableContext = VariableContext.new(var_names, var_def_values)
 	
 	while file != '':
-		var path = '%s%s' % [folder_path, file]
-		var blockfile: BlockFile = Assets.blockfiles.get_unqueued(path)
-		
-		var count: int = 0
-		for block in blockfile.blocks.values():
-			for par in Blocks.resolve_parts(block, game_ctxt):
-				var words = par.split(' ', false)
-				
-				for word in words:
-					if IS_WORD.search(word) != null:
-						count += 1
-		
-		counts[file] = count
+		if file.ends_with('.tef'):
+			var path = '%s%s' % [folder_path, file]
+			var blockfile: BlockFile = Assets.blockfiles.get_unqueued(path)
+			
+			var count: int = 0
+			for block in blockfile.blocks.values():
+				for par in Blocks.resolve_parts(block, game_ctxt):
+					var words = par.split(' ', false)
+					
+					for word in words:
+						if IS_WORD.search(word) != null:
+							count += 1
+			
+			counts[file] = count
 		
 		file = folder.get_next()
-	
-	var max_len: int = max(5, counts.keys().map(func(k): return len(k)).max())
-	
-	for counted_file in counts.keys():
-		print('%-*s   %d' % [max_len, counted_file, counts[counted_file]])
 	
 	var total: int = 0
 	for count in counts.values():
 		total += count
+	counts['total'] = total
 	
-	print('\n%-*s   %d' % [max_len, 'TOTAL', total])
-	
-	return 0
+	return counts
 
 
 static func _extract_language(lang_id: String, where: String) -> int:
