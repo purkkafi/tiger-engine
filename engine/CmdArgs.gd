@@ -7,62 +7,57 @@ static var cmd_task_screen: PackedScene = preload('res://tiger-engine/ui/screens
 
 # parses cmd args, setting game options or executing an additional task and quitting
 static func handle_args() -> Variant:
-	var args: Array = Array(OS.get_cmdline_user_args())
-	var instead = null
+	var instead: Variant = null
+	var parser: ArgParser = ArgParser.new()
 	
-	var i: int = 0
-	while i < len(args):
-		match args[i]:
-			'--run-tests':
-				instead = cmd_task_screen.instantiate()
-				instead.task = TestRunner.run_tests
-			'--extract-language':
-				i += 1
-				var lang: String = args[i]
-				i += 1
-				var to: String = args[i]
-				instead = cmd_task_screen.instantiate()
-				instead.task = CmdArgs._extract_language.bind(lang, to)
-			'--debug', '-d':
-				TE._force_debug = true
-			'--mobile', '-m':
-				TE._force_mobile = true
-			'--web', '-w':
-				TE._force_web = true
-			'--stage-editor', '-se':
-				instead = preload('res://tiger-engine/engine/StageEditor.tscn').instantiate()
-			'--word-count', '-wc':
-				i += 1
-				var lang: String = args[i]
-				instead = cmd_task_screen.instantiate()
-				instead.task = _word_count.bind(lang)
-			'--help', '-h':
-				print("""
-					supported arguments:
-					--run-tests
-						run the engine's unit & integration tests and quit
-					--extract-language <lang> <target>
-						creates translation project, extracting the given language to the target folder
-					-d, --debug
-						force enable the engine's debug mode (by default enabled if Godot's is)
-					-m, --mobile
-						force enable mobile mode, i.e. pretend game is run on android
-					--no-mobile
-						force disable mobile mode, i.e. pretend game is run on desktop
-					-wc, --word-count <output file>
-						saves word count.json to file
-					-h, --help
-						print this message and quit
-				""".dedent().trim_prefix('\n').trim_suffix('\n')) # this is so ugly lol
-				TE.quit_game()
-			_:
-				print("error: unknown command line argument: '%s'" % args[i])
-				print("run with '-- --help' for help")
-				TE.quit_game()
-		
-		i += 1
+	parser.register('--debug', ArgParser.Type.FLAG, ['-d'], 'Run in debug mode.')
+	parser.register('--mobile', ArgParser.Type.FLAG, ['-m'], 'Run as if on mobile.')
+	parser.register('--web', ArgParser.Type.FLAG, ['-w'], 'Run as if on the browser.')
+	parser.set_as_exclusive(['--mobile', '--web'])
 	
-	return instead
+	parser.register('--help', ArgParser.Type.FLAG, ['-h'], 'Display help and quit.')
+	parser.register('--run-tests', ArgParser.Type.FLAG, ['--rt', '-T'], "Run the engine's test suite.")
+	parser.register('--stage-editor', ArgParser.Type.FLAG, ['--se', '-S'], 'Run the interactive stage editor.')
+	parser.register('--word-count', ArgParser.Type.STRING, ['--wc', '-W'], 'Save word count data to file.', 'FILE')
+	parser.set_as_exclusive(['--help', '--run-tests', '--stage-editor', '--word-count'])
+	# TODO reimplement '--extract-language'
+	
+	var parsed: Dictionary = parser.parse(OS.get_cmdline_user_args())
+	
+	if 'error' in parsed:
+		push_error(parsed['error'])
+		parser.print_help()
+		TE.quit_game(1)
+	
+	if '--debug' in parsed:
+		TE._force_debug = true
+	
+	if '--mobile' in parsed:
+		TE._force_mobile = true
+	
+	if '--web' in parsed:
+		TE._force_web = true
+	
+	if '--run-tests' in parsed:
+		instead = cmd_task_screen.instantiate()
+		instead.task = TestRunner.run_tests
+		return instead
+	
+	if '--stage-editor' in parsed:
+		instead = preload('res://tiger-engine/engine/StageEditor.tscn').instantiate()
+		return instead
+	
+	if '--word-count' in parsed:
+		var out: String = parsed['--word-count']
+		instead = cmd_task_screen.instantiate()
+		instead.task = _word_count.bind(out)
+		return instead
+	
+	if '--help' in parsed:
+		parser.print_help()
+		TE.quit_game()
+	
+	return null
 
 
 # regex that matches if a word has any alphanumeric charcters and
@@ -70,23 +65,21 @@ static func handle_args() -> Variant:
 static var IS_WORD: RegEx = RegEx.create_from_string('\\w+')
 
 
-static func _word_count(out: Variant) -> int:
+# performs a word count across languages and saves the result to the given file
+static func _word_count(out: String) -> int:
 	var wc: Dictionary = {}
 	
 	for lang in TE.all_languages:
 		wc[lang.id] = _word_count_lang(lang.id)
 	
 	var output: String = JSON.stringify(wc, '  ')
-	if out == null:
-		print(output)
-	else:
-		var outfile: FileAccess = FileAccess.open(out as String, FileAccess.WRITE_READ)
-		if outfile == null:
-			print(FileAccess.get_open_error())
-			return 1
-		
-		outfile.store_string(output)
-		outfile.close()
+	var outfile: FileAccess = FileAccess.open(out as String, FileAccess.WRITE_READ)
+	if outfile == null:
+		print(FileAccess.get_open_error())
+		return 1
+	
+	outfile.store_string(output)
+	outfile.close()
 	
 	return 0
 
