@@ -37,6 +37,7 @@ func _initialize_overlay():
 	
 	if TE.is_mobile(): # no fullscreen setting on mobile
 		video_section.get_parent().remove_child(video_section)
+		video_section.queue_free()
 	else:
 		if TE.settings.fullscreen:
 			window_options.selected = WM_FULLSCREEN
@@ -48,7 +49,7 @@ func _initialize_overlay():
 	if TE.is_web():
 		%WindowModeLabel.hide()
 		%WindowOptions.hide()
-	else:
+	elif not TE.is_mobile():
 		%WebFullscreen.hide()
 	
 	music_volume.value = TE.settings.music_volume
@@ -72,6 +73,7 @@ func _initialize_overlay():
 	# hide button settings on mobile
 	if TE.is_mobile():
 		keys_section.get_parent().remove_child(keys_section)
+		keys_section.queue_free()
 	
 	# setup keyboard shortcut controls
 	for key in Settings.KEYBOARD_SHORTCUTS.keys():
