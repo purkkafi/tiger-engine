@@ -9,10 +9,12 @@ var localize: Localize = null
 var savefile: Savefile = null
 var settings: Settings = null
 var seen_blocks: SeenBlocks = null
-# game config files, set by this object
+# audio singleton
+# game config files and singletons, set by this object
 var defs: Definitions = load('res://assets/definitions.tef')
 var persistent: Persistent = Persistent.load_from_file()
 var opts: Options = null
+var audio: Audio = null
 # the current scene, stored here for convenience
 var current_scene: Node = null
 # array containing all available languages
@@ -92,6 +94,10 @@ func _ready():
 	
 	# detect available languages
 	detect_languages()
+	
+	# instantiate audio singleton
+	audio = preload('res://tiger-engine/singletons/Audio.tscn').instantiate()
+	add_child(audio)
 	
 	get_tree().get_root().connect('files_dropped', _load_translation_package)
 	

@@ -1,4 +1,4 @@
-extends Node
+class_name Popups extends Object
 # utility class for spawning standard popups
 # its functions return the created popup object
 # TODO: add shadow ColorRect to the scene behind the popups
@@ -8,7 +8,7 @@ extends Node
 
 # popup for entering text
 # title is the window title, edit is the LineEdit to insert
-func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
+static func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	var popup: AcceptDialog = AcceptDialog.new()
 	popup.unresizable = true
 	popup.title = title
@@ -36,7 +36,7 @@ func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 
 
 # popup for presenting a warning & making user choose between OK and cancel
-func warning_dialog(msg: String) -> ConfirmationDialog:
+static func warning_dialog(msg: String) -> ConfirmationDialog:
 	var popup: ConfirmationDialog = ConfirmationDialog.new()
 	popup.unresizable = true
 	popup.title = TE.localize['general_warning']
@@ -71,7 +71,7 @@ static func _remove_popup(popup: AcceptDialog):
 
 
 # standard popup for presenting the user arbitrary content
-func info_dialog(title: String, content: Control) -> AcceptDialog:
+static func info_dialog(title: String, content: Control) -> AcceptDialog:
 	var popup: AcceptDialog = AcceptDialog.new()
 	popup.unresizable = true
 	popup.title = title
@@ -97,7 +97,7 @@ func info_dialog(title: String, content: Control) -> AcceptDialog:
 # the error consists of a GameError type and an optional extra message
 # switches away from the current scene and shows the popup
 # the user is given the option to return to the title screen by pressing OK
-func error_dialog(game_error: TE.Error, extra_msg: String = ''):
+static func error_dialog(game_error: TE.Error, extra_msg: String = ''):
 	TE.switch_scene(
 		preload('res://tiger-engine/ui/screens/TEErrorScreen.tscn').instantiate(),
 		_display_error_dialog.bind(game_error, extra_msg),
@@ -105,7 +105,7 @@ func error_dialog(game_error: TE.Error, extra_msg: String = ''):
 	)
 
 
-func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: String = ''):
+static func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: String = ''):
 	var label: RichTextLabel = RichTextLabel.new()
 	label.custom_minimum_size = Vector2(800, 50)
 	label.bbcode_enabled = true
@@ -145,13 +145,13 @@ func _display_error_dialog(old_scene: Node, game_error: TE.Error, extra_msg: Str
 		dialog.add_button(TE.localize.general_report, false, 'report')
 
 
-func _to_titlescreen(old_scene: Node):
+static func _to_titlescreen(old_scene: Node):
 	old_scene.queue_free()
 	var title_screen = load(TE.opts.title_screen).instantiate()
 	TE.switch_scene(title_screen)
 
 
-func _custom_error_action(action: String, old_scene: Node):
+static func _custom_error_action(action: String, old_scene: Node):
 	match action:
 		'ignore':
 			TE.switch_scene(old_scene)
@@ -161,7 +161,7 @@ func _custom_error_action(action: String, old_scene: Node):
 			push_error('unknown custom action in error dialog: %s' % action)
 
 
-func add_shadow(to_node: Node):
+static func add_shadow(to_node: Node):
 	var shadow: ColorRect = ColorRect.new()
 	shadow.position = Vector2(0, 0)
 	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
@@ -175,7 +175,7 @@ func add_shadow(to_node: Node):
 	TETheme.anim_shadow_in.call(shadow)
 
 
-func _remove_shadow(shadow: ColorRect):
+static func _remove_shadow(shadow: ColorRect):
 	if shadow.is_inside_tree():
 		var tween = TETheme.anim_shadow_out.call(shadow)
 		if tween != null:
@@ -185,6 +185,6 @@ func _remove_shadow(shadow: ColorRect):
 	_do_remove_shadow(shadow)
 
 
-func _do_remove_shadow(shadow: ColorRect):
+static func _do_remove_shadow(shadow: ColorRect):
 	shadow.get_parent().remove_child.call_deferred(shadow)
 	shadow.queue_free.call_deferred()

@@ -1,4 +1,4 @@
-extends Node
+class_name Blocks extends Object
 # utility class for stringifying Blocks; methods have to exist here because
 # of class resolution problems
 
@@ -8,11 +8,11 @@ const USED_ARGUMENT_MARKER: String = '!!!<<[USED_ARGUMENT_MARKER]>>!!!'
 
 
 # a null object representing an empty block
-var EMPTY_BLOCK = Block.new([])
+static var EMPTY_BLOCK = Block.new([])
 
 
 # initializes properties of EMPTY_BLOCK
-func _ready():
+static func _static_init() -> void:
 	EMPTY_BLOCK.id = ''
 	EMPTY_BLOCK.blockfile_path = ''
 
@@ -21,7 +21,7 @@ func _ready():
 # for instance, given "a:b", the block b in the blockfile a.tef is returned
 # EMPTY_BLOCK is returned if the Block cannot be found
 # if queue_only is true, the blockfile is queued for loading and null is returned
-func find(id: String, queue_only = false) -> Variant:
+static func find(id: String, queue_only = false) -> Variant:
 	var parts = id.split(':')
 	if len(parts) != 2:
 		TE.log_error(TE.Error.FILE_ERROR, 'block id should be of form <file>:<block>, got %s' % id)
@@ -44,7 +44,7 @@ func find(id: String, queue_only = false) -> Variant:
 
 # resolves this Block into a String, with paragraphs being separated with
 # the given separator (two newlines by default)
-func resolve_string(block: Block, paragraph_separator: String = '\n\n', ctxt: ControlExpr.BaseContext=null) -> String:
+static func resolve_string(block: Block, paragraph_separator: String = '\n\n', ctxt: ControlExpr.BaseContext=null) -> String:
 	var text: String = ''
 	
 	for part in resolve_parts(block, ctxt):
@@ -56,11 +56,11 @@ func resolve_string(block: Block, paragraph_separator: String = '\n\n', ctxt: Co
 # resolves a Block into an array of its parts, which are separated by Break objects
 # in the original taglist
 # a context from which variables are resolved can optionally be provided
-func resolve_parts(block: Block, ctxt: ControlExpr.BaseContext=null) -> Array[String]:
+static func resolve_parts(block: Block, ctxt: ControlExpr.BaseContext=null) -> Array[String]:
 	return _resolve_parts(block.taglist, ctxt)
 
 
-func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null) -> Array[String]:
+static func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContext=null) -> Array[String]:
 	var parts: Array[String] = []
 	parts.append('') # start building the first string
 	

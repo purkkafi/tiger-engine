@@ -1,22 +1,22 @@
-extends Node
+class_name Assets extends Node
 # used for caching resources and queuing them to be loaded in the background
 # contains specific Cache instances for different resources
 
 
-var songs: Cache = Cache.new('songs', 5)
-var sounds: Cache = Cache.new('sounds', 5)
-var imgs: Cache = Cache.new('imgs', 10)
-var blockfiles: Cache = Cache.new('blockfiles', 10)
-var scripts: Cache = Cache.new('scripts', 10)
-var sprites: Cache = Cache.new('sprites', 10) # note: should be used to load SpriteResources
+static var songs: Cache = Cache.new('songs', 5)
+static var sounds: Cache = Cache.new('sounds', 5)
+static var imgs: Cache = Cache.new('imgs', 10)
+static var blockfiles: Cache = Cache.new('blockfiles', 10)
+static var scripts: Cache = Cache.new('scripts', 10)
+static var sprites: Cache = Cache.new('sprites', 10) # note: should be used to load SpriteResources
 # for misc resources that don't have to be cached
-var noncached: Cache = Cache.new('noncached', 0)
+static var noncached: Cache = Cache.new('noncached', 0)
 # for resources that are cached permanently
 # should only be used for small or frequently accessed resources
-var permanent: Cache = Cache.new('permanent', 99999)
+static var permanent: Cache = Cache.new('permanent', 99999)
 
 
-func _ready():
+static func _static_init() -> void:
 	blockfiles.hash_function = _blockfile_hash
 	scripts.hash_function = _scriptfile_hash
 
@@ -25,7 +25,7 @@ func _ready():
 # supports two special prefixes that ignore relative_to:
 # – 'assets:' causes the path to be resolved relative to the assets folder
 # – 'lang:' causes the path to be resolved relative to the chosen language's folder
-func _resolve(path: String, relative_to: Variant = null) -> String:
+static func _resolve(path: String, relative_to: Variant = null) -> String:
 	var result: String = ''
 	
 	if path.begins_with('assets:'):
@@ -51,7 +51,7 @@ func _resolve(path: String, relative_to: Variant = null) -> String:
 
 # calculates the hash of every Block in the given BlockFile
 # stores the hashes in keys of form '<blockfile path>:<block id>'
-func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
+static func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
 	for block in blockfile.blocks.values():
 		var hashcode: String = block.resolve_hash()
 		hashes[block.full_id()] = hashcode
@@ -59,13 +59,13 @@ func _blockfile_hash(blockfile: BlockFile, hashes: Dictionary):
 
 # calculates the hash of every Script in the given ScriptFile
 # stores the hashes in keys of form 'scriptfile_path:script_id'
-func _scriptfile_hash(scriptfile: ScriptFile, hashes: Dictionary):
+static func _scriptfile_hash(scriptfile: ScriptFile, hashes: Dictionary):
 	for script_id in scriptfile.scripts.keys():
 		var hashcode: String = scriptfile.scripts[script_id].hashcode()
 		hashes[scriptfile.resource_path + ':' + script_id] = hashcode
 
 
-func _debug_message() -> String:
+static func _debug_message() -> String:
 	var msg: String = ''
 	msg += 'Songs:\n' + songs._debug_message() + '\n'
 	msg += 'Sounds:\n' + sounds._debug_message() + '\n'

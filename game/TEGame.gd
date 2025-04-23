@@ -118,10 +118,10 @@ func next_blocking():
 		
 		match ins.name:
 			'Music':
-				Audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
+				TE.audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
 			
 			'Sound':
-				Audio.play_sound(ins.sound_id)
+				TE.audio.play_sound(ins.sound_id)
 			
 			'Meta':
 				game_name = TE.localize[ins.game_name_uistring]
@@ -518,7 +518,7 @@ func create_save() -> Dictionary:
 		'view_result' : context.view_result,
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
-		'audio' : Audio.get_state(),
+		'audio' : TE.audio.get_state(),
 		'save_name' : null,
 		'save_datetime' : null, # these 2 should be handled by saving screen
 		'save_utime' : null,
@@ -559,7 +559,7 @@ func load_save(save: Dictionary, stage_cache: Dictionary):
 	# custom save data
 	_custom_data = save['custom_data'].duplicate(true)
 	
-	Audio.set_state(save['audio'])
+	TE.audio.set_state(save['audio'])
 	
 	# if starting from a continue point, skip rest of the initialization
 	if 'continue_point' in save:
@@ -672,7 +672,7 @@ func update_debug_mode_text():
 		DebugMode.NONE:
 			%DebugMsg.text = ''
 		DebugMode.AUDIO:
-			%DebugMsg.text = Audio.debug_text()
+			%DebugMsg.text = TE.audio.debug_text()
 		DebugMode.SPRITES:
 			%DebugMsg.text = $VNStage._sprite_debug_msg()
 

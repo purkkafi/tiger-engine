@@ -42,7 +42,7 @@ func initialize(_ctxt: InitContext):
 	TE.overlay_closed.connect(_resume_after_overlay)
 	
 	if stop_music:
-		Audio.play_song('', 0) # stop previous song, if any
+		TE.audio.play_song('', 0) # stop previous song, if any
 	
 	if len(custom_options) != 0:
 		if 'set_custom_options' in cutscene:

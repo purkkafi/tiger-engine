@@ -1,4 +1,4 @@
-extends Node
+class_name Audio extends Node
 # plays songs and sound effects defined in the definitions file
 
 
