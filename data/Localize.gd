@@ -101,10 +101,17 @@ func translate(node: Control):
 
 # returns translation of the given string if it is of the form %localize_id%
 # otherwise returns the string
-func translate_text(text: String):
+func translate_text(text: String) -> String:
 	if text.begins_with('%') and text.ends_with('%'):
 		return _get(text.substr(1, len(text)-2))
 	return text
+
+
+# returns whether a translation for the given id is available
+func has_translation(text: String) -> bool:
+	if text.begins_with('%') and text.ends_with('%'):
+		return text.substr(1, len(text)-2) in strings
+	return false
 
 
 # if strings autoquote_left and autoquote_right are defined, surrounds the

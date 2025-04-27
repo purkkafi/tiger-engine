@@ -1,3 +1,4 @@
+@warning_ignore("unused_signal")
 class_name Audio extends Node
 # plays songs and sound effects defined in the definitions file
 
@@ -12,10 +13,12 @@ var local_volume: float = 1.0
 
 
 # emitted with the song id when a song is played
-@warning_ignore("unused_signal")
 signal song_played
+# emitted with the sound effect id when a sound is played
+signal sound_played
+# emitted with the sound effect id when a played sound finishes
+signal sound_finished
 # emitted when audio is paused with id of current song & whether paused or unapaused
-@warning_ignore("unused_signal")
 signal song_paused
 
 
@@ -66,7 +69,6 @@ func play_song(new_song_id: String, duration: float, with_local_volume: float = 
 		for unlockable in TE.defs.unlocked_by_song[song_id]:
 			TE.persistent.unlock(unlockable)
 	
-	# emit signal
 	emit_signal('song_played', song_id)
 
 
@@ -124,6 +126,13 @@ func play_sound(id: String):
 	$SoundPlayer.stream = sound
 	$SoundPlayer.volume_db = linear_to_db(TE.defs.sound_volume(id))
 	$SoundPlayer.play()
+	
+	# emit appropriate signals
+	emit_signal('sound_played', id)
+	
+	var tween = create_tween()
+	tween.tween_interval(sound.get_length())
+	tween.tween_callback(func(): emit_signal('sound_finished', id))
 
 
 # returns the AudioStreamPlayer of currently playing song or null

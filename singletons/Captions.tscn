@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://dli7sw6lml1kq"]
+
+[ext_resource type="Script" uid="uid://pfvckvid08md" path="res://tiger-engine/singletons/Captions.gd" id="1_aq2a3"]
+
+[node name="Captions" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+mouse_recursive_behavior = 2
+script = ExtResource("1_aq2a3")
+
+[node name="Margins" type="MarginContainer" parent="."]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 40.0
+theme_type_variation = &"CaptionsMargins"
+
+[node name="List" type="VBoxContainer" parent="Margins"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0

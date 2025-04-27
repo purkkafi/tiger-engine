@@ -14,6 +14,7 @@ var lang_id # language id; String or null if unset
 var keys: Dictionary
 var gui_scale: GUIScale # larger or smaller UI elements
 var dyslexic_font: bool # whether dyslexia-friendly font is used
+var audio_captions: bool # whether audio captions are on
 var format: int # current format
 
 
@@ -64,6 +65,7 @@ func change_settings():
 	Settings.change_language(lang_id)
 	TETheme.force_change_settings(gui_scale, dyslexic_font)
 	Settings.change_keyboard_shortcuts(keys)
+	TE.captions.set_captions_on(audio_captions)
 
 
 static func change_music_volume(vol_linear: float):
@@ -199,6 +201,7 @@ static func default_settings():
 	defs.keys = KEYBOARD_SHORTCUTS.duplicate(true)
 	defs.gui_scale = GUIScale.LARGE if TE.is_mobile() else GUIScale.NORMAL
 	defs.dyslexic_font = false
+	defs.audio_captions = false
 	defs.format = SETTINGS_FORMAT
 	
 	return defs

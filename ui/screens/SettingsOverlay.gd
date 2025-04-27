@@ -23,6 +23,7 @@ var language_disabled: bool = false
 @onready var gui_scale_container: HBoxContainer = %GUIScaleContainer
 @onready var gui_scale: OptionButton = %GUIScale
 @onready var dyslexic_font: CheckButton = %DyslexicFont
+@onready var audio_captions: CheckButton = %AudioCaptions
 @onready var save_exit: Button = %SaveExit
 @onready var discard: Button = %Discard
 
@@ -104,6 +105,7 @@ func _initialize_overlay():
 	gui_scale.selected = TE.settings.gui_scale
 	gui_scale.get_popup().transparent_bg = true
 	dyslexic_font.button_pressed = TE.settings.dyslexic_font
+	audio_captions.button_pressed = TE.settings.audio_captions
 	
 	save_exit.grab_focus()
 
@@ -133,7 +135,9 @@ func disable_language():
 
 func _language_selected(index):
 	Settings.change_language(TE.all_languages[index].id)
-	TE.localize.translate(TE.current_scene)
+	for child in TE.get_tree().root.get_children():
+		if child is Control:
+			TE.localize.translate(child)
 
 
 func _window_mode_selected(selection):
@@ -221,6 +225,10 @@ func _dyslexic_font_toggled(_pressed):
 	scroll.ensure_control_visible(dyslexic_font)
 
 
+func _audio_captions_toggled(toggled_on: bool) -> void:
+	TE.captions.set_captions_on(toggled_on)
+
+
 func _save_exit():
 	TE.settings.music_volume = music_volume.value
 	TE.settings.sfx_volume = sfx_volume.value
@@ -236,6 +244,7 @@ func _save_exit():
 	
 	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	TE.settings.dyslexic_font = dyslexic_font.button_pressed
+	TE.settings.audio_captions = audio_captions.button_pressed
 	
 	if not TE.is_mobile():
 		TE.settings.fullscreen = window_options.selected == WM_FULLSCREEN

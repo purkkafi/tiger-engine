@@ -15,6 +15,7 @@ var defs: Definitions = load('res://assets/definitions.tef')
 var persistent: Persistent = Persistent.load_from_file()
 var opts: Options = null
 var audio: Audio = null
+var captions: Captions = null
 # the current scene, stored here for convenience
 var current_scene: Node = null
 # array containing all available languages
@@ -99,6 +100,13 @@ func _ready():
 	audio = preload('res://tiger-engine/singletons/Audio.tscn').instantiate()
 	add_child(audio)
 	
+	# instantiate captions singleton
+	captions = preload('res://tiger-engine/singletons/Captions.tscn').instantiate()
+	get_tree().root.add_child.call_deferred(captions)
+	TE.audio.song_played.connect(_handle_song_played_caption)
+	TE.audio.sound_played.connect(func(sound): captions.show_caption('%alt_sound_' + sound + '%', sound))
+	TE.audio.sound_finished.connect(func(sound): captions.hide_caption(sound))
+	
 	get_tree().get_root().connect('files_dropped', _load_translation_package)
 	
 	# set current scene to be the initial scene
@@ -107,6 +115,13 @@ func _ready():
 	
 	# disable auto quit to save various game files with quit_game()
 	get_tree().set_auto_accept_quit(false)
+
+
+func _handle_song_played_caption(song_id: String):
+	if song_id == '':
+		captions.hide_caption('song')
+	else:
+		captions.show_caption('%alt_song_' + song_id + '%', 'song')
 
 
 # sets the scene to the given scene and calls callback afterwards
@@ -119,7 +134,7 @@ func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: boo
 func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 	var old_scene = current_scene
 	current_scene = new_scene
-	current_scene.theme = TETheme.current_theme
+	#current_scene.theme = TETheme.current_theme
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
 	
@@ -130,6 +145,9 @@ func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 	else:
 		get_tree().root.remove_child(old_scene)
 		after.call(old_scene)
+	
+	# move captions to front
+	get_tree().root.move_child(captions, -1)
 
 
 # detects all available languages by crawling the filesystem

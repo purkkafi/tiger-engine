@@ -161,7 +161,7 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 				var size: int = current_theme.get_font_size(fs, tp)
 				current_theme.set_font_size(fs, tp, int(size * od_size_factor))
 	
-	TE.current_scene.theme = current_theme
+	get_tree().root.theme = current_theme
 	emit_signal('theme_changed')
 
 
