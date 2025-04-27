@@ -194,7 +194,7 @@ func _resolve_large_theme(id: String) -> Theme:
 
 func _resolve_animations(id: String) -> Variant:
 	var path = 'res://assets/themes/%s/animations.gd' % id
-	if FileAccess.file_exists(path):
+	if ResourceLoader.exists(path):
 		return (load(path) as GDScript).new()
 	return null
 
@@ -206,6 +206,6 @@ func force_change_settings(gui_scale: Settings.GUIScale, dyslexic_font: bool):
 
 func _resolve_font_data(id: String) -> Variant:
 	var path = 'res://assets/themes/%s/font_data.gd' % id
-	if FileAccess.file_exists(path):
+	if ResourceLoader.exists(path):
 		return (load(path) as GDScript).new()
 	return null
