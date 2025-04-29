@@ -44,7 +44,7 @@ func _ready():
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
 	
 	# if settings file exists, read it and switch to the specified language
-	var loaded_settings = Settings.load_from_file()
+	var loaded_settings = null if TE.ignore_settings else Settings.load_from_file()
 	if loaded_settings is Settings:
 		TE.settings = loaded_settings
 		# save immediately in case settings were modified due to
@@ -92,8 +92,9 @@ func display_language_choice():
 		
 		btn.text = lang.full_name()
 		btn.set_meta('lang_id', lang.id)
-		if lang.icon_path != '':
-			btn.icon = load('%s/%s' % [lang.path, lang.icon_path]) as Texture2D
+		
+		if lang.icon_path != null:
+			btn.icon = load(lang.icon_path) as Texture2D
 		
 		btn.set_h_size_flags(Control.SIZE_SHRINK_CENTER) 
 		btn.connect('pressed', _language_selected.bind(lang))

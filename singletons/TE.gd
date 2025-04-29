@@ -22,6 +22,8 @@ var current_scene: Node = null
 var all_languages: Array[Lang] = []
 # whether debug mode should be force-enabled
 var _force_debug: bool = false
+# whether local settings file should be ignored
+var ignore_settings: bool = false
 # whether platform should be treated as mobile
 var _force_mobile: bool = false
 # whether platform should be treated as web
@@ -169,6 +171,11 @@ func detect_languages() -> bool:
 		var lang: Lang = load(lang_path + '/' + folder + '/lang.tef')
 		lang.id = folder
 		lang.path = lang_path + '/' + folder
+		
+		# TODO support other file types?
+		var icon_path: String = '%s/icon.png' % lang.path
+		if ResourceLoader.exists(icon_path):
+			lang.icon_path = icon_path
 		
 		found.append(lang)
 

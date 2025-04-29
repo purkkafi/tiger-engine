@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://pfvckvid08md" path="res://tiger-engine/singletons/Captions.gd" id="1_aq2a3"]
 
 [node name="Captions" type="Control"]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
-mouse_recursive_behavior = 2
 script = ExtResource("1_aq2a3")
 
 [node name="Margins" type="MarginContainer" parent="."]

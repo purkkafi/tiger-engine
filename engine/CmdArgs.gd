@@ -11,6 +11,8 @@ static func handle_args() -> Variant:
 	var parser: ArgParser = ArgParser.new()
 	
 	parser.register('--debug', ArgParser.Type.FLAG, ['-d'], 'Run in debug mode.')
+	parser.register('--ignore-settings', ArgParser.Type.FLAG, ['-i'], 'Ignore local settings file if it exists.')
+	
 	parser.register('--mobile', ArgParser.Type.FLAG, ['-m'], 'Run as if on mobile.')
 	parser.register('--web', ArgParser.Type.FLAG, ['-w'], 'Run as if on the browser.')
 	parser.set_as_exclusive(['--mobile', '--web'])
@@ -31,6 +33,9 @@ static func handle_args() -> Variant:
 	
 	if '--debug' in parsed:
 		TE._force_debug = true
+	
+	if '--ignore-settings' in parsed:
+		TE.ignore_settings = true
 	
 	if '--mobile' in parsed:
 		TE._force_mobile = true

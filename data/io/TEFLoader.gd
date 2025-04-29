@@ -112,7 +112,6 @@ func _resolve_top_level(node: Tag):
 func _resolve_lang(tree: Tag):
 		var name: String
 		var translation_by: String = ''
-		var icon_path: String = ''
 		
 		for tag in tree.get_tags():
 			match tag.name:
@@ -120,12 +119,10 @@ func _resolve_lang(tree: Tag):
 					name = tag.get_string()
 				'translation_by':
 					translation_by = tag.get_string()
-				'icon_path':
-					icon_path = tag.get_string()
 				_:
 					push_error('unknown lang file tag: %s' % tag)
 		
-		return Lang.new(name, translation_by, icon_path)
+		return Lang.new(name, translation_by)
 
 
 func _resolve_localize(node: Tag):

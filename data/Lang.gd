@@ -7,14 +7,12 @@ var name: String # the name  (e.g. "English", "Suomi")
 var translation_by: String # the name of the translator(s) (empty for default langs)
 var id: String = '' # the id, set dynamically when game is initialized
 var path: String = '' # the file path, set dynamically when game is initialized
-# the icon file's path relative to the lang folder or '' if there is no icon
-var icon_path: String = ''
+var icon_path: Variant = null # absolute path of the icon, null if doesn't exist
 
 
-func _init(_name: String, _by: String, _icon_path: String):
+func _init(_name: String, _by: String):
 	name = _name
 	translation_by = _by
-	icon_path = _icon_path
 
 
 # returns the full name of this language, containing its
