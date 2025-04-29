@@ -2,6 +2,12 @@ extends Node
 # code for managing themes and variations applied to them
 
 
+const od_regular: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
+const od_bold: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold.otf')
+const od_italic: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
+const od_bold_italic: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold-Italic.otf')
+
+
 # the current base Theme, on top of which variations may be applied
 var _base_theme: Theme = Theme.new()
 # the current large theme variant
@@ -21,19 +27,12 @@ var anim_overlay_out: Callable = NO_ANIM
 var anim_shadow_in: Callable = NO_ANIM
 var anim_shadow_out: Callable = NO_ANIM
 var anim_full_image_in: Callable = NO_ANIM
-# script that holds font-related data
-var font_data = null
 
 
 # signal emitted when the variable current_theme is changed
 # clients can connect to this to reinitialize themselves if they need to
 @warning_ignore("unused_signal")
 signal theme_changed
-
-
-enum FontStyle {
-	NORMAL, BOLD, ITALIC, BOLD_ITALIC
-}
 
 
 # changes the base theme
@@ -73,15 +72,6 @@ func set_theme(theme_id: String):
 		anim_shadow_out = NO_ANIM
 		anim_full_image_in = NO_ANIM
 	
-	if font_data != null:
-		self.remove_child(font_data)
-		font_data.queue_free()
-	
-	font_data = _resolve_font_data(theme_id)
-	
-	if font_data != null:
-		self.add_child(font_data)
-	
 	background_color = _base_theme.get_color('background_color', 'Global')
 	shadow_color = _base_theme.get_color('shadow_color', 'Global')
 	default_text_color = _base_theme.get_color('font_color', 'Label')
@@ -111,58 +101,56 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 	if force_dyslexic_font != null:
 		is_dyslexic_font = force_dyslexic_font
 	
-	if is_dyslexic_font:
-		var od_regular = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Regular.otf')
-		var od_bold = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold.otf')
-		var od_italic = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
-		var od_bold_italic = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold-Italic.otf')
-		
-		var od_size_factor: float = 1.0
-		if font_data != null:
-			od_size_factor = font_data.opendyslexic_size_factor()
-			
-			var extra_space = font_data.opendyslexic_extra_space() if 'opendyslexic_extra_space' in font_data else 0
-			for fnt in [od_regular, od_bold, od_italic, od_bold_italic]:
-				fnt.set_extra_spacing(0, TextServer.SPACING_TOP, extra_space)
-				fnt.set_extra_spacing(0, TextServer.SPACING_BOTTOM, extra_space)
-		
-		if current_theme.has_default_font():
-			current_theme.default_font = od_regular
-		if current_theme.has_default_font_size():
-			current_theme.default_font_size = int(current_theme.default_font_size * od_size_factor)
-		
+	if is_dyslexic_font:		
 		# convert every theme font to OpenDyslexic equivalent
 		for tp in current_theme.get_type_list():
+			
+			# the default font for this type; by default the default font
+			var default_font = current_theme.get_font(tp, '')
+			
 			for fn in current_theme.get_font_list(tp):
 				# do not replace line end symbol font
 				if tp == 'Global' and fn == 'line_end_symbol':
 					continue
 				
-				var theme_font: String = current_theme.get_font(fn, tp).resource_path
-				var to_style: FontStyle
+				var font: Font = current_theme.get_font(fn, tp)
+				var style = font.get_font_style()
 				
-				if font_data != null:
-					to_style = font_data.get_font_style(theme_font)
-				else:
-					to_style = FontStyle.NORMAL
-				
-				match to_style:
-					FontStyle.BOLD_ITALIC:
-						current_theme.set_font(fn, tp, od_bold_italic)
-					FontStyle.ITALIC:
-						current_theme.set_font(fn, tp, od_italic)
-					FontStyle.BOLD:
-						current_theme.set_font(fn, tp, od_bold)
+				var replacement: Font
+				match style:
+					TextServer.FONT_BOLD | TextServer.FONT_ITALIC:
+						replacement = od_bold_italic
+					TextServer.FONT_ITALIC:
+						replacement = od_italic
+					TextServer.FONT_BOLD:
+						replacement = od_bold
 					_:
-						current_theme.set_font(fn, tp, od_regular)
+						replacement = od_regular
+						default_font = font # use this as the default font
+				
+				current_theme.set_font(fn, tp, replacement)
 			
-			# reduce font size to make up for the fact that OpenDyslexic tends to take more space
+			# find appropriate replacement font sizes
 			for fs in current_theme.get_font_size_list(tp):
-				var size: int = current_theme.get_font_size(fs, tp)
-				current_theme.set_font_size(fs, tp, int(size * od_size_factor))
+				var base_size: int = current_theme.get_font_size(fs, tp)
+				current_theme.set_font_size(fs, tp, _find_od_size(default_font, base_size, od_regular))
+		
+		# finally, chabge the default font, if any
+		if current_theme.has_default_font() and current_theme.has_default_font_size():
+			current_theme.default_font_size = _find_od_size(current_theme.default_font, current_theme.default_font_size, od_regular)
+			current_theme.default_font = od_regular
 	
 	get_tree().root.theme = current_theme
 	emit_signal('theme_changed')
+
+
+# finds a font size for an OpenDyslexic font that matches the given font at the given size
+func _find_od_size(base_font: Font, base_size: int, od_font: Font) -> int:
+	var target_height: float = base_font.get_height(base_size)
+	var od_size: int = 12 # start search from an arbitrary small size
+	while od_font.get_height(od_size) < target_height:
+		od_size = od_size + 2
+	return od_size
 
 
 # GODOT BUG: merge_with() ignres default base scale, font, and font size
@@ -202,10 +190,3 @@ func _resolve_animations(id: String) -> Variant:
 # applies the given settings to the theme
 func force_change_settings(gui_scale: Settings.GUIScale, dyslexic_font: bool):
 	_apply_variations(gui_scale, dyslexic_font)
-
-
-func _resolve_font_data(id: String) -> Variant:
-	var path = 'res://assets/themes/%s/font_data.gd' % id
-	if ResourceLoader.exists(path):
-		return (load(path) as GDScript).new()
-	return null

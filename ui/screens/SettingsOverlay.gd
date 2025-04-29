@@ -237,17 +237,17 @@ func _save_exit():
 	TE.settings.skip_unseen_text = skip_unseen_text.button_pressed
 	TE.settings.lang_id = TE.language.id
 	
-	for btn in key_buttons:
-		if btn is Button:
-			TE.settings.keys[btn.get_meta('key_id')] = btn.get_meta('key')
-	Settings.change_keyboard_shortcuts(TE.settings.keys)
-	
 	TE.settings.gui_scale = gui_scale.selected as Settings.GUIScale
 	TE.settings.dyslexic_font = dyslexic_font.button_pressed
 	TE.settings.audio_captions = audio_captions.button_pressed
 	
 	if not TE.is_mobile():
 		TE.settings.fullscreen = window_options.selected == WM_FULLSCREEN
+		
+		for btn in key_buttons:
+			if btn is Button:
+				TE.settings.keys[btn.get_meta('key_id')] = btn.get_meta('key')
+				Settings.change_keyboard_shortcuts(TE.settings.keys)
 	
 	TE.settings.save_to_file()
 	_exit()
