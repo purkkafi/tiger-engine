@@ -626,7 +626,8 @@ func reset_speedup():
 # returns the string put at the end of each line
 func line_end_string() -> String:
 	var symbol_font = get_theme_font('line_end_symbol', 'Global')
-	if symbol_font == null:
-		return '[next] ▶[/next]'
-	else:
+	# detects that not godot default font
+	if symbol_font != null and symbol_font.resource_path != '':
 		return '[next] [font=%s]▶[/font][/next]' % symbol_font.resource_path
+	else:
+		return '[next] ▶[/next]'
