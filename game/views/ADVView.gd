@@ -33,9 +33,17 @@ func initialize(ctxt: View.InitContext):
 
 func adjust_size(controls: VNControls):
 	var controls_height: float = controls.size.y if controls != null else 0.0
-	var w: float = get_theme_constant('width', 'ADVView')
-	var h: float = get_theme_constant('height', 'ADVView')
+	
+	var w: float = 1200
+	if has_theme_constant('width', 'ADVView'):
+		w = get_theme_constant('width', 'ADVView')
+	
+	var h: float = 300
+	if has_theme_constant('height', 'ADVView'):
+		h = get_theme_constant('height', 'ADVView')
+	
 	var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
+	
 	var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
 	
 	box.size.x = w

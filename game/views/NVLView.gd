@@ -45,9 +45,18 @@ func initialize(_ctxt: InitContext):
 
 func adjust_size(controls: VNControls):
 	var controls_height = controls.size.y if controls != null else 0.0
-	var top_margin: float = get_theme_constant('top_margin', type_variation)
-	var bottom_margin: float = get_theme_constant('bottom_margin', type_variation)
-	var width: float = get_theme_constant('width', type_variation)
+	
+	var top_margin: float = 50
+	if has_theme_constant('top_margin', type_variation):
+		top_margin = get_theme_constant('top_margin', type_variation)
+	
+	var bottom_margin: float = 50
+	if has_theme_constant('bottom_margin', type_variation):
+		bottom_margin = get_theme_constant('bottom_margin', type_variation)
+	
+	var width: float = 1200
+	if has_theme_constant('width', type_variation):
+		width = get_theme_constant('width', type_variation)
 	
 	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
 	$Scroll.position.y = top_margin
