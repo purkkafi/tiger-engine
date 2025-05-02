@@ -120,7 +120,7 @@ func _refresh_language_options():
 		var lang: Lang = TE.all_languages[i]
 		lang_options.add_item(lang.full_name(), i)
 		
-		if lang.icon_path != '':
+		if lang.icon_path != null:
 			lang_options.set_item_icon(i, load(lang.icon_path) as Texture2D)
 		
 		if lang == TE.language:

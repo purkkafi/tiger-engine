@@ -55,10 +55,21 @@ func adjust_size():
 	# width is 'width' as defined in 'VNControlsPanel'
 	# height is 'bottom_offset' + 'height' + 'top_offset'
 	
-	var w: float = get_theme_constant('width', 'VNControlsPanel')
-	var h: float =  get_theme_constant('height', 'VNControlsPanel')
-	var bottom_offset: float = get_theme_constant('bottom_offset', 'VNControlsPanel')
-	var top_offset: float = get_theme_constant('top_offset', 'VNControlsPanel')
+	var w: float = 1200
+	if has_theme_constant('width', 'VNControlsPanel'):
+		w = get_theme_constant('width', 'VNControlsPanel')
+	
+	var h: float = 50
+	if has_theme_constant('height', 'VNControlsPanel'):
+		h = get_theme_constant('height', 'VNControlsPanel')
+	
+	var bottom_offset: float = 5
+	if has_theme_constant('bottom_offset', 'VNControlsPanel'):
+		bottom_offset = get_theme_constant('bottom_offset', 'VNControlsPanel')
+	
+	var top_offset: float = 5
+	if has_theme_constant('top_offset', 'VNControlsPanel'):
+		top_offset = get_theme_constant('top_offset', 'VNControlsPanel')
 	
 	panel.size.x = w
 	panel.size.y = h
