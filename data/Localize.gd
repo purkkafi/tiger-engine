@@ -31,11 +31,9 @@ static func of_lang(lang: String):
 	var dir_path: String = 'res://assets/lang/%s/localize' % lang
 	var dir: DirAccess = DirAccess.open(dir_path)
 	
-	dir.list_dir_begin()
-	while true:
-		var file: String = dir.get_next()
+	for file in dir.get_files():
 		if file == '' or file.ends_with('.uid'):
-			break
+			continue
 		# TODO: this just indiscriminantly merges files, should there be
 		# checks for duplicate localize ids?
 		strings.merge((load(dir_path + '/' + file) as LocalizeResource).content)

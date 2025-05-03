@@ -2,6 +2,7 @@ class_name ADVView extends View
 
 
 @onready var box: PanelContainer = %TextBox
+@onready var decoration: Panel = %Decoration
 @onready var speaker_panel: PanelContainer = %SpeakerPanel
 @onready var speaker_name: Label = %SpeakerName
 var label: RichTextLabel
@@ -50,6 +51,16 @@ func adjust_size(controls: VNControls):
 	box.size.y = h
 	box.position.x = (TE.SCREEN_WIDTH - w)/2 
 	box.position.y = TE.SCREEN_HEIGHT - h - controls_height
+	
+	decoration.position = box.position
+	decoration.size = box.size
+	
+	print(box.get_theme_stylebox('panel', 'ADVView').resource_path)
+	
+	if has_theme_stylebox('decoration', 'ADVView'):
+		decoration.add_theme_stylebox_override('panel', get_theme_stylebox('decoration', 'ADVView'))
+	else:
+		decoration.visible = false
 	
 	speaker_panel.position.x = box.position.x + speaker_offset_x
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y

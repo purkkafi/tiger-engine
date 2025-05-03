@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cnfsm3m6bl1ge"]
 
-[ext_resource type="Script" path="res://tiger-engine/game/views/NVLView.gd" id="1_dkpbi"]
+[ext_resource type="Script" uid="uid://bj31mlwjg6x71" path="res://tiger-engine/game/views/NVLView.gd" id="1_dkpbi"]
 
 [node name="NVLView" type="Control"]
 layout_mode = 3

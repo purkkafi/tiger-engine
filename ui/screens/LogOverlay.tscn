@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bq63q6yj8nts5"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/LogOverlay.gd" id="2_twusl"]
+[ext_resource type="Script" uid="uid://fjal6aluto04" path="res://tiger-engine/ui/screens/LogOverlay.gd" id="2_twusl"]
 
 [node name="Container" type="PanelContainer"]
 anchors_preset = 15
@@ -10,6 +10,7 @@ offset_left = 400.0
 offset_top = 100.0
 offset_right = -400.0
 offset_bottom = -100.0
+theme_type_variation = &"Overlay"
 script = ExtResource("2_twusl")
 
 [node name="Margins" type="MarginContainer" parent="."]

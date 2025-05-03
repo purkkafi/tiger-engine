@@ -405,6 +405,7 @@ func create_label() -> RichTextLabel:
 	label.text = ''
 	label.clip_contents = false
 	label.theme_type_variation = 'GameTextLabel'
+	label.focus_mode = Control.FOCUS_NONE
 	
 	return label
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c85avq4erlxlg"]
 
-[ext_resource type="Script" path="res://tiger-engine/ui/screens/SavingOverlay.gd" id="2_o3abm"]
+[ext_resource type="Script" uid="uid://nha0rc2uouyn" path="res://tiger-engine/ui/screens/SavingOverlay.gd" id="2_o3abm"]
 
 [node name="Container" type="PanelContainer"]
 anchors_preset = 15
@@ -10,6 +10,7 @@ offset_left = 200.0
 offset_top = 100.0
 offset_right = -200.0
 offset_bottom = -100.0
+theme_type_variation = &"Overlay"
 script = ExtResource("2_o3abm")
 
 [node name="Margins" type="MarginContainer" parent="."]

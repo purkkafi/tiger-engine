@@ -10,6 +10,7 @@ offset_left = 400.0
 offset_top = 100.0
 offset_right = -400.0
 offset_bottom = -100.0
+theme_type_variation = &"Overlay"
 script = ExtResource("2_2w7fv")
 
 [node name="Margins" type="MarginContainer" parent="."]
