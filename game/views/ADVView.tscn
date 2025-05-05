@@ -25,6 +25,7 @@ unique_name_in_owner = true
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 2
 
 [node name="SpeakerPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
