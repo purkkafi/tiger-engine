@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://hekxp6y8nfsu"]
+[gd_scene load_steps=5 format=3 uid="uid://hekxp6y8nfsu"]
 
-[ext_resource type="Script" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
+[ext_resource type="Script" uid="uid://p7vjo070qiok" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
 [ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="1_o0gew"]
+[ext_resource type="PackedScene" uid="uid://dj5b2g3xmpfgs" path="res://tiger-engine/game/VNControls.tscn" id="3_4kxbx"]
+[ext_resource type="PackedScene" uid="uid://b3rlrbanr73ci" path="res://tiger-engine/game/views/ADVView.tscn" id="4_fhyyp"]
 
 [node name="StageEditor" type="Control"]
 layout_mode = 3
@@ -13,6 +15,12 @@ grow_vertical = 2
 script = ExtResource("1_8xaur")
 
 [node name="VNStage" parent="." instance=ExtResource("1_o0gew")]
+layout_mode = 1
+
+[node name="ADVView" parent="." instance=ExtResource("4_fhyyp")]
+layout_mode = 1
+
+[node name="VNControls" parent="." instance=ExtResource("3_4kxbx")]
 layout_mode = 1
 
 [node name="Margins" type="MarginContainer" parent="."]
@@ -63,6 +71,11 @@ text = "Save sprite"
 layout_mode = 2
 text = "Debug"
 
+[node name="ADV" type="CheckButton" parent="Margins/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ADV"
+
 [node name="ScreenshotViewport" type="SubViewport" parent="."]
 transparent_bg = true
 handle_input_locally = false
@@ -76,3 +89,4 @@ size = Vector2i(2, 2)
 [connection signal="pressed" from="Margins/Buttons/Exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="Margins/Buttons/SaveSprite" to="." method="_on_save_sprite_pressed"]
 [connection signal="toggled" from="Margins/Buttons/Debug" to="." method="_on_debug_toggled"]
+[connection signal="toggled" from="Margins/Buttons/ADV" to="." method="_on_adv_toggled"]

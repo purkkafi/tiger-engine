@@ -2,6 +2,8 @@ extends Control
 
 
 @onready var stage: VNStage = $VNStage
+@onready var vn_controls: VNControls = $VNControls
+@onready var adv_view: ADVView = $ADVView
 var lexer: Lexer = Lexer.new()
 var parser: Parser = Parser.new()
 
@@ -48,6 +50,14 @@ func _init():
 func _ready():
 	_enable_buttons()
 	$ScreenshotViewport.size = Vector2(0, 0)
+	
+	vn_controls.adjust_size()
+	vn_controls.set_buttons_disabled(true)
+	vn_controls.visible = false
+	
+	adv_view.adjust_size(vn_controls)
+	adv_view.visible = false
+	
 
 
 func _on_set_bg_pressed():
@@ -346,3 +356,8 @@ func show_error(msg: String):
 
 func _on_debug_toggled(button_pressed):
 	TE.draw_debug = button_pressed
+
+
+func _on_adv_toggled(button_pressed: bool) -> void:
+	vn_controls.visible = button_pressed
+	adv_view.visible = button_pressed
