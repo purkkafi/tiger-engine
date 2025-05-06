@@ -7,6 +7,13 @@ const od_bold: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.1
 const od_italic: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Italic.otf')
 const od_bold_italic: Font = preload('res://tiger-engine/resources/opendyslexic-0.910.12-rc2-2019.10.17/OpenDyslexic-Bold-Italic.otf')
 
+const LOREM_IPSUM = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad \
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea \
+commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit \
+esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
+non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+
 
 # the current base Theme, on top of which variations may be applied
 var _base_theme: Theme = Theme.new()
@@ -144,12 +151,19 @@ func _apply_variations(force_gui_scale = null, force_dyslexic_font = null):
 	emit_signal('theme_changed')
 
 
+# dirty, possibly illegal hack for generating a number that approximates the line
+# height of the given font at the given size in comparison to other fonts & sizes
+func _approximate_relative_height(font: Font, size: int) -> float:
+	return font.get_multiline_string_size(LOREM_IPSUM, HORIZONTAL_ALIGNMENT_LEFT, 800, size).y
+
+
 # finds a font size for an OpenDyslexic font that matches the given font at the given size
 func _find_od_size(base_font: Font, base_size: int, od_font: Font) -> int:
-	var target_height: float = base_font.get_height(base_size)
+	var target_height: float = _approximate_relative_height(base_font, base_size)
 	var od_size: int = 12 # start search from an arbitrary small size
-	while od_font.get_height(od_size) < target_height:
+	while _approximate_relative_height(od_font, od_size) < target_height:
 		od_size = od_size + 2
+	
 	return od_size
 
 
