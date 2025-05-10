@@ -347,7 +347,14 @@ func _parse_song_definition(defs: Definitions, node: Tag) -> String:
 func _parse_img_definition(defs: Definitions, node: Tag) -> String:
 	node.expect_length(2, 3)
 	var id: String = node.get_string_at(0)
-	var value: String = node.get_string_at(1)
+	var value: Variant
+	
+	if node.get_string_at(1) != null:
+		value = node.get_string_at(1)
+	elif node.get_tag_at(1) != null and node.get_tag_at(1).name == 'placeholder':
+		value = Definitions.PLACEHOLDER
+	else:
+		push_error('img definition must be string or \\placeholder, got %s' % node.get_value_at(1))
 	
 	if node.has_index(2):
 		for option in node.get_tags_at(2):

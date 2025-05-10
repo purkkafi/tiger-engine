@@ -2,7 +2,12 @@ class_name Definitions extends Resource
 # maps ids of game assets to resources
 
 
+# marker object for placeholder images
+static var PLACEHOLDER: Variant = Object.new()
+
+
 # a map of ids to images, which are paths relative to the 'assets/bg' folder
+# or the PLACEHOLDER constant
 var imgs: Dictionary = {}
 var img_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of transition ids to Transition objects

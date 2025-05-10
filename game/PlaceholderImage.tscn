@@ -1,0 +1,82 @@
+[gd_scene load_steps=2 format=3 uid="uid://drb0ideh1ptvr"]
+
+[ext_resource type="Script" uid="uid://bgip1h3154xag" path="res://tiger-engine/game/PlaceholderImage.gd" id="1_73k4o"]
+
+[node name="PlaceholderImage" type="ColorRect"]
+color = Color(0.5, 0.5, 0.5, 1)
+script = ExtResource("1_73k4o")
+
+[node name="Grid" type="GridContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 11.0
+offset_bottom = 77.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 3
+
+[node name="Label1" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label4" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label5" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label6" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label7" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label8" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label9" type="Label" parent="Grid"]
+layout_mode = 2
+size_flags_horizontal = 7
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
