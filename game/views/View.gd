@@ -298,8 +298,6 @@ func update_state(delta: float):
 	if state == State.WAITING_LINE_SWITCH_COOLDOWN or speedup == Speedup.SKIP:
 		line_switch_delta -= delta
 		if line_switch_delta < 0:
-			if line_index == len(_lines):
-				_block_ended()
 			state = State.READY_TO_PROCEED
 		return
 	else:
@@ -358,6 +356,7 @@ func game_advanced(delta: float):
 		# call callback if this is the end of the current block
 		if line_index == len(_lines):
 			_block_ended()
+			
 		line_switch_delta = LINE_SWITCH_COOLDOWN
 		state = State.WAITING_LINE_SWITCH_COOLDOWN
 	

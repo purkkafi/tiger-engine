@@ -58,12 +58,15 @@ func adjust_size(controls: VNControls):
 	if has_theme_constant('width', type_variation):
 		width = get_theme_constant('width', type_variation)
 	
-	$Scroll.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
-	$Scroll.position.y = top_margin
+	if has_theme_stylebox('panel', type_variation):
+		%Panel.add_theme_stylebox_override('panel', get_theme_stylebox('panel', type_variation))
+	
+	%Panel.size.y = (TE.SCREEN_HEIGHT - controls_height - top_margin - bottom_margin)
+	%Panel.position.y = top_margin
 	
 	var w = width
-	$Scroll.size.x = w
-	$Scroll.position.x = (TE.SCREEN_WIDTH - w)/2
+	%Panel.size.x = w
+	%Panel.position.x = (TE.SCREEN_WIDTH - w)/2
 	
 	for child in paragraphs.get_children():
 		if child is TextureRect:

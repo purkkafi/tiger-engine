@@ -98,7 +98,7 @@ func _get_layer_node(id: String) -> Node:
 			TE.log_error(TE.Error.FILE_ERROR, "Layer object not found: '%s'" % id)
 		
 		# is placeholder, actual image not added yet
-		if TE.defs.imgs[id] == Definitions.PLACEHOLDER:
+		if not TE.defs.imgs[id] is String and TE.defs.imgs[id] == Definitions.PLACEHOLDER:
 			var placeholder: = preload('res://tiger-engine/game/PlaceholderImage.tscn').instantiate()
 			placeholder.set_text(id)
 			return placeholder
@@ -154,7 +154,6 @@ func _replace_with(layer: Node, new_layer: Node):
 	remove_child(layer)
 	move_child(new_layer, old_pos)
 	new_layer.name = layer.name
-	
 	layer.queue_free()
 
 
@@ -476,12 +475,18 @@ func get_state() -> Dictionary:
 # this removes all objects from the stage and whoever uses the cache
 # must free them manually
 func get_node_cache() -> Dictionary:
-	var cache: Dictionary = {
-		'BG:%s' % bg_id: $BG,
-		'FG:%s' % fg_id: $FG
-	}
-	remove_child($BG)
-	remove_child($FG)
+	var cache: Dictionary = {}
+	
+	var _bg = get_node('NewBG') if has_node('NewBG') else get_node('BG') if has_node('BG') else null
+	var _fg = get_node('NewFG') if has_node('NewFG') else get_node('FG') if has_node('FG') else null
+	
+	if _bg != null:
+		cache['BG:%s' % bg_id] = _bg
+		remove_child(_bg)
+	
+	if _fg != null:
+		cache['FG:%s' % fg_id] = _fg
+		remove_child(_fg)
 	
 	for sprite in $Sprites.get_children():
 		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite

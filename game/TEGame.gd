@@ -610,6 +610,7 @@ func take_user_screenshot():
 
 
 func _back():
+	# TODO implement caching for expensive View instances
 	TE.load_from_save(rollback.pop(), rollback, gamelog, $VNStage.get_node_cache())
 
 

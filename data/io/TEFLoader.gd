@@ -51,10 +51,12 @@ func _load(path, _original_path, _use_sub_threads, _cache_mode):
 	
 	# special handling for blockfiles because they consist of multiple top-level objects
 	if type == 'block':
-		var blocks = {}
+		var blocks: Dictionary[String, Block] = {}
+		
 		for node in tree:
-			var parts = _resolve_top_level(node)
-			blocks[parts[0]] = parts[1]
+			var resolved = _resolve_top_level(node)
+			if resolved is ParsedBlock:
+				blocks[resolved.name] = resolved.content
 		
 		# extracts the 'NAME' part of 'path/to/file/NAME.tef'
 		var id: String = path.substr(path.rfind('/')+1)
@@ -135,12 +137,18 @@ func _resolve_localize(node: Tag):
 	return LocalizeResource.new(dict)
 
 
+class ParsedBlock:
+	var name: String
+	var content: Block
+
+
 # resolves a singular block definition
-func _resolve_block(tag: Tag):
-	var name = tag.get_string_at(0)
-	var nodes = tag.args[1]
+func _resolve_block(tag: Tag) -> ParsedBlock:
+	var block: ParsedBlock = ParsedBlock.new()
+	block.name = tag.get_string_at(0)
+	block.content = Block.new(tag.args[1])
 	
-	return [name, Block.new(nodes)]
+	return block
 
 
 func _resolve_definitions(tree: Tag):

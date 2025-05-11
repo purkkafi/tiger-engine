@@ -113,10 +113,10 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 				if ins.in_file != null:
 					Assets.scripts.queue(ins.in_file + '.tef', 'res://assets/scripts')
 			'BG':
-				if ins.bg_id in TE.defs.imgs and not TE.defs.imgs[ins.bg_id] == Definitions.PLACEHOLDER:
+				if ins.bg_id in TE.defs.imgs and TE.defs.imgs[ins.bg_id] is String:
 					Assets.imgs.queue(TE.defs.imgs[ins.bg_id], 'res://assets/img')
 			'FG':
-				if ins.fg_id in TE.defs.imgs and not TE.defs.imgs[ins.fg_id] == Definitions.PLACEHOLDER:
+				if ins.fg_id in TE.defs.imgs and TE.defs.imgs[ins.fg_id] is String:
 					Assets.imgs.queue(TE.defs.imgs[ins.fg_id], 'res://assets/img')
 			'Music':
 				if ins.song_id != '':

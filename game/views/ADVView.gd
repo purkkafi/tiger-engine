@@ -55,8 +55,6 @@ func adjust_size(controls: VNControls):
 	decoration.position = box.position
 	decoration.size = box.size
 	
-	print(box.get_theme_stylebox('panel', 'ADVView').resource_path)
-	
 	if has_theme_stylebox('decoration', 'ADVView'):
 		decoration.add_theme_stylebox_override('panel', get_theme_stylebox('decoration', 'ADVView'))
 	else:
@@ -83,7 +81,7 @@ func _display_line(line: String, speaker: Speaker = null):
 		if speaker.textbox_variation != '':
 			box.theme_type_variation = speaker.textbox_variation
 		else:
-			box.theme_type_variation = 'ADVViewWithSpeaker'
+			box.theme_type_variation = 'ADVView'
 		
 		if speaker.label_variation != '':
 			speaker_panel.theme_type_variation = speaker.label_variation
