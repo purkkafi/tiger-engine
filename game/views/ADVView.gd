@@ -60,7 +60,10 @@ func adjust_size(controls: VNControls):
 	else:
 		decoration.visible = false
 	
-	speaker_panel.position.x = box.position.x + speaker_offset_x
+	if has_theme_constant('center_horizontally', 'ADVSpeaker') and get_theme_constant('center_horizontally', 'ADVSpeaker') == 1:
+		speaker_panel.position.x = (TE.SCREEN_WIDTH - speaker_panel.size.x)/2
+	else:
+		speaker_panel.position.x = box.position.x + speaker_offset_x
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y
 
 
