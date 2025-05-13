@@ -116,6 +116,16 @@ func _init(_resource: SpriteResource):
 				
 				shorthands[shorthand_id] = effects
 			
+			'shorthands_for_attribute':
+				if len(tag.args) != 1:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"\\shorthand_for_attribute requires attr, got '%s'" & tag)
+					continue
+				
+				var attr_id: String = tag.get_string()
+				for value in attributes[attr_id]:
+					shorthands[value] = [ EqPredicate.new(attr_id, value, self) ]
+			
 			'y_offset':
 				if tag.get_string() == null:
 					TE.log_error(TE.Error.FILE_ERROR,

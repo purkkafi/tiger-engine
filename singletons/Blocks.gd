@@ -80,6 +80,8 @@ static func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContex
 				parts.push_back(parts.pop_back() + '[i]' + node.get_string() + '[/i]')
 			elif node.name == 'b':
 				parts.push_back(parts.pop_back() + '[b]' + node.get_string() + '[/b]')
+			elif node.name == 'quote':
+				parts.push_back(parts.pop_back() + TE.localize.autoquote(node.get_string()))
 			elif node.name == 'link':
 				parts.push_back(parts.pop_back() + '[url=' + node.get_string_at(1) + ']' + node.get_string_at(0) + '[/url]')
 			elif node.name == 'erase':
