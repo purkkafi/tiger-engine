@@ -119,7 +119,8 @@ func get_state() -> Dictionary:
 func from_state(savestate: Dictionary):
 	path = savestate['cutscene_path']
 	wait_input = savestate['wait_input']
-	custom_options = savestate['custom_options']
+	custom_options.clear()
+	custom_options.merge(savestate['custom_options'])
 	super.from_state(savestate)
 
 
