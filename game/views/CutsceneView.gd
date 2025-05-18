@@ -90,7 +90,7 @@ func game_advanced(delta: float):
 
 func _process(_delta):
 	# if 'wait_input' is true, allow skipping entire animation with speedup
-	if wait_input and self.speedup == Speedup.FASTER:
+	if wait_input and self.speedup == Speedup.SPEEDUP:
 		is_finished = true
 		waiting_for_input = false
 

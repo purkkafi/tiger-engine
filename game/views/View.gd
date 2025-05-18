@@ -15,7 +15,8 @@ var next_effect = RichTextNext.new() # effect that implements the ▶ effect
 var pause_delta: float = 0.0 # delta to wait until pause is over
 var next_letter_delta: float = 0.0 # delta until next letter is displayed
 var advance_held: float = 0.0 # sum of delta for which game has been advanced
-var line_switch_delta = 0.0 # delta until advancing to the next line if on FASTER speedup
+var advance_held_this_line: float = 0.0 # like 'advance_held' but reset on each line
+var cooldown = 0.0 # cooldown time remaining
 var speedup: Speedup = Speedup.NORMAL # status of speedup
 # whether current line has been read previously by the player
 var previously_seen_line: bool = false
@@ -28,10 +29,12 @@ var previous_state: Variant = null
 
 
 # TODO implement setting for skip speed?
-const LINE_SWITCH_COOLDOWN: float = 0.1 # cooldown for moving to next line on speedup
+const SKIP_COOLDOWN: float = 0.1 # cooldown when moving to next line on speedup
+const JUMP_TO_LINE_END_COOLDOWN: float = 0.75 # cooldown after scrolling text is skipped to line end
+
 const SKIP_TWEEN_SCALE: float = 10.0 # factor to multiply tweening speed with
-const SPEEDUP_THRESHOLD_FAST: float = 0.25 # treshold to start speeding up
-const SPEEDUP_THRESHOLD_FASTER: float = 1.15 # treshold to start speeding up faster
+const SKIP_TO_LINE_END_THRESHOLD: float = 0.05 # treshold to skip to line end
+const SPEEDUP_THRESHOLD_FASTER: float = 1.5 # treshold to start speeding up faster
 const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	' ' : 0, '\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
@@ -49,12 +52,9 @@ static var GET_BBCODE: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<con
 # current speedup state; will move continuously to faster speedup as input is held down
 enum Speedup {
 	NORMAL, # no speedup
-	# scroll to end of current line and set state to WAITING_UNADVANCE (which will then set state
-	# to WAITING_ADVANCE i.e. user has to release spacebar and/or mouse and then press it again)
-	FAST,
-	# accelerate tweens, scroll to end of line & set state to WAITING_LINE_SWITCH_DELTA
-	FASTER,
-	# should be as fast as FASTER
+	# speedup when advance is held, skips forward
+	SPEEDUP,
+	# should work like SPEEDUP but via the skip button
 	SKIP
 }
 
@@ -63,9 +63,9 @@ enum Speedup {
 enum State {
 	SCROLLING_TEXT, # not at end of line, text is being scrolled
 	WAITING_ADVANCE, # at end of line, waiting for user to advance (press spacebar/mouse)
-	WAITING_UNADVANCE, # at end of line, waiting for user to not advance (release spacebar/mouse)
-	WAITING_LINE_SWITCH_COOLDOWN, # at an end of line, waiting for cooldown
+	SKIPPING_COOLDOWN, # at an end of line, waiting for cooldown
 	READY_TO_PROCEED, # can proceed to next line/block
+	JUMPED_TO_LINE_END_COOLDOWN # cooldown after jumping scrolling text to end of line
 }
 
 
@@ -129,7 +129,7 @@ func _is_waiting():
 		return true
 	if _is_paused():
 		return true
-	if line_switch_delta > 0:
+	if cooldown > 0:
 		return true
 	return false
 
@@ -213,17 +213,18 @@ func next_line(loading_from_save: bool = false) -> void:
 	var label: RichTextLabel = _current_label()
 	label.visible_characters = 0
 	next_letter_delta = 0 # reset to avoid bugs with infinite text speed
+	advance_held_this_line = 0
 	
 	match speedup:
-		Speedup.NORMAL, Speedup.FAST:
+		Speedup.NORMAL:
 			# proceed normally
 			state = State.SCROLLING_TEXT
-		Speedup.FASTER, Speedup.SKIP:
+		Speedup.SPEEDUP, Speedup.SKIP:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
 			
-			line_switch_delta = LINE_SWITCH_COOLDOWN
-			state = State.WAITING_LINE_SWITCH_COOLDOWN
+			cooldown = SKIP_COOLDOWN
+			state = State.SKIPPING_COOLDOWN
 
 
 func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
@@ -276,7 +277,7 @@ func convert_line_to_finished_form(line: String):
 func update_state(delta: float):
 	# if pausing, reduce counter
 	if pause_delta > 0:
-		if speedup == Speedup.FASTER or speedup == Speedup.SKIP:
+		if speedup == Speedup.SPEEDUP or speedup == Speedup.SKIP:
 			pause_delta = 0
 			
 		pause_delta -= delta
@@ -288,20 +289,27 @@ func update_state(delta: float):
 	
 	# make tween faster on skip
 	if waiting_tween != null:
-		if speedup == Speedup.FASTER or speedup == Speedup.SKIP:
+		if speedup == Speedup.SPEEDUP or speedup == Speedup.SKIP:
 			waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
 		
 		if waiting_tween.is_running():
 			return
 	
+	# if waiting for cooldown of jumping to end of line, reduce counter
+	if state == State.JUMPED_TO_LINE_END_COOLDOWN:
+		cooldown -= delta
+		if cooldown < 0:
+			state = State.WAITING_ADVANCE
+		return
+	
 	# if waiting for line switch cooldown, reduce counter
-	if state == State.WAITING_LINE_SWITCH_COOLDOWN or speedup == Speedup.SKIP:
-		line_switch_delta -= delta
-		if line_switch_delta < 0:
+	if state == State.SKIPPING_COOLDOWN or speedup == Speedup.SKIP:
+		cooldown -= delta
+		if cooldown < 0:
 			state = State.READY_TO_PROCEED
 		return
 	else:
-		line_switch_delta = 0
+		cooldown = 0
 	
 	var label: RichTextLabel = _current_label()
 	var text_speed: float = 30 + 80*TE.settings.text_speed
@@ -351,47 +359,37 @@ func _char_wait_delta(chr: String):
 # should be called on frames when user is advancing the game via the mouse or keyboard
 func game_advanced(delta: float):
 	advance_held += delta
+	advance_held_this_line += delta
 	
-	if state == State.WAITING_ADVANCE:
-		# call callback if this is the end of the current block
-		if line_index == len(_lines):
-			_block_ended()
-			
-		line_switch_delta = LINE_SWITCH_COOLDOWN
-		state = State.WAITING_LINE_SWITCH_COOLDOWN
+	# accelerate tween if advance is held during
+	if waiting_tween != null and waiting_tween.is_running() and advance_held >= 0.05:
+		waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
 	
-	elif speedup == Speedup.FAST and advance_held >= SPEEDUP_THRESHOLD_FASTER: # TODO was if
-		speedup = Speedup.FASTER
+	if state == State.WAITING_ADVANCE and advance_held_this_line >= 0.05:
+		# move to next line
+		cooldown = SKIP_COOLDOWN
+		state = State.SKIPPING_COOLDOWN
+	
+	elif state == State.SCROLLING_TEXT and advance_held_this_line >= SKIP_TO_LINE_END_THRESHOLD:
+		# skip to end of line
 		_to_end_of_line()
-		line_switch_delta = LINE_SWITCH_COOLDOWN
-		state = State.WAITING_LINE_SWITCH_COOLDOWN
-		
-		if line_index == len(_lines):
-			_block_ended()
-		
-	elif speedup == Speedup.NORMAL and advance_held >= SPEEDUP_THRESHOLD_FAST:
-		speedup = Speedup.FAST
-		_to_end_of_line()
-		if not _is_waiting(): # could lead to state being WAITING_ADVANCE in pauses
-			state = State.WAITING_UNADVANCE
+		state = State.JUMPED_TO_LINE_END_COOLDOWN
+		cooldown = JUMP_TO_LINE_END_COOLDOWN
+	
+	if advance_held >= SPEEDUP_THRESHOLD_FASTER:
+		speedup = Speedup.SPEEDUP
 
 
 # should be called on frames when user is not advancing the game
 func game_not_advanced(_delta: float):
 	advance_held = 0.0
+	
 	if speedup != Speedup.SKIP:
+		# reset speedup when advance is not held
 		speedup = Speedup.NORMAL
-	
-	# on FAST speedup, wait for user to unadvance first and then to advance
-	# i.e. raise spacebar to end speedup and then press it again
-	if state == State.WAITING_UNADVANCE:
-		state = State.WAITING_ADVANCE
-	
-	# if advancing is stopped while waiting for line switch cooldown,
-	# convert the remaining time to a regular pause and proceed
-	if state == State.WAITING_LINE_SWITCH_COOLDOWN:
-		pause_delta = line_switch_delta
-		state = State.READY_TO_PROCEED
+		# clear advance cooldowns
+		if cooldown > 0:
+			cooldown = 0
 
 
 # returns a new RichTextLabel with appropriate settings
@@ -465,11 +463,6 @@ func _display_line(_line: String, _speaker: Speaker = null):
 # optionally, subclasses may respond to a new block starting
 # old is the previously displayed Block (may be null) and new is the new one
 func _block_started(_old: Variant, _new: Block):
-	pass
-
-
-# callback for when a Block ends
-func _block_ended():
 	pass
 
 
@@ -631,3 +624,27 @@ func line_end_string() -> String:
 		return '[next] [font=%s]▶[/font][/next]' % symbol_font.resource_path
 	else:
 		return '[next] ▶[/next]'
+
+
+const STATE_TO_STR: Dictionary[State, String] = {
+	State.SCROLLING_TEXT: 'SCROLLING_TEXT', 
+	State.WAITING_ADVANCE: 'WAITING_ADVANCE',
+	State.SKIPPING_COOLDOWN: 'SKIPPING_COOLDOWN',
+	State.READY_TO_PROCEED: 'READY_TO_PROCEED',
+	State.JUMPED_TO_LINE_END_COOLDOWN: 'JUMPED_TO_LINE_END_COOLDOWN'
+}
+
+
+const SPEEDUP_TO_STR: Dictionary[Speedup, String] = {
+	Speedup.NORMAL: 'NORMAL',
+	Speedup.SPEEDUP: 'SPEEDUP',
+	Speedup.SKIP: 'SKIP'
+}
+
+
+func _debug_msg() -> String:
+	var msg: String = ''
+	msg += 'state: %s\n' % STATE_TO_STR[state]
+	msg += 'speedup: %s' % SPEEDUP_TO_STR[speedup]
+	
+	return msg

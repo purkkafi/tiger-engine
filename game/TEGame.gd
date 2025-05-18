@@ -22,7 +22,7 @@ var custom_controls: Variant = null # custom controls or null if not specified
 var user_hiding: bool = false # whether user is hiding game UI with H key
 
 
-enum DebugMode { NONE, AUDIO, SPRITES }
+enum DebugMode { NONE, AUDIO, SPRITES, VIEW }
 
 
 # sets the 'main' script in the given ScriptFile to be run
@@ -676,6 +676,8 @@ func update_debug_mode_text():
 			%DebugMsg.text = TE.audio.debug_text()
 		DebugMode.SPRITES:
 			%DebugMsg.text = $VNStage._sprite_debug_msg()
+		DebugMode.VIEW:
+			%DebugMsg.text = $View._debug_msg()
 
 
 func stage() -> VNStage:
