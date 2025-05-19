@@ -124,7 +124,10 @@ func _init(_resource: SpriteResource):
 				
 				var attr_id: String = tag.get_string()
 				for value in attributes[attr_id]:
-					shorthands[value] = [ EqPredicate.new(attr_id, value, self) ]
+					if value is String and not ':' in value:
+						shorthands[value] = [ EqPredicate.new(attr_id, value, self) ]
+					elif value is Dictionary and value['type'] == 'shorthand':
+						shorthands[value['value']] = [ EqPredicate.new(attr_id, value['shorthand_for'], self)]
 			
 			'y_offset':
 				if tag.get_string() == null:
