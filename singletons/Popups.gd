@@ -17,6 +17,7 @@ static func text_entry_dialog(title: String, edit: LineEdit) -> AcceptDialog:
 	popup.get_ok_button().text = TE.localize.general_ok
 	
 	var margins: MarginContainer = MarginContainer.new()
+	margins.theme_type_variation = 'DialogMargins'
 	margins.custom_minimum_size = Vector2(600, 0)
 	margins.add_child(edit)
 	popup.register_text_enter(edit)
@@ -46,6 +47,7 @@ static func warning_dialog(msg: String) -> ConfirmationDialog:
 	popup.get_cancel_button().text = TE.localize['general_cancel']
 	
 	var margins: MarginContainer = MarginContainer.new()
+	margins.theme_type_variation = 'DialogMargins'
 	var label: Label = Label.new()
 	label.text = msg
 	margins.add_child(label)
@@ -79,6 +81,7 @@ static func info_dialog(title: String, content: Control) -> AcceptDialog:
 	popup.get_ok_button().text = TE.localize['general_ok']
 	
 	var margins = MarginContainer.new()
+	margins.theme_type_variation = 'DialogMargins'
 	margins.add_child(content)
 	popup.add_child(margins)
 	

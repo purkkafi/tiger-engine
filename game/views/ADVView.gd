@@ -43,10 +43,6 @@ func adjust_size(controls: VNControls):
 	if has_theme_constant('height', 'ADVView'):
 		h = get_theme_constant('height', 'ADVView')
 	
-	var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
-	
-	var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
-	
 	box.size.x = w
 	box.size.y = h
 	box.position.x = (TE.SCREEN_WIDTH - w)/2 
@@ -60,10 +56,28 @@ func adjust_size(controls: VNControls):
 	else:
 		decoration.visible = false
 	
+	if speaker_panel.visible:
+		_adjust_speaker_panel()
+
+
+func _adjust_speaker_panel():
+	var speaker_offset_x: float = get_theme_constant('speaker_offset_x', 'ADVSpeaker')
+	var speaker_offset_y: float = get_theme_constant('speaker_offset_y', 'ADVSpeaker')
+	
+	if has_theme_constant('min_width', 'ADVSpeaker'):
+		speaker_panel.custom_minimum_size.x = get_theme_constant('min_width', 'ADVSpeaker')
+	
+	# BUGFIX: godot seems to report 'speaker_panel.size' wrong unless position is "refreshed" first
+	# i don't know why but this works
+	speaker_panel.position = Vector2(0,0)
+	
 	if has_theme_constant('center_horizontally', 'ADVSpeaker') and get_theme_constant('center_horizontally', 'ADVSpeaker') == 1:
 		speaker_panel.position.x = (TE.SCREEN_WIDTH - speaker_panel.size.x)/2
+		speaker_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	else:
 		speaker_panel.position.x = box.position.x + speaker_offset_x
+		speaker_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	
 	speaker_panel.position.y = box.position.y - speaker_panel.size.y + speaker_offset_y
 
 
@@ -108,6 +122,8 @@ func _display_line(line: String, speaker: Speaker = null):
 			speaker_name.add_theme_color_override('font_color', speaker.name_color)
 		elif speaker_name.has_theme_color_override('font_color'):
 			speaker_name.remove_theme_color_override('font_color')
+		
+		_adjust_speaker_panel()
 		
 	else:
 		speaker_panel.visible = false
