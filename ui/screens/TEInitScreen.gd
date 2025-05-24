@@ -15,13 +15,13 @@ func _ready():
 	# rebuild UI if the user drops in a language pack
 	TE.connect('languages_changed', display_language_choice)
 	
-	# set initial window settings
-	self.color = TETheme.background_color
-	get_window().min_size = Vector2i(962, 542)
-	
 	# load default theme or use an empty theme if not specified
 	if TE.opts.default_theme != null:
 		TETheme.set_theme(TE.opts.default_theme)
+	
+	# set initial window settings
+	self.color = TETheme.background_color
+	get_window().min_size = Vector2i(962, 542)
 	
 	# setup events for keyboard shortcuts
 	for shortcut in Settings.KEYBOARD_SHORTCUTS.keys():

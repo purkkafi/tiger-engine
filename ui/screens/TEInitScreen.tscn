@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://c0pukatu2bu51" path="res://tiger-engine/ui/screens/TEInitScreen.gd" id="1_cqq5s"]
 
 [node name="TEInitScreen" type="ColorRect"]
-modulate = Color(0.976471, 0.976471, 0.976471, 1)
 offset_right = 1920.0
 offset_bottom = 1080.0
 script = ExtResource("1_cqq5s")
