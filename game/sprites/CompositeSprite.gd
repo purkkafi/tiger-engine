@@ -204,6 +204,7 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 func enter_stage(initial_state: Variant = null):
 	self.container.position.y = _stage_size().y * y_offset
 	self.container.scale = Vector2(sprite_scale, sprite_scale)
+	self.container.use_parent_material = true
 	
 	for layer in layers:
 		layer.rect = TextureRect.new()

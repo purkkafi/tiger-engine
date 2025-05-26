@@ -544,6 +544,7 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		# get vfx from cache or create a fresh object
 		if vfx_from_cache in node_cache:
 			avfx = node_cache[vfx_from_cache]
+			node_cache.erase(vfx_from_cache)
 		else:
 			var vfx: Vfx = load(vfx_data['path']).new() as Vfx
 			avfx = ActiveVfx.new(vfx, vfx_data['target'], vfx_data['as'])
@@ -557,6 +558,14 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 	for cached_obj in node_cache.values():
 		if cached_obj is Node and (cached_obj as Node).get_parent() == null:
 			cached_obj.queue_free()
+		elif cached_obj is ActiveVfx:
+			# clear vfxs that should not be applied now
+			# TODO what if the target was also removed? get_vfx_target errors
+			var target = get_vfx_target(cached_obj.target)
+			if target != null:
+				var tween = create_tween()
+				cached_obj.vfx.clear(target, tween)
+				tween.custom_step(INF)
 
 
 # clears the stage, returning it to the empty initial state
