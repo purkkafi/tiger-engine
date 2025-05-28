@@ -366,7 +366,7 @@ func game_advanced(delta: float):
 		waiting_tween.custom_step(INF)
 	
 	if pause_delta > 0:
-		pause_delta = 0
+		pause_delta = SKIP_TO_LINE_END_THRESHOLD
 	
 	if state == State.WAITING_ADVANCE and advance_held_this_line >= SKIP_TO_LINE_END_THRESHOLD:
 		# move to next line
