@@ -20,6 +20,7 @@ func show_caption(text: String, caption_id):
 		for old_caption in %List.get_children():
 			if old_caption.has_meta('id') and old_caption.get_meta('id') == caption_id:
 				label = old_caption
+				label.remove_meta('uistring_text_id')
 				break
 	
 	# else, create new one
@@ -28,16 +29,14 @@ func show_caption(text: String, caption_id):
 		label.theme_type_variation = 'CaptionLabel'
 		label.add_theme_stylebox_override('normal', caption_stylebox)
 		label.set_meta('id', caption_id)
+		label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		%List.add_child(label)
 	
 	label.text = text
+	TE.localize.translate(label)
 	
-	# only actually show the caption if a translated description is found; print a warning if not
-	if TE.localize.has_translation(text):
-		TE.localize.translate(label)
-	else:
-		_hide_caption(label)
-		TE.log_warning('missing audio caption: %s' % text)
+	# TODO: hide label when translation can't be found
+	# should also work when language is changed
 
 
 # hides a previously shown caption based on its id
@@ -52,5 +51,12 @@ func hide_caption(caption_id: String):
 
 
 func _hide_caption(caption: Label):
+	caption.remove_meta('id')
+	var tween: Tween = create_tween()
+	tween.tween_property(caption, 'modulate:a', 0.0, 1.0)
+	tween.chain().tween_callback(_remove_caption.bind(caption))
+
+
+func _remove_caption(caption: Label):
 	%List.remove_child(caption)
 	caption.queue_free()
