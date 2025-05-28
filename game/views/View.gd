@@ -363,7 +363,9 @@ func game_advanced(delta: float):
 	
 	# accelerate tween and move past pauses if advance is held
 	if waiting_tween != null and waiting_tween.is_running() and advance_held >= SKIP_TO_LINE_END_THRESHOLD:
-		waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
+		waiting_tween.custom_step(INF)
+	
+	if pause_delta > 0:
 		pause_delta = 0
 	
 	if state == State.WAITING_ADVANCE and advance_held_this_line >= SKIP_TO_LINE_END_THRESHOLD:

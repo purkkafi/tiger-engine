@@ -113,6 +113,10 @@ func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, 
 		position.x = _stage_x(horizontal_position)
 		position.y = _stage_y(vertical_position)
 	else:
+		var zoom_tweener = tween.parallel().tween_property(self, 'scale', Vector2(zoom, zoom), trans.duration)
+		zoom_tweener.set_ease(trans.ease_type)
+		zoom_tweener.set_trans(trans.trans_type)
+		
 		var x_tweener = tween.parallel().tween_method(func(_x): position.x = _stage_x(_x), x0, horizontal_position, trans.duration)
 		x_tweener.set_ease(trans.ease_type)
 		x_tweener.set_trans(trans.trans_type)
@@ -120,10 +124,6 @@ func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, 
 		var y_tweener = tween.parallel().tween_method(func(_y): position.y = _stage_y(_y), y0, vertical_position, trans.duration)
 		y_tweener.set_ease(trans.ease_type)
 		y_tweener.set_trans(trans.trans_type)
-		
-		var zoom_tweener = tween.parallel().tween_property(self, 'scale', Vector2(zoom, zoom), trans.duration)
-		zoom_tweener.set_ease(trans.ease_type)
-		zoom_tweener.set_trans(trans.trans_type)
 
 
 # the size of the stage (ie the parent node) this sprite is on
