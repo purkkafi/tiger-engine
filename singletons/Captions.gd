@@ -33,7 +33,8 @@ func show_caption(text: String, caption_id):
 		%List.add_child(label)
 	
 	label.text = text
-	TE.localize.translate(label)
+	if TE.localize != null:
+		TE.localize.translate(label)
 	
 	# TODO: hide label when translation can't be found
 	# should also work when language is changed

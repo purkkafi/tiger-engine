@@ -23,13 +23,15 @@ var resource: SpriteResource
 var sprite_scale: float = 1.0
 # downwad vertical displacement of the sprite as a % of stage height
 var y_offset: float = 0.0
+# horizontal displacement of sprite as % of sprite width
+var x_offset: float = 0.0
 
 
 # properties to be used by Effects
 var offset: Vector2 = Vector2(0, 0):
 	set(new_offset):
 		container.position = Vector2(
-			new_offset.x,
+			new_offset.x + _stage_size().x * x_offset,
 			new_offset.y + _stage_size().y * y_offset
 		)
 
@@ -129,6 +131,13 @@ func _init(_resource: SpriteResource):
 					elif value is Dictionary and value['type'] == 'shorthand':
 						shorthands[value['value']] = [ EqPredicate.new(attr_id, value['shorthand_for'], self)]
 			
+			'x_offset':
+				if tag.get_string() == null:
+					TE.log_error(TE.Error.FILE_ERROR,
+						"\\x_offset requires float, got '%s'" % tag)
+					continue
+				x_offset = float(tag.get_string())
+			
 			'y_offset':
 				if tag.get_string() == null:
 					TE.log_error(TE.Error.FILE_ERROR,
@@ -202,6 +211,7 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 
 
 func enter_stage(initial_state: Variant = null):
+	self.container.position.x = _stage_size().x * x_offset
 	self.container.position.y = _stage_size().y * y_offset
 	self.container.scale = Vector2(sprite_scale, sprite_scale)
 	self.container.use_parent_material = true
@@ -259,9 +269,9 @@ func show_as(tag: Tag):
 		else:
 			layer.rect.texture = resource.textures[_match]
 			
-			var y_offset_vec = Vector2(0, _stage_size().y * y_offset)
+			var offset_vec = Vector2(_stage_size().x * x_offset, _stage_size().y * y_offset)
 			layer.debug_rect = Rect2(
-				layer.rect.texture.margin.position * sprite_scale + y_offset_vec,
+				layer.rect.texture.margin.position * sprite_scale + offset_vec,
 				layer.rect.texture.region.size * sprite_scale
 			)
 			

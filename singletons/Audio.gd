@@ -136,7 +136,7 @@ func play_sound(id: String):
 
 
 # returns the AudioStreamPlayer of currently playing song or null
-func song_player():
+func song_player() -> AudioStreamPlayer:
 	if $SongPlayer.get_stream() != null:
 		return $SongPlayer
 	return null
