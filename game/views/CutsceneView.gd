@@ -60,6 +60,8 @@ func _pause_on_overlay():
 	if was_playing_before_pause:
 		pause_position = anim_player.current_animation_position
 		anim_player.pause()
+		if '_pause' in cutscene:
+			cutscene._pause()
 
 
 func _resume_after_overlay():
@@ -67,6 +69,8 @@ func _resume_after_overlay():
 		anim_player.seek(0)
 		anim_player.advance(pause_position)
 		anim_player.play()
+		if '_resume' in cutscene:
+			cutscene._resume()
 
 
 func check_finished():

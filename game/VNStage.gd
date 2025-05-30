@@ -435,6 +435,7 @@ func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
 	
 	avfx.vfx.clear(get_vfx_target(avfx.target), tween)
 	
+	print('clear ', avfx_id)
 	tween.chain().tween_callback(active_vfxs.erase.bind(avfx))
 	return tween
 
@@ -494,7 +495,6 @@ func get_node_cache() -> Dictionary:
 	
 	for avfx in active_vfxs:
 		cache['vfx:%s:%s' % [avfx.path(), avfx._as]] = avfx
-		active_vfxs.erase(avfx)
 	
 	return cache
 
