@@ -78,7 +78,8 @@ static func change_sfx_volume(vol_linear: float):
 
 static func change_fullscreen(to_fullscreen: bool):
 	# NOOP on web because toggling fullscreen doesn't work
-	if TE.is_web():
+	# NOOP on android because it messes with immersive mode
+	if TE.is_web() or TE.is_mobile():
 		return
 	
 	var is_fullscreen = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
