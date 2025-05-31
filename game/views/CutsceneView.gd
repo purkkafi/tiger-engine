@@ -56,6 +56,9 @@ func initialize(_ctxt: InitContext):
 
 
 func _pause_on_overlay():
+	if 'dont_pause_on_overlay' in cutscene and cutscene.dont_pause_on_overlay:
+		return
+	
 	was_playing_before_pause = anim_player.is_playing()
 	if was_playing_before_pause:
 		pause_position = anim_player.current_animation_position
@@ -65,6 +68,9 @@ func _pause_on_overlay():
 
 
 func _resume_after_overlay():
+	if 'dont_pause_on_overlay' in cutscene and cutscene.dont_pause_on_overlay:
+		return
+	
 	if was_playing_before_pause:
 		anim_player.seek(0)
 		anim_player.advance(pause_position)
