@@ -331,12 +331,12 @@ func _draw():
 func stage_editor_hints() -> Array:
 	var hints: Array = []
 	
-	hints.append_array(shorthands.keys().map(func(s): return '\\as{%s}' % s))
+	hints.append_array(shorthands.keys().map(func(s): return s))
 	
 	for attr in attributes:
 		for val in attributes[attr]:
 			if val is String: # no ghost values
-				hints.append('\\as{%s=%s}' % [attr, val])
+				hints.append('%s=%s' % [attr, val])
 	return hints
 
 

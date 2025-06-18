@@ -20,9 +20,9 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'sprite_at_order': func(): return null,
 	'sprite_as_optional': func(): return null,
 	'filename': func(): return null,
-	# no default value, just error
-	'sprite_id': func(): show_error('Sprite ID must be specified'); return null,
-	'sprite_as': func(): show_error('"as" must be specified'); return null
+	# null indicates no action should be taken
+	'sprite_id': func(): return null,
+	'sprite_as': func(): return null
 }
 
 
@@ -95,6 +95,9 @@ func _on_enter_pressed():
 
 
 func _enter_sprite(values: Dictionary):
+	if values['sprite_id'] == null:
+		return
+	
 	var sprite_id: String = values['sprite_id']
 	var by: Variant = null
 	
@@ -146,7 +149,7 @@ func _on_show_pressed():
 		{ 'id': 'sprite_id', 'name': 'Sprite ID',
 			'default': only_sprite_id,
 			'suggestions': func(_state): return stage.get_sprite_ids() },
-		{ 'id': 'sprite_as', 'name': 'As', 'default': func(): return '\\as{}', 'suggestions': _get_sprite_as_suggestions },
+		{ 'id': 'sprite_as', 'name': 'As', 'default': func(): return '', 'suggestions': _get_sprite_as_suggestions },
 		{ 'id': 'trans', 'name': 'With', 'suggestions': func(_state): return TRANSITIONS }
 	], _show_sprite)
 
@@ -159,7 +162,9 @@ func _get_sprite_as_suggestions(state: Dictionary) -> Array:
 
 
 func _show_sprite(values: Dictionary):
-	_wait_tween(stage.show_sprite(values['sprite_id'], parse_tag(values['sprite_as']), values['trans'], null))
+	if values['sprite_id'] == null or values['sprite_as'] == null:
+		return
+	_wait_tween(stage.show_sprite(values['sprite_id'], parse_tag('\\as{%s}' % values['sprite_as']), values['trans'], null))
 
 
 func _on_exit_pressed():
@@ -172,6 +177,8 @@ func _on_exit_pressed():
 
 
 func _exit_sprite(values: Dictionary):
+	if values['sprite_id'] == null:
+		return
 	_wait_tween(stage.exit_sprite(values['sprite_id'], values['trans'], null))
 
 

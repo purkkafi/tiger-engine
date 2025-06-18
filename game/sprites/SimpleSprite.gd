@@ -89,4 +89,4 @@ func set_sprite_state(state: Variant):
 
 
 func stage_editor_hints() -> Array:
-	return paths.keys().map(func(s): return '\\as{%s}' % s)
+	return paths.keys().map(func(s): return s)

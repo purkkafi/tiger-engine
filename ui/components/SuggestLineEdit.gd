@@ -51,5 +51,5 @@ func _line_edit_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.pressed and event.button_index == 1:
 		if get_popup().visible:
 			_hide_menu()
-		else:
+		elif line_edit.text == '' or (event as InputEventMouseButton).double_click:
 			_show_menu()
