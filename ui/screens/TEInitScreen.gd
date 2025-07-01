@@ -11,6 +11,7 @@ var instead_scene: Variant
 
 func _ready():
 	instead_scene = CmdArgs.handle_args()
+	# TODO: handle instead_scene immediately instead of waiting for user input
 	
 	# rebuild UI if the user drops in a language pack
 	TE.connect('languages_changed', display_language_choice)
@@ -43,6 +44,11 @@ func _ready():
 	for custom_view in TE.opts.custom_views:
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
 	
+	# if specified in cmd args, execute non-game scene
+	if instead_scene != null:
+		TE.switch_scene(instead_scene as Node)
+		return
+	
 	# if settings file exists, read it and switch to the specified language
 	var loaded_settings = null if TE.ignore_settings else Settings.load_from_file()
 	if loaded_settings is Settings:
@@ -70,9 +76,7 @@ func _ready():
 
 # changes to the appropriate next scene
 func _next_screen():
-	if instead_scene != null: # if specified in cmd args
-		TE.switch_scene(instead_scene as Node)
-	elif TE.opts.splash_screen != null: # go to splash screen if specified
+	if TE.opts.splash_screen != null: # go to splash screen if specified
 		TE.switch_scene(load(TE.opts.splash_screen).instantiate())
 	else: # by default go to the title screen
 		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())

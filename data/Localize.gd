@@ -114,7 +114,7 @@ func has_translation(text: String) -> bool:
 
 # if strings autoquote_left and autoquote_right are defined, surrounds the
 # given text with them; otherwise, returns it as-is
-func autoquote(text: String):
-	if 'autoquote_left' in self.strings and 'autoquote_right' in self.strings:
-		return _get('autoquote_left') + text + _get('autoquote_right')
+static func autoquote(text: String):
+	if TE.localize and 'autoquote_left' in TE.localize.strings and 'autoquote_right' in TE.localize.strings:
+		return TE.localize._get('autoquote_left') + text + TE.localize._get('autoquote_right')
 	return text

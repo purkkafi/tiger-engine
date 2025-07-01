@@ -311,7 +311,7 @@ func show_dialog(title: String, settings: Array, callback: Callable):
 		grid.add_child(edit)
 		edits.append(edit)
 	
-	var dialog: AcceptDialog = Popups.info_dialog(title, grid)
+	var dialog: AcceptDialog = make_popup(title, grid)
 	dialog.connect('confirmed', _call_callback.bind(edits, callback))
 
 
@@ -351,7 +351,30 @@ func _call_callback(edits: Array[Control], callback: Callable):
 
 
 func show_error(msg: String):
-	Popups.error_dialog(TE.Error.ENGINE_ERROR, msg)
+	var label: Label = Label.new()
+	label.text = msg
+	make_popup('Error', label)
+
+
+func make_popup(title: String, content: Control)-> AcceptDialog:
+	var popup: AcceptDialog = AcceptDialog.new()
+	popup.unresizable = true
+	popup.title = title
+	popup.exclusive = true
+	popup.get_ok_button().text = 'OK'
+	
+	var margins = MarginContainer.new()
+	margins.theme_type_variation = 'DialogMargins'
+	margins.add_child(content)
+	popup.add_child(margins)
+	
+	TE.current_scene.add_child(popup)
+	popup.popup_centered_clamped()
+	
+	popup.connect('canceled', Popups._remove_popup.bind(popup))
+	popup.connect('confirmed', Popups._remove_popup.bind(popup))
+	
+	return popup
 
 
 func _on_debug_toggled(button_pressed):
