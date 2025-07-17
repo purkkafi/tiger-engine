@@ -179,8 +179,8 @@ func next_line(loading_from_save: bool = false) -> void:
 	previously_seen_line = TE.seen_blocks.is_read(block, line_index)
 	TE.emit_signal('game_next_line')
 	
-	# if skipping but skip mode was just set to DISABLED, stop
-	if get_skip_mode() == SkipMode.DISABLED and speedup != Speedup.NORMAL:
+	# if skipping with button/skip hotkey but skip mode was just set to DISABLED, stop
+	if get_skip_mode() == SkipMode.DISABLED and speedup == Speedup.SKIP:
 		skip_toggled(false)
 	
 	TE.seen_blocks.mark_read(block, line_index)
