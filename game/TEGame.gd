@@ -405,6 +405,14 @@ func _gui_input(event):
 		tabbing = true
 		$VNControls.btn_quit.grab_focus()
 		accept_event()
+	
+	if event.is_action_pressed(VNInput.SCROLL_FORWARD):
+		# TODO implement forward scroll via storing states in rollback when going back
+		accept_event()
+	if event.is_action_pressed(VNInput.SCROLL_BACK):
+		if not $VNControls.btn_back.disabled:
+			_back()
+		accept_event()
 
 
 func before_overlay():
