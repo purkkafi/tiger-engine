@@ -24,6 +24,9 @@ func _ready():
 	self.color = TETheme.background_color
 	get_window().min_size = Vector2i(962, 542)
 	
+	# setup basic actions in input map
+	VNInput.register_actions()
+	
 	# setup events for keyboard shortcuts
 	for shortcut in Settings.KEYBOARD_SHORTCUTS.keys():
 		InputMap.add_action(shortcut)

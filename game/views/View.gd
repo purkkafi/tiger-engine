@@ -231,7 +231,7 @@ func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
 	var speaker_declaration: String = tag_bbcode.get_string('content')
 	
 	return {
-		'line': TE.localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
+		'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
 		'speaker': Speaker.resolve(speaker_declaration, game.context)
 	}
 
