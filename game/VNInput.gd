@@ -29,6 +29,10 @@ static func register_actions() -> void:
 	enter.keycode = KEY_ENTER
 	InputMap.action_add_event(GAME_ADVANCE, enter)
 	
+	var numpad_enter = InputEventKey.new()
+	numpad_enter.keycode = KEY_KP_ENTER
+	InputMap.action_add_event(GAME_ADVANCE, numpad_enter)
+	
 	var controller_advance = InputEventJoypadButton.new()
 	controller_advance.button_index = JOY_BUTTON_B
 	InputMap.action_add_event(GAME_ADVANCE, controller_advance)
