@@ -324,7 +324,7 @@ func _process(delta):
 	# sometimes end of 'game_advance_mouse' is not detected properly
 	# this should help
 	# TODO: was from old Godot 3 version, might be fixed now?
-	if advancing and !(Input.is_action_pressed(VNInput.GAME_ADVANCE_MOUSE) or Input.is_action_pressed(VNInput.GAME_ADVANCE_KEYS)):
+	if advancing and !(Input.is_action_pressed(VNInput.GAME_ADVANCE)):
 		advancing = false
 	
 	if debug_mode != DebugMode.NONE:
@@ -390,9 +390,9 @@ func save_rollback():
 
 # detect if mouse is held to advance the game
 func _gui_input(event):
-	if event.is_action_pressed(VNInput.GAME_ADVANCE_MOUSE) or event.is_action_pressed(VNInput.GAME_ADVANCE_KEYS):
+	if event.is_action_pressed(VNInput.GAME_ADVANCE):
 		advancing = true
-	if event.is_action_released(VNInput.GAME_ADVANCE_MOUSE) or event.is_action_released(VNInput.GAME_ADVANCE_KEYS):
+	if event.is_action_released(VNInput.GAME_ADVANCE):
 		advancing = false
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		tabbing = true
