@@ -388,14 +388,23 @@ func save_rollback():
 	next_rollback = create_save()
 
 
-# detect if mouse is held to advance the game
 func _gui_input(event):
 	if event.is_action_pressed(VNInput.GAME_ADVANCE):
 		advancing = true
 	if event.is_action_released(VNInput.GAME_ADVANCE):
 		advancing = false
+	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		tabbing = true
+	
+	if event.is_action_pressed(VNInput.GAIN_FOCUS_START):
+		tabbing = true
+		$VNControls.btn_back.grab_focus()
+		accept_event()
+	if event.is_action_pressed(VNInput.GAIN_FOCUS_END):
+		tabbing = true
+		$VNControls.btn_quit.grab_focus()
+		accept_event()
 
 
 func before_overlay():
