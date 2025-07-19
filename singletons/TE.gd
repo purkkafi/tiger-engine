@@ -130,8 +130,11 @@ func _handle_song_played_caption(song_id: String):
 
 # sets the scene to the given scene and calls callback afterwards
 # the old one will be freed if 'free_old' is true, else it will be given as an argument to 'after'
+# if the old scene has a method called '_scene_change_initiated', it will be called
+# this should be used to disable further inputs while the scene laods
 func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: bool = true):
-	await get_tree().process_frame
+	if '_scene_change_initiated' in current_scene:
+		current_scene._scene_change_initiated()
 	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
 
 
@@ -359,8 +362,8 @@ func _input(event: InputEvent) -> void:
 	if event.is_action(&'game_rollback', true) or event.is_action(&'game_rollforward', true):
 		if event.is_echo():
 			var now: int = Time.get_ticks_msec()
-			# wait 150ms between events
-			if now < _last_key_rollback_or_rollforward_time + 150:
+			# wait 50ms between events
+			if now < _last_key_rollback_or_rollforward_time + 50:
 				get_viewport().set_input_as_handled()
 			else:
 				_last_key_rollback_or_rollforward_time = now

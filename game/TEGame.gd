@@ -706,3 +706,9 @@ func update_debug_mode_text():
 
 func stage() -> VNStage:
 	return $VNStage
+
+
+# do not accept further input while new scene is loaded
+# prevents timing issues if user mashes rollback/rollforward while the game lags
+func _scene_change_initiated():
+	self.focus_mode = Control.FOCUS_NONE
