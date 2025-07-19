@@ -5,7 +5,7 @@ class_name TEGame extends Control
 
 
 var vm: TEScriptVM # virtual machine that runs the game script
-var rollback: Rollback # stores save states for Back button
+var rollback: Rollback # stores save states for Back button and rollback/forward
 var gamelog: Log # the game log
 var context: InGameContext # stores in-game variables
 var next_rollback: Variant = null # next save state to add to rollback
@@ -298,18 +298,18 @@ func _unhide_ui():
 
 
 func _unhandled_key_input(event):
-	if event.is_action_pressed('game_screenshot', false, true):
+	if event.is_action_pressed(&'game_screenshot', false, true):
 		take_user_screenshot()
 	
 	# hide when key pressed
-	if event.is_action_pressed('game_hide', false, true) and not user_hiding:
+	if event.is_action_pressed(&'game_hide', false, true) and not user_hiding:
 		toggle_user_hide()
 	
 	# show when key released
-	if event.is_action_released('game_hide', true) and user_hiding:
+	if event.is_action_released(&'game_hide', true) and user_hiding:
 		toggle_user_hide()
 	
-	if event.is_action_pressed('debug_toggle', false, true) and TE.is_debug():
+	if event.is_action_pressed(&'debug_toggle', false, true) and TE.is_debug():
 		toggle_debug_mode()
 		update_debug_mode_text()
 
@@ -339,13 +339,13 @@ func _process(delta):
 	var skip_mode: View.SkipMode = $View.get_skip_mode()
 	
 	# handle skipping via the keyboard shortcut
-	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed('game_skip', true):
+	if skip_mode == View.SkipMode.PRESS and Input.is_action_just_pressed(&'game_skip', true):
 		$VNControls.btn_skip.emit_signal('pressed')
 	elif skip_mode == View.SkipMode.TOGGLE:
-		if Input.is_action_just_pressed('game_skip', true) and not $VNControls.btn_skip.button_pressed:
+		if Input.is_action_just_pressed(&'game_skip', true) and not $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = true
 			$View.skip_toggled(true)
-		elif Input.is_action_just_released('game_skip', true) and $VNControls.btn_skip.button_pressed:
+		elif Input.is_action_just_released(&'game_skip', true) and $VNControls.btn_skip.button_pressed:
 			$VNControls.btn_skip.button_pressed = false
 			$View.skip_toggled(false)
 	
@@ -384,7 +384,7 @@ func _process(delta):
 # previously saved state
 func save_rollback():
 	if next_rollback != null:
-		rollback.push(next_rollback)
+		rollback.push_rollback(next_rollback)
 	next_rollback = create_save()
 
 
@@ -401,15 +401,16 @@ func _gui_input(event):
 		tabbing = true
 		$VNControls.btn_back.grab_focus()
 		accept_event()
-	if event.is_action_pressed(VNInput.GAIN_FOCUS_END):
+	elif event.is_action_pressed(VNInput.GAIN_FOCUS_END):
 		tabbing = true
 		$VNControls.btn_quit.grab_focus()
 		accept_event()
 	
-	if event.is_action_pressed(VNInput.SCROLL_FORWARD):
-		# TODO implement forward scroll via storing states in rollback when going back
+	if event.is_action_pressed(VNInput.SCROLL_FORWARD) or event.is_action_pressed(&'game_rollforward', true):
+		if not rollback.is_rollforward_empty():
+			_forward()
 		accept_event()
-	if event.is_action_pressed(VNInput.SCROLL_BACK):
+	elif event.is_action_pressed(VNInput.SCROLL_BACK) or event.is_action_pressed(&'game_rollback', true):
 		if not $VNControls.btn_back.disabled:
 			_back()
 		accept_event()
@@ -628,7 +629,13 @@ func take_user_screenshot():
 
 func _back():
 	# TODO implement caching for expensive View instances
-	TE.load_from_save(rollback.pop(), rollback, gamelog, $VNStage.get_node_cache())
+	rollback.push_rollforward(create_save())
+	TE.load_from_save(rollback.pop_rollback(), rollback, gamelog, $VNStage.get_node_cache())
+
+
+func _forward():
+	rollback.push_rollback(create_save())
+	TE.load_from_save(rollback.pop_rollforward(), rollback, gamelog, $VNStage.get_node_cache())
 
 
 func _log():

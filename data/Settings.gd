@@ -31,22 +31,30 @@ const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'keys', 'format' ]
 # – 'string', a string representing the key
 # – 'shift', 'alt', 'ctrl', bools representing the modifiers
 static var KEYBOARD_SHORTCUTS: Dictionary = {
-	'game_screenshot': {
+	&'game_screenshot': {
 		'keycode': KEY_S,
 		'string': key_to_string(KEY_S),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'game_hide': {
+	&'game_hide': {
 		'keycode': KEY_H,
 		'string': key_to_string(KEY_H),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'game_skip': {
+	&'game_rollback': {
+		'keycode': KEY_PAGEUP,
+		'string': key_to_string(KEY_PAGEUP),
+		'shift': false, 'alt': false, 'ctrl': false },
+	&'game_rollforward': {
+		'keycode': KEY_PAGEDOWN,
+		'string': key_to_string(KEY_PAGEDOWN),
+		'shift': false, 'alt': false, 'ctrl': false },
+	&'game_skip': {
 		'keycode': KEY_CTRL,
 		'string': key_to_string(KEY_CTRL),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'debug_toggle' : {
+	&'debug_toggle': {
 		'keycode': KEY_F1,
 		'string': key_to_string(KEY_F1),
-		'shift': false, 'alt': false, 'ctrl': false }
+		'shift': false, 'alt': false, 'ctrl': false },
 }
 # current settings file format number
 const SETTINGS_FORMAT: int = 1

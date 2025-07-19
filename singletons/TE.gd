@@ -34,6 +34,8 @@ var draw_debug: bool = false:
 	set(enabled):
 		draw_debug = enabled
 		_redraw_all(current_scene)
+# time of last 'game_rollback' or 'game_rollforward' input to limit their frequency
+var _last_key_rollback_or_rollforward_time: int = 0
 
 
 # screen size constants
@@ -239,7 +241,7 @@ func load_from_save(save: Dictionary, rollback: Rollback = null, gamelog: Log = 
 
 func _after_load_from_save(game_scene: TEGame, save: Dictionary, rollback: Rollback = null, gamelog: Log = null, stage_node_cache: Variant = null):
 	if rollback != null and gamelog != null:
-		game_scene.rollback.set_rollback(rollback.entries)
+		game_scene.rollback.set_rollback(rollback)
 		gamelog.remove_last()
 		game_scene.gamelog = gamelog
 	
@@ -350,3 +352,15 @@ func _load_translation_package(files: Array[String]):
 			if file not in persistent.translation_packages:
 				persistent.translation_packages.append(file)
 		persistent.save_to_file()
+
+
+func _input(event: InputEvent) -> void:
+	# limit frequency of 'game_rollback' and 'game_rollforward' events echoing
+	if event.is_action(&'game_rollback', true) or event.is_action(&'game_rollforward', true):
+		if event.is_echo():
+			var now: int = Time.get_ticks_msec()
+			# wait 150ms between events
+			if now < _last_key_rollback_or_rollforward_time + 150:
+				get_viewport().set_input_as_handled()
+			else:
+				_last_key_rollback_or_rollforward_time = now

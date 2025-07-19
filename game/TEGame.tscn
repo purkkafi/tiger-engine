@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cfb4wk2phunje"]
 
 [ext_resource type="PackedScene" uid="uid://dj5b2g3xmpfgs" path="res://tiger-engine/game/VNControls.tscn" id="1_0evqp"]
-[ext_resource type="Script" path="res://tiger-engine/game/TEGame.gd" id="1_8iwxg"]
+[ext_resource type="Script" uid="uid://bqnsycodh2vb6" path="res://tiger-engine/game/TEGame.gd" id="1_8iwxg"]
 [ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="2_w8ob5"]
 [ext_resource type="PackedScene" uid="uid://cdstpj7eud5op" path="res://tiger-engine/ui/components/ToastContainer.tscn" id="4_6341s"]
 
