@@ -33,6 +33,7 @@ func run_script(script_file: ScriptFile):
 
 func _ready():
 	TE.localize.translate(self)
+	TE.connect('game_next_line', _on_next_line)
 	TETheme.connect('theme_changed', _theme_changed)
 	
 	get_viewport().connect('gui_focus_changed', _gui_focus_changed)
@@ -634,6 +635,7 @@ func _back():
 
 
 func _forward():
+	# TODO clear rollforward when game is advanced normally
 	rollback.push_rollback(create_save())
 	TE.load_from_save(rollback.pop_rollforward(), rollback, gamelog, $VNStage.get_node_cache())
 
@@ -712,3 +714,9 @@ func stage() -> VNStage:
 # prevents timing issues if user mashes rollback/rollforward while the game lags
 func _scene_change_initiated():
 	self.focus_mode = Control.FOCUS_NONE
+
+
+# actions that happen when the user proceeds to the next line normally
+func _on_next_line(_block: Block, _line_index: int):
+	# clear rollforward since user is not going back
+	rollback.clear_rollforward()

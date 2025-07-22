@@ -55,9 +55,9 @@ signal toast_notification(toast: Dictionary)
 # fired when a translation package is loaded
 @warning_ignore("unused_signal")
 signal languages_changed
-# fired when the game displays the next line of text
+# fired when user moves to the next line of text
 @warning_ignore("unused_signal")
-signal game_next_line
+signal game_next_line(block: Block, line_index: int)
 # user has opened an in-game overlay, i.e. the settings screen; everything should pause
 @warning_ignore("unused_signal")
 signal overlay_opened

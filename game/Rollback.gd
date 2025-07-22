@@ -55,6 +55,10 @@ func is_rollforward_empty() -> bool:
 	return rollforward_entries.is_empty()
 
 
+func clear_rollforward() -> void:
+	rollforward_entries.clear()
+
+
 # removes and returns latest rollforward entry
 func pop_rollforward() -> Dictionary:
 	if rollforward_entries.is_empty():
