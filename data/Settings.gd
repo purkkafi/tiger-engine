@@ -6,6 +6,7 @@ class_name Settings extends RefCounted
 var music_volume: float # volume of music, in range [0, 1]
 var sfx_volume: float # volume of sfx, in range [0, 1]
 var text_speed: float # text speed, in range [0, 1]
+var skip_speed: float # speed of skipping, in range [0, 1]
 var dynamic_text_speed: bool # dynamic text speed on/off
 var skip_unseen_text: bool # skip allowed even when reading new text
 var fullscreen: bool # fullscreen on/off
@@ -203,6 +204,7 @@ static func default_settings():
 		defs.sfx_volume = 1
 	
 	defs.text_speed = 0.5
+	defs.skip_speed = 0.5
 	defs.dynamic_text_speed = true
 	defs.skip_unseen_text = false
 	defs.fullscreen = false

@@ -154,6 +154,19 @@ tooltip_text = "%settings_text_speed_tooltip%"
 max_value = 1.0
 step = 0.01
 
+[node name="SkipSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+layout_mode = 2
+text = "%settings_skip_speed%"
+
+[node name="SkipSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "%settings_skip_speed_tooltip%"
+max_value = 1.0
+step = 0.01
+
 [node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
 unique_name_in_owner = true
 layout_mode = 2

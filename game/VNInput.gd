@@ -79,12 +79,12 @@ static func register_actions() -> void:
 	
 	InputMap.add_action(SCROLL_FORWARD)
 	
-	var scroll_up = InputEventMouseButton.new()
-	scroll_up.button_index = MOUSE_BUTTON_WHEEL_UP
-	InputMap.action_add_event(SCROLL_FORWARD, scroll_up)
+	var scroll_down = InputEventMouseButton.new()
+	scroll_down.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	InputMap.action_add_event(SCROLL_FORWARD, scroll_down)
 	
 	InputMap.add_action(SCROLL_BACK)
 	
-	var scroll_down = InputEventMouseButton.new()
-	scroll_down.button_index = MOUSE_BUTTON_WHEEL_DOWN
-	InputMap.action_add_event(SCROLL_BACK, scroll_down)
+	var scroll_up = InputEventMouseButton.new()
+	scroll_up.button_index = MOUSE_BUTTON_WHEEL_UP
+	InputMap.action_add_event(SCROLL_BACK, scroll_up)

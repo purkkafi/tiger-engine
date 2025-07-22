@@ -719,4 +719,5 @@ func _scene_change_initiated():
 # actions that happen when the user proceeds to the next line normally
 func _on_next_line(_block: Block, _line_index: int):
 	# clear rollforward since user is not going back
-	rollback.clear_rollforward()
+	#rollback.clear_rollforward()
+	pass

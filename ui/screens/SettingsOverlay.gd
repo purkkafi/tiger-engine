@@ -15,6 +15,7 @@ var language_disabled: bool = false
 @onready var music_volume: Slider = %MusicVolSlider
 @onready var sfx_volume: Slider = %SFXVolSlider
 @onready var text_speed: Slider = %TextSpeedSlider
+@onready var skip_speed: Slider = %SkipSpeedSlider
 @onready var dyn_text_speed: CheckBox = %DynTextSpeed
 @onready var skip_unseen_text: CheckBox = %SkipUnseenText
 @onready var lang_options: OptionButton = %LangOptions
@@ -60,6 +61,7 @@ func _initialize_overlay():
 	sfx_volume.connect('value_changed', Callable(Settings, 'change_sfx_volume'))
 	
 	text_speed.value = TE.settings.text_speed
+	skip_speed.value = TE.settings.skip_speed
 	dyn_text_speed.button_pressed = TE.settings.dynamic_text_speed
 	skip_unseen_text.button_pressed = TE.settings.skip_unseen_text
 	
@@ -233,6 +235,7 @@ func _save_exit():
 	TE.settings.music_volume = music_volume.value
 	TE.settings.sfx_volume = sfx_volume.value
 	TE.settings.text_speed = text_speed.value
+	TE.settings.skip_speed = skip_speed.value
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
 	TE.settings.skip_unseen_text = skip_unseen_text.button_pressed
 	TE.settings.lang_id = TE.language.id
