@@ -127,15 +127,15 @@ func _handle_song_played_caption(song_id: String):
 	else:
 		captions.show_caption('%alt_song_' + song_id + '%', 'song')
 
-
 # sets the scene to the given scene and calls callback afterwards
 # the old one will be freed if 'free_old' is true, else it will be given as an argument to 'after'
 # if the old scene has a method called '_scene_change_initiated', it will be called
 # this should be used to disable further inputs while the scene laods
 func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: bool = true):
-	await get_tree().process_frame
 	if '_scene_change_initiated' in current_scene:
 		current_scene._scene_change_initiated()
+		
+	await get_tree().process_frame
 	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
 
 

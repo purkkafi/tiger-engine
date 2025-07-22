@@ -390,6 +390,10 @@ func save_rollback():
 
 
 func _gui_input(event):
+	# when game is just being rollbacked/rollforwarded
+	if self.focus_mode == FOCUS_NONE:
+		return
+	
 	if event.is_action_pressed(VNInput.GAME_ADVANCE):
 		advancing = true
 	if event.is_action_released(VNInput.GAME_ADVANCE):
@@ -719,5 +723,4 @@ func _scene_change_initiated():
 # actions that happen when the user proceeds to the next line normally
 func _on_next_line(_block: Block, _line_index: int):
 	# clear rollforward since user is not going back
-	#rollback.clear_rollforward()
-	pass
+	rollback.clear_rollforward()
