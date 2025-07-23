@@ -71,9 +71,9 @@ func _ready():
 		var icon_tooltip = ''
 		if save['save_name'] != null:
 			icon_tooltip += save['save_name'] + '\n'
-		if 'game_name' in save and save['game_name'] != null:
+		if 'game_name' in save and save['game_name'] != null and save['game_name'] != '':
 			icon_tooltip += save['game_name'] + '\n'
-		if 'game_version' in save and save['game_version'] != null:
+		if 'game_version' in save and save['game_version'] != null and save['game_version'] != '':
 			icon_tooltip += save['game_version'] + '\n'
 		icon_tooltip += save['save_datetime']
 		icon.tooltip_text = icon_tooltip
@@ -136,7 +136,20 @@ func check_hashes():
 	else:
 		block_hashes_match = true # nothing to compare to
 	
-	if not (script_hashes_match and block_hashes_match): # place warning icon
+	if not (script_hashes_match and block_hashes_match):
+		# add warning to text
+		icon.tooltip_text = '%s\n\n%s' % [icon.tooltip_text, TE.localize.saving_bad_hash]
+		
+		# set name color
+		if has_theme_color('hash_mismatch', 'SaveBox'):
+			var mismatch_color: Color = get_theme_color('hash_mismatch', 'SaveBox')
+			name_label.add_theme_color_override('font_color', mismatch_color)
+			var ms2 = mismatch_color.blend(Color(1, 1, 1, 0.5))
+			icon.modulate = ms2
+		
+		# place warning icon
+		# TODO re-implement properly
+		"""
 		icon_warn = TextureRect.new()
 		icon_warn.texture = get_theme_icon('image', 'SaveWarningIcon')
 		icon_warn.tooltip_text = TE.localize.saving_bad_hash
@@ -145,6 +158,7 @@ func check_hashes():
 		icon_warn.anchor_left = 0.75
 		icon_warn.anchor_right = 0.75
 		icon.add_child(icon_warn)
+		"""
 
 
 # when the save's name is clocked
