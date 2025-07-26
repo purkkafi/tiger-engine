@@ -424,6 +424,7 @@ func create_label() -> RichTextLabel:
 	label.clip_contents = false
 	label.theme_type_variation = 'GameTextLabel'
 	label.focus_mode = Control.FOCUS_NONE
+	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	
 	return label
 
