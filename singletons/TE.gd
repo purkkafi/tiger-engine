@@ -46,21 +46,30 @@ const SCREEN_HEIGHT = 1080
 # signal when an unlockable is unlocked
 @warning_ignore("unused_signal")
 signal unlockable_unlocked(_namespace: String, id: String)
+
 # signal sent when a toast notification is spawned
 # a toast object has these entries:
 # – 'bbcode': the text in bbcode
 # – 'icon' (optional): path to icon
 @warning_ignore("unused_signal")
 signal toast_notification(toast: Dictionary)
-# fired when a translation package is loaded
+
+# fired when loading mods adds a language
 @warning_ignore("unused_signal")
 signal languages_changed
+
+# fired when user drops mod files on program
+@warning_ignore("unused_signal")
+signal mod_files_dropped(files: Array[String])
+
 # fired when user moves to the next line of text
 @warning_ignore("unused_signal")
 signal game_next_line(block: Block, line_index: int)
+
 # user has opened an in-game overlay, i.e. the settings screen; everything should pause
 @warning_ignore("unused_signal")
 signal overlay_opened
+
 # user has closed the in-game overlay
 @warning_ignore("unused_signal")
 signal overlay_closed
@@ -83,19 +92,8 @@ func _ready():
 	if opts == null:
 		opts = Options.new()
 	
-	# attempt to load known translation packs
-	var remove: Array[String] = []
-	for tp in persistent.translation_packages:
-		var ok: bool = ProjectSettings.load_resource_pack(tp, false)
-		if not ok:
-			remove.append(tp)
-			log_warning("Translation package '%s' was not found and will be removed from cache" % tp)
-	
-	# remove the bad ones that couldn't be loaded
-	if len(remove) != 0:
-		for bad_package in remove:
-			persistent.translation_packages.erase(bad_package)
-		persistent.save_to_file()
+	# attempt to load known mods
+	_load_mods(persistent.mods)
 	
 	# detect available languages
 	detect_languages()
@@ -111,7 +109,7 @@ func _ready():
 	TE.audio.sound_played.connect(func(sound): captions.show_caption('%alt_sound_' + sound + '%', sound))
 	TE.audio.sound_finished.connect(func(sound): captions.hide_caption(sound))
 	
-	get_tree().get_root().connect('files_dropped', _load_translation_package)
+	get_tree().get_root().connect('files_dropped', _load_dropped_mods)
 	
 	# set current scene to be the initial scene
 	var root = get_tree().root
@@ -344,18 +342,35 @@ func _redraw_all(node: Node):
 		node.queue_redraw()
 
 
-func _load_translation_package(files: Array[String]):
+# returns whether current scene supports changing loaded mods
+# this is true if the scene declares a method called '_change_mods_supported' and it returns true
+func change_mods_supported() -> bool:
+	return '_change_mods_supported' in current_scene and current_scene._change_mods_supported()
+
+
+func _load_dropped_mods(files: Array[String]):
+	if change_mods_supported():
+		mod_files_dropped.emit(files)
+
+
+func _load_mods(files: Array[String]):
+	var persistent_changed: bool = false
+	
 	for file in files:
-		if not ProjectSettings.load_resource_pack(file, false):
-			log_error(TE.Error.FILE_ERROR, "Could not load language package: '%s'" % file)
+		if FileAccess.file_exists(file) and ProjectSettings.load_resource_pack(file, true):
+			if file not in persistent.mods:
+				persistent.mods.append(file)
+				persistent_changed = true
+		else:
+			if file in persistent.mods:
+				persistent.mods.erase(file)
+				persistent_changed = true
+	
+	if persistent_changed:
+		persistent.save_to_file()
 	
 	if detect_languages():
 		emit_signal('languages_changed')
-		
-		for file in files:
-			if file not in persistent.translation_packages:
-				persistent.translation_packages.append(file)
-		persistent.save_to_file()
 
 
 func _input(event: InputEvent) -> void:

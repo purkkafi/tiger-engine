@@ -47,6 +47,9 @@ func _ready():
 	for custom_view in TE.opts.custom_views:
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
 	
+	# allow user to drag-and-drop mods & load them immediately
+	TE.mod_files_dropped.connect(func(files): TE._load_mods(files))
+	
 	# if specified in cmd args, execute non-game scene
 	if instead_scene != null:
 		TE.switch_scene(instead_scene as Node)
@@ -129,3 +132,7 @@ func _language_selected(selected: Lang):
 	TE.settings.lang_id = selected.id
 	TE.settings.save_to_file()
 	_next_screen()
+
+
+func _change_mods_supported() -> bool:
+	return true

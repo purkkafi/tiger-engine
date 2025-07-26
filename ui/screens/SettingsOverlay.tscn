@@ -253,6 +253,27 @@ size_flags_horizontal = 0
 tooltip_text = "%settings_audio_captions_tooltip%"
 text = "%settings_audio_captions%"
 
+[node name="Mods" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods"]
+layout_mode = 2
+
+[node name="ModsLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"Subheader"
+text = "%settings_subheader_mods%"
+
+[node name="AddModButton" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "%settings_mod_add%"
+
+[node name="ModsGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="HSeparator" type="HSeparator" parent="Margins/VBox"]
 layout_mode = 2
 

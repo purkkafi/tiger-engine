@@ -78,6 +78,7 @@ static func info_dialog(title: String, content: Control) -> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
+	popup.transparent_bg = true
 	popup.get_ok_button().text = TE.localize['general_ok']
 	
 	var margins = MarginContainer.new()
@@ -92,6 +93,29 @@ static func info_dialog(title: String, content: Control) -> AcceptDialog:
 	
 	popup.connect('canceled', _remove_popup.bind(popup))
 	popup.connect('confirmed', _remove_popup.bind(popup))
+	
+	return popup
+
+
+# standard popup for selecting file(s)
+static func file_dialog(mode: FileDialog.FileMode, filters: PackedStringArray) -> FileDialog:
+	var popup: FileDialog = FileDialog.new()
+	popup.unresizable = true
+	popup.exclusive = true
+	popup.access = FileDialog.ACCESS_FILESYSTEM
+	popup.file_mode = mode
+	popup.use_native_dialog = true
+	popup.filters = filters
+	
+	add_shadow(popup)
+	
+	TE.current_scene.add_child(popup)
+	popup.popup_centered()
+	
+	popup.connect('canceled', _remove_popup.bind(popup))
+	popup.connect('dir_selected', func(_ignore): _remove_popup(popup))
+	popup.connect('file_selected', func(_ignore): _remove_popup(popup))
+	popup.connect('files_selected', func(_ignore): _remove_popup(popup))
 	
 	return popup
 
