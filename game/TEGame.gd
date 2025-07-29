@@ -394,6 +394,12 @@ func _gui_input(event):
 	if self.focus_mode == FOCUS_NONE:
 		return
 	
+	# BUG: touch is not recognized even though it sends InputEventMouseButton
+	# that should map to this action
+	# TODO: workaround if godot doesn't fix soon: check manually that all of these are true:
+	# event is InputEventMouseButton
+	# event.button_index == MOUSE_BUTTON_LEFT
+	# event.is_pressed()
 	if event.is_action_pressed(VNInput.GAME_ADVANCE):
 		advancing = true
 	if event.is_action_released(VNInput.GAME_ADVANCE):
