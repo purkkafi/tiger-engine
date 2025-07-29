@@ -116,10 +116,14 @@ func _initialize_overlay():
 	initial_mods = TE.persistent.mods.duplicate()
 	mods_now = TE.persistent.mods.duplicate()
 	add_mod.connect('pressed', _add_mod)
+	
 	if TE.change_mods_supported():
 		TE.mod_files_dropped.connect(_mod_files_dropped)
-	else:
+	
+	# disabled on web while godot web builds don't support native file chooser
+	if TE.is_web() or not TE.change_mods_supported():
 		add_mod.disabled = true
+	
 	_populate_mods_grid()
 	
 	save_exit.grab_focus()

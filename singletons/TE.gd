@@ -355,7 +355,11 @@ func is_valid_mod_extension(file: String) -> bool:
 	return file.get_extension() == 'zip' or file.get_extension() == 'pck'
 
 
-func _load_dropped_mods(files: Array[String]):
+func _load_dropped_mods(files: Array[String]) -> void:
+	# mods not supported on web yet
+	if TE.is_web():
+		return
+	
 	if change_mods_supported():
 		var mods: Array[String] = []
 		
@@ -406,6 +410,10 @@ func load_mods(files: Array[String]):
 # – are of extension .zip or .pck
 # – contain (case-insensitive) the string "mod"
 func _discover_mods() -> Array[String]:
+	# not supported on these platforms
+	if TE.is_web() or TE.is_mobile():
+		return []
+	
 	var discovered: Array[String] = []
 	var exec_dir: String = OS.get_executable_path().rsplit('/', false, 1)[0]
 	
