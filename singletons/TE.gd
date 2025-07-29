@@ -93,7 +93,9 @@ func _ready():
 		opts = Options.new()
 	
 	# attempt to load known mods
-	_load_mods(persistent.mods)
+	load_mods(persistent.mods)
+	# attempt to load mods discovered in same folder as executable
+	load_mods(_discover_mods())
 	
 	# detect available languages
 	detect_languages()
@@ -348,20 +350,47 @@ func change_mods_supported() -> bool:
 	return '_change_mods_supported' in current_scene and current_scene._change_mods_supported()
 
 
+# returns whether the extension of the given string, interpreted as a path, is .zip or .pck
+func is_valid_mod_extension(file: String) -> bool:
+	return file.get_extension() == 'zip' or file.get_extension() == 'pck'
+
+
 func _load_dropped_mods(files: Array[String]):
 	if change_mods_supported():
-		mod_files_dropped.emit(files)
+		var mods: Array[String] = []
+		
+		for file in files:
+			if is_valid_mod_extension(file):
+				mods.append(file)
+		
+		mod_files_dropped.emit(mods)
 
 
-func _load_mods(files: Array[String]):
+# loads all the given files as mods
+# if loading a mod succeeds, it will be added to 'persistent.mods';
+# if loading a mod fails, it will be removed from there
+func load_mods(files: Array[String]):
 	var persistent_changed: bool = false
 	
 	for file in files:
-		if FileAccess.file_exists(file) and ProjectSettings.load_resource_pack(file, true):
+		var success: bool = false
+		
+		if not FileAccess.file_exists(file):
+			log_info("Did not load mod '%s' (file doesn't exist)" % file)
+		elif not is_valid_mod_extension(file):
+			log_info("Did not load mod '%' (invalid extension)" % file)
+		elif not ProjectSettings.load_resource_pack(file, true):
+			log_info("Did not load mod '%s' (error while loading)" % file)
+		else:
+			success = true
+			log_info("Loaded mod '%s'" % file)
+			# add to known mods
 			if file not in persistent.mods:
 				persistent.mods.append(file)
 				persistent_changed = true
-		else:
+		
+		# remove from known mods if loading failed
+		if not success:
 			if file in persistent.mods:
 				persistent.mods.erase(file)
 				persistent_changed = true
@@ -371,6 +400,23 @@ func _load_mods(files: Array[String]):
 	
 	if detect_languages():
 		emit_signal('languages_changed')
+
+
+# returns a list of files in the executable file's folder that:
+# – are of extension .zip or .pck
+# – contain (case-insensitive) the string "mod"
+func _discover_mods() -> Array[String]:
+	var discovered: Array[String] = []
+	var exec_dir: String = OS.get_executable_path().rsplit('/', false, 1)[0]
+	
+	for file in DirAccess.get_files_at(exec_dir):
+		# don't rediscover known mods
+		if file in persistent.mods:
+			continue
+		if (file.ends_with('.zip') or file.ends_with('.pck')) and 'mod' in file.to_lower():
+			discovered.append(discovered)
+	
+	return discovered
 
 
 func _input(event: InputEvent) -> void:

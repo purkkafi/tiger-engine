@@ -435,7 +435,6 @@ func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
 	
 	avfx.vfx.clear(get_vfx_target(avfx.target), tween)
 	
-	print('clear ', avfx_id)
 	tween.chain().tween_callback(active_vfxs.erase.bind(avfx))
 	return tween
 

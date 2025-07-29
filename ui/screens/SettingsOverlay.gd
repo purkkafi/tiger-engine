@@ -251,10 +251,14 @@ func _add_mod():
 
 func _mod_added(files: Variant):
 	if files is String:
-		mods_now.append(files)
+		var the_file: String = files
+		if the_file not in mods_now and TE.is_valid_mod_extension(the_file):
+			mods_now.append(the_file)
 	else:
 		for file in files as Array[String]:
-			mods_now.append(file)
+			if file not in mods_now and TE.is_valid_mod_extension(file):
+				mods_now.append(file)
+	
 	_populate_mods_grid()
 
 
