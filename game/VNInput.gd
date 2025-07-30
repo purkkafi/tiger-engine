@@ -21,6 +21,13 @@ static func register_actions() -> void:
 	left_click.button_index = MOUSE_BUTTON_LEFT
 	InputMap.action_add_event(GAME_ADVANCE, left_click)
 	
+	# needed so that input events spawned by emulate_mouse_from_touch
+	# will be recognized properly
+	var left_click_emulated = InputEventMouseButton.new()
+	left_click_emulated.button_index = MOUSE_BUTTON_LEFT
+	left_click_emulated.device = InputEvent.DEVICE_ID_EMULATION 
+	InputMap.action_add_event(GAME_ADVANCE, left_click_emulated)
+	
 	var space = InputEventKey.new()
 	space.keycode = KEY_SPACE
 	InputMap.action_add_event(GAME_ADVANCE, space)
