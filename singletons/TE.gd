@@ -184,19 +184,27 @@ func detect_languages() -> bool:
 			lang.icon_path = icon_path
 		
 		found.append(lang)
-
-	# sort found languages, preferring the one matching user's locale
-	var locale = OS.get_locale_language()
+	
+	# sort languages, preferring the one matching user's locale, then the one matching language
+	var locale = OS.get_locale()
+	var locale_language = OS.get_locale_language()
 	var preferred = null
 	
 	for lang in found:
 		if lang.id == locale:
 			preferred = lang
-			found.remove_at(found.find(lang))
+			break
+	
+	if preferred == null:
+		for lang in found:
+			if lang.id == locale_language:
+				preferred = lang
+				break
 	
 	found.sort_custom(func(lang1: Lang, lang2: Lang): return lang2.name > lang1.name)
 	
 	if preferred != null:
+		found.erase(preferred)
 		found.insert(0, preferred)
 	
 	all_languages = found
@@ -374,6 +382,9 @@ func _load_dropped_mods(files: Array[String]) -> void:
 # if loading a mod succeeds, it will be added to 'persistent.mods';
 # if loading a mod fails, it will be removed from there
 func load_mods(files: Array[String]):
+	if files.is_empty():
+		return
+	
 	var persistent_changed: bool = false
 	
 	for file in files:
