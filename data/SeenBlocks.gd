@@ -32,11 +32,9 @@ func mark_read(block: Block, line: int):
 	if id in data:
 		var old_line: int = data[id]['line']
 		
-		# retain old hash, we haven't progressed since it was stored
-		if line < old_line:
-			hash = data[id]['hash']
-		
-		line = max(line, old_line)
+		# if hash matches, increase line index, else start from new line
+		if hash == data[id]['hash']:
+			line = max(line, old_line)
 	
 	data[id] = { 'line': line, 'hash': hash }
 

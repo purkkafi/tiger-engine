@@ -22,24 +22,27 @@ var speedup: Speedup = Speedup.NORMAL # status of speedup
 var previously_seen_line: bool = false
 var state: State = State.READY_TO_PROCEED # current state
 var waiting_tween: Tween = null # tween being waited for
+var waiting_unadvance_after_pause_skip: bool = false
 var game: TEGame = null # TEGame object used to access various game data
 var result: Variant = null # the optional value this View resulted in
 # the state of the previous View (for temporary Views); Dictionary or null for none
 var previous_state: Variant = null
 
 
-# TODO implement setting for skip speed?
-const SKIP_COOLDOWN: float = 0.1 # cooldown when moving to next line on speedup
+# base cooldown when moving to next line on speedup; use _skip_cooldown() to get
+# value adjusted by skip speed setting
+const BASE_SKIP_COOLDOWN: float = 0.1
+# base factor to multiply tweening speed with
+# same deal, use _skip_tween_scale()
+const BASE_SKIP_TWEEN_SCALE: float = 25.0
 const JUMP_TO_LINE_END_COOLDOWN: float = 0.75 # cooldown after scrolling text is skipped to line end
-
-const SKIP_TWEEN_SCALE: float = 10.0 # factor to multiply tweening speed with
-const SKIP_TO_LINE_END_THRESHOLD: float = 0.05 # treshold to skip to line end
+const ADVANCE_THRESHOLD: float = 0.01 # treshold to advance
+const SKIP_PAUSE_THRESHOLD: float = 0.5# 0.3 # threshold to click through pause/tweens
 const SPEEDUP_THRESHOLD_FASTER: float = 1.5 # treshold to start speeding up faster
 const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
-	' ' : 0, '\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
-	'.' : 14, '!' : 14, '?' : 14, '–' : 14, ':' : 14,
-	';' : 11,
+	'\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
+	'.' : 14, '!' : 14, '?' : 14, '–' : 13, ':' : 14, ';' : 14,
 	',' : 8,
 	DEL : 5
 }
@@ -177,10 +180,12 @@ func show_block(new_block: Block) -> void:
 # proceeds to the next line
 func next_line(loading_from_save: bool = false) -> void:
 	previously_seen_line = TE.seen_blocks.is_read(block, line_index)
-	TE.emit_signal('game_next_line')
 	
-	# if skipping but skip mode was just set to DISABLED, stop
-	if get_skip_mode() == SkipMode.DISABLED and speedup != Speedup.NORMAL:
+	if not loading_from_save:
+		TE.emit_signal('game_next_line', block, line_index)
+	
+	# if skipping with button/skip hotkey but skip mode was just set to DISABLED, stop
+	if get_skip_mode() == SkipMode.DISABLED and speedup == Speedup.SKIP:
 		skip_toggled(false)
 	
 	TE.seen_blocks.mark_read(block, line_index)
@@ -214,24 +219,27 @@ func next_line(loading_from_save: bool = false) -> void:
 	label.visible_characters = 0
 	next_letter_delta = 0 # reset to avoid bugs with infinite text speed
 	advance_held_this_line = 0
+	waiting_unadvance_after_pause_skip = true
 	
 	match speedup:
 		Speedup.NORMAL:
 			# proceed normally
 			state = State.SCROLLING_TEXT
-		Speedup.SPEEDUP, Speedup.SKIP:
+		Speedup.SPEEDUP:
 			# skip to the end of the line, wait cooldown
 			_to_end_of_line()
-			
-			cooldown = SKIP_COOLDOWN
+			cooldown = BASE_SKIP_COOLDOWN
 			state = State.SKIPPING_COOLDOWN
-
+		Speedup.SKIP:
+			_to_end_of_line()
+			cooldown = _modified_skip_cooldown()
+			state = State.SKIPPING_COOLDOWN
 
 func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
 	var speaker_declaration: String = tag_bbcode.get_string('content')
 	
 	return {
-		'line': TE.localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
+		'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
 		'speaker': Speaker.resolve(speaker_declaration, game.context)
 	}
 
@@ -290,7 +298,7 @@ func update_state(delta: float):
 	# make tween faster on skip
 	if waiting_tween != null:
 		if speedup == Speedup.SPEEDUP or speedup == Speedup.SKIP:
-			waiting_tween.set_speed_scale(SKIP_TWEEN_SCALE)
+			waiting_tween.set_speed_scale(_modified_skip_tween_scale())
 		
 		if waiting_tween.is_running():
 			return
@@ -361,31 +369,41 @@ func game_advanced(delta: float):
 	advance_held += delta
 	advance_held_this_line += delta
 	
+	if advance_held >= SPEEDUP_THRESHOLD_FASTER:
+		speedup = Speedup.SPEEDUP
+		waiting_unadvance_after_pause_skip = false
+	
 	# accelerate tween and move past pauses if advance is held
-	if waiting_tween != null and waiting_tween.is_running() and advance_held >= SKIP_TO_LINE_END_THRESHOLD:
+	if waiting_tween != null and waiting_tween.is_running() and advance_held_this_line >= SKIP_PAUSE_THRESHOLD:
 		waiting_tween.custom_step(INF)
+		waiting_unadvance_after_pause_skip = true
 	
-	if pause_delta > 0:
-		pause_delta = SKIP_TO_LINE_END_THRESHOLD
+	if pause_delta > 0 and advance_held_this_line >= SKIP_PAUSE_THRESHOLD:
+		pause_delta = 0
+		waiting_unadvance_after_pause_skip = true
 	
-	if state == State.WAITING_ADVANCE and advance_held_this_line >= SKIP_TO_LINE_END_THRESHOLD:
+	if waiting_unadvance_after_pause_skip:
+		return
+	
+	if state == State.WAITING_ADVANCE and advance_held_this_line >= ADVANCE_THRESHOLD:
 		# move to next line
-		cooldown = SKIP_COOLDOWN
+		cooldown = BASE_SKIP_COOLDOWN
 		state = State.SKIPPING_COOLDOWN
+		waiting_unadvance_after_pause_skip = true
 	
-	elif state == State.SCROLLING_TEXT and advance_held_this_line >= SKIP_TO_LINE_END_THRESHOLD:
+	elif state == State.SCROLLING_TEXT and advance_held_this_line >= ADVANCE_THRESHOLD:
 		# skip to end of line
 		_to_end_of_line()
 		state = State.JUMPED_TO_LINE_END_COOLDOWN
 		cooldown = JUMP_TO_LINE_END_COOLDOWN
-	
-	if advance_held >= SPEEDUP_THRESHOLD_FASTER:
-		speedup = Speedup.SPEEDUP
+		waiting_unadvance_after_pause_skip = true
 
 
 # should be called on frames when user is not advancing the game
 func game_not_advanced(_delta: float):
 	advance_held = 0.0
+	advance_held_this_line = 0.0
+	waiting_unadvance_after_pause_skip = false
 	
 	if speedup != Speedup.SKIP:
 		# reset speedup when advance is not held
@@ -406,6 +424,7 @@ func create_label() -> RichTextLabel:
 	label.clip_contents = false
 	label.theme_type_variation = 'GameTextLabel'
 	label.focus_mode = Control.FOCUS_NONE
+	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	
 	return label
 
@@ -651,3 +670,12 @@ func _debug_msg() -> String:
 	msg += 'speedup: %s' % SPEEDUP_TO_STR[speedup]
 	
 	return msg
+
+
+# skip cooldown based on skip speed setting
+func _modified_skip_cooldown() -> float:
+	return BASE_SKIP_COOLDOWN * (1.0 - TE.settings.skip_speed) * 5.0
+
+
+func _modified_skip_tween_scale() -> float:
+	return BASE_SKIP_TWEEN_SCALE * (TE.settings.skip_speed + 0.5)

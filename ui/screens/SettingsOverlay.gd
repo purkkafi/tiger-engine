@@ -15,6 +15,7 @@ var language_disabled: bool = false
 @onready var music_volume: Slider = %MusicVolSlider
 @onready var sfx_volume: Slider = %SFXVolSlider
 @onready var text_speed: Slider = %TextSpeedSlider
+@onready var skip_speed: Slider = %SkipSpeedSlider
 @onready var dyn_text_speed: CheckBox = %DynTextSpeed
 @onready var skip_unseen_text: CheckBox = %SkipUnseenText
 @onready var lang_options: OptionButton = %LangOptions
@@ -24,11 +25,15 @@ var language_disabled: bool = false
 @onready var gui_scale: OptionButton = %GUIScale
 @onready var dyslexic_font: CheckButton = %DyslexicFont
 @onready var audio_captions: CheckButton = %AudioCaptions
+@onready var add_mod: Button = %AddModButton
+@onready var mods_grid: GridContainer = %ModsGrid
 @onready var save_exit: Button = %SaveExit
 @onready var discard: Button = %Discard
 
 var unhandled_input_callback = null
 var key_buttons: Array[Button] = []
+var initial_mods: Array[String]
+var mods_now: Array[String]
 
 
 func _initialize_overlay():
@@ -60,6 +65,7 @@ func _initialize_overlay():
 	sfx_volume.connect('value_changed', Callable(Settings, 'change_sfx_volume'))
 	
 	text_speed.value = TE.settings.text_speed
+	skip_speed.value = TE.settings.skip_speed
 	dyn_text_speed.button_pressed = TE.settings.dynamic_text_speed
 	skip_unseen_text.button_pressed = TE.settings.skip_unseen_text
 	
@@ -106,6 +112,19 @@ func _initialize_overlay():
 	gui_scale.get_popup().transparent_bg = true
 	dyslexic_font.button_pressed = TE.settings.dyslexic_font
 	audio_captions.button_pressed = TE.settings.audio_captions
+	
+	initial_mods = TE.persistent.mods.duplicate()
+	mods_now = TE.persistent.mods.duplicate()
+	add_mod.connect('pressed', _add_mod)
+	
+	if TE.change_mods_supported():
+		TE.mod_files_dropped.connect(_mod_files_dropped)
+	
+	# disabled on web while godot web builds don't support native file chooser
+	if TE.is_web() or not TE.change_mods_supported():
+		add_mod.disabled = true
+	
+	_populate_mods_grid()
 	
 	save_exit.grab_focus()
 
@@ -229,10 +248,69 @@ func _audio_captions_toggled(toggled_on: bool) -> void:
 	TE.captions.set_captions_on(toggled_on)
 
 
+func _add_mod():
+	var popup: FileDialog = Popups.file_dialog(FileDialog.FILE_MODE_OPEN_FILE, ["*.zip,*.pck"])
+	popup.connect('file_selected', func(file): _mod_added(file))
+
+
+func _mod_added(files: Variant):
+	if files is String:
+		var the_file: String = files
+		if the_file not in mods_now and TE.is_valid_mod_extension(the_file):
+			mods_now.append(the_file)
+	else:
+		for file in files as Array[String]:
+			if file not in mods_now and TE.is_valid_mod_extension(file):
+				mods_now.append(file)
+	
+	_populate_mods_grid()
+
+
+func _mod_removed(file: String):
+	mods_now.erase(file)
+	_populate_mods_grid()
+
+
+func _mod_files_dropped(files: Array[String]):
+	_mod_added(files)
+
+
+func _populate_mods_grid():
+	var prev_children: Array[Node] = mods_grid.get_children().duplicate()
+	for child in prev_children:
+		mods_grid.remove_child(child)
+		child.queue_free()
+	
+	mods_grid.columns = 2
+	
+	var buttons_disabled: bool = not TE.change_mods_supported()
+	
+	for mod in mods_now:
+		var label_text: String = mod
+		if '/' in label_text:
+			label_text = label_text.split('/', false)[-1]
+		
+		var path_label: Label = Label.new()
+		path_label.text = label_text
+		path_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		path_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		path_label.tooltip_text = mod
+		path_label.mouse_filter = Control.MOUSE_FILTER_PASS
+		mods_grid.add_child(path_label)
+		
+		var delete: Button = Button.new()
+		delete.size_flags_horizontal = Control.SIZE_SHRINK_END
+		delete.disabled = buttons_disabled
+		delete.text = TE.localize.settings_mod_delete
+		delete.connect('pressed', _mod_removed.bind(mod))
+		mods_grid.add_child(delete)
+
+
 func _save_exit():
 	TE.settings.music_volume = music_volume.value
 	TE.settings.sfx_volume = sfx_volume.value
 	TE.settings.text_speed = text_speed.value
+	TE.settings.skip_speed = skip_speed.value
 	TE.settings.dynamic_text_speed = dyn_text_speed.button_pressed
 	TE.settings.skip_unseen_text = skip_unseen_text.button_pressed
 	TE.settings.lang_id = TE.language.id
@@ -250,6 +328,19 @@ func _save_exit():
 				Settings.change_keyboard_shortcuts(TE.settings.keys)
 	
 	TE.settings.save_to_file()
+	
+	initial_mods.sort()
+	mods_now.sort()
+	if initial_mods != mods_now:
+		TE.persistent.mods = mods_now
+		TE.persistent.save_to_file()
+		
+		var restart_info: Label = Label.new()
+		restart_info.text = TE.localize.settings_mod_restart_info
+		var popup: AcceptDialog = Popups.info_dialog(TE.localize.settings_mod_restart_title, restart_info)
+		popup.connect('confirmed', TE.quit_game)
+		popup.connect('canceled', TE.quit_game)
+			
 	_exit()
 
 

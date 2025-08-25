@@ -11,9 +11,10 @@ var instead_scene: Variant
 
 func _ready():
 	instead_scene = CmdArgs.handle_args()
+	# TODO: handle instead_scene immediately instead of waiting for user input
 	
 	# rebuild UI if the user drops in a language pack
-	TE.connect('languages_changed', display_language_choice)
+	TE.languages_changed.connect(display_language_choice)
 	
 	# load default theme or use an empty theme if not specified
 	if TE.opts.default_theme != null:
@@ -22,6 +23,9 @@ func _ready():
 	# set initial window settings
 	self.color = TETheme.background_color
 	get_window().min_size = Vector2i(962, 542)
+	
+	# setup basic actions in input map
+	VNInput.register_actions()
 	
 	# setup events for keyboard shortcuts
 	for shortcut in Settings.KEYBOARD_SHORTCUTS.keys():
@@ -42,6 +46,14 @@ func _ready():
 	# install custom views
 	for custom_view in TE.opts.custom_views:
 		TE.defs.view_registry[custom_view] = load(TE.opts.custom_views[custom_view])
+	
+	# allow user to drag-and-drop mods & load them immediately
+	TE.mod_files_dropped.connect(_files_dropped)
+	
+	# if specified in cmd args, execute non-game scene
+	if instead_scene != null:
+		TE.switch_scene(instead_scene as Node)
+		return
 	
 	# if settings file exists, read it and switch to the specified language
 	var loaded_settings = null if TE.ignore_settings else Settings.load_from_file()
@@ -70,9 +82,7 @@ func _ready():
 
 # changes to the appropriate next scene
 func _next_screen():
-	if instead_scene != null: # if specified in cmd args
-		TE.switch_scene(instead_scene as Node)
-	elif TE.opts.splash_screen != null: # go to splash screen if specified
+	if TE.opts.splash_screen != null: # go to splash screen if specified
 		TE.switch_scene(load(TE.opts.splash_screen).instantiate())
 	else: # by default go to the title screen
 		TE.switch_scene(Assets.noncached.get_resource(TE.opts.title_screen).instantiate())
@@ -122,3 +132,17 @@ func _language_selected(selected: Lang):
 	TE.settings.lang_id = selected.id
 	TE.settings.save_to_file()
 	_next_screen()
+
+
+func _change_mods_supported() -> bool:
+	return true
+
+
+func _files_dropped(files: Array[String]):
+	TE.load_mods(files)
+
+
+# clear signals
+func _exit_tree():
+	TE.languages_changed.disconnect(display_language_choice)
+	TE.mod_files_dropped.disconnect(_files_dropped)

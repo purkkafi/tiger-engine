@@ -6,6 +6,7 @@ class_name Settings extends RefCounted
 var music_volume: float # volume of music, in range [0, 1]
 var sfx_volume: float # volume of sfx, in range [0, 1]
 var text_speed: float # text speed, in range [0, 1]
+var skip_speed: float # speed of skipping, in range [0, 1]
 var dynamic_text_speed: bool # dynamic text speed on/off
 var skip_unseen_text: bool # skip allowed even when reading new text
 var fullscreen: bool # fullscreen on/off
@@ -31,22 +32,30 @@ const NO_DEFAULT_PROPERTIES: Array[String] = [ 'lang_id', 'keys', 'format' ]
 # – 'string', a string representing the key
 # – 'shift', 'alt', 'ctrl', bools representing the modifiers
 static var KEYBOARD_SHORTCUTS: Dictionary = {
-	'game_screenshot': {
+	&'game_screenshot': {
 		'keycode': KEY_S,
 		'string': key_to_string(KEY_S),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'game_hide': {
+	&'game_hide': {
 		'keycode': KEY_H,
 		'string': key_to_string(KEY_H),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'game_skip': {
+	&'game_rollback': {
+		'keycode': KEY_PAGEUP,
+		'string': key_to_string(KEY_PAGEUP),
+		'shift': false, 'alt': false, 'ctrl': false },
+	&'game_rollforward': {
+		'keycode': KEY_PAGEDOWN,
+		'string': key_to_string(KEY_PAGEDOWN),
+		'shift': false, 'alt': false, 'ctrl': false },
+	&'game_skip': {
 		'keycode': KEY_CTRL,
 		'string': key_to_string(KEY_CTRL),
 		'shift': false, 'alt': false, 'ctrl': false },
-	'debug_toggle' : {
+	&'debug_toggle': {
 		'keycode': KEY_F1,
 		'string': key_to_string(KEY_F1),
-		'shift': false, 'alt': false, 'ctrl': false }
+		'shift': false, 'alt': false, 'ctrl': false },
 }
 # current settings file format number
 const SETTINGS_FORMAT: int = 1
@@ -195,6 +204,7 @@ static func default_settings():
 		defs.sfx_volume = 1
 	
 	defs.text_speed = 0.5
+	defs.skip_speed = 0.5
 	defs.dynamic_text_speed = true
 	defs.skip_unseen_text = false
 	defs.fullscreen = false

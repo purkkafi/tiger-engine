@@ -34,6 +34,8 @@ var draw_debug: bool = false:
 	set(enabled):
 		draw_debug = enabled
 		_redraw_all(current_scene)
+# time of last 'game_rollback' or 'game_rollforward' input to limit their frequency
+var _last_key_rollback_or_rollforward_time: int = 0
 
 
 # screen size constants
@@ -44,21 +46,30 @@ const SCREEN_HEIGHT = 1080
 # signal when an unlockable is unlocked
 @warning_ignore("unused_signal")
 signal unlockable_unlocked(_namespace: String, id: String)
+
 # signal sent when a toast notification is spawned
 # a toast object has these entries:
 # – 'bbcode': the text in bbcode
 # – 'icon' (optional): path to icon
 @warning_ignore("unused_signal")
 signal toast_notification(toast: Dictionary)
-# fired when a translation package is loaded
+
+# fired when loading mods adds a language
 @warning_ignore("unused_signal")
 signal languages_changed
-# fired when the game displays the next line of text
+
+# fired when user drops mod files on program
 @warning_ignore("unused_signal")
-signal game_next_line
+signal mod_files_dropped(files: Array[String])
+
+# fired when user moves to the next line of text
+@warning_ignore("unused_signal")
+signal game_next_line(block: Block, line_index: int)
+
 # user has opened an in-game overlay, i.e. the settings screen; everything should pause
 @warning_ignore("unused_signal")
 signal overlay_opened
+
 # user has closed the in-game overlay
 @warning_ignore("unused_signal")
 signal overlay_closed
@@ -81,19 +92,10 @@ func _ready():
 	if opts == null:
 		opts = Options.new()
 	
-	# attempt to load known translation packs
-	var remove: Array[String] = []
-	for tp in persistent.translation_packages:
-		var ok: bool = ProjectSettings.load_resource_pack(tp, false)
-		if not ok:
-			remove.append(tp)
-			log_warning("Translation package '%s' was not found and will be removed from cache" % tp)
-	
-	# remove the bad ones that couldn't be loaded
-	if len(remove) != 0:
-		for bad_package in remove:
-			persistent.translation_packages.erase(bad_package)
-		persistent.save_to_file()
+	# attempt to load known mods
+	load_mods(persistent.mods)
+	# attempt to load mods discovered in same folder as executable
+	load_mods(_discover_mods())
 	
 	# detect available languages
 	detect_languages()
@@ -109,7 +111,7 @@ func _ready():
 	TE.audio.sound_played.connect(func(sound): captions.show_caption('%alt_sound_' + sound + '%', sound))
 	TE.audio.sound_finished.connect(func(sound): captions.hide_caption(sound))
 	
-	get_tree().get_root().connect('files_dropped', _load_translation_package)
+	get_tree().get_root().connect('files_dropped', _load_dropped_mods)
 	
 	# set current scene to be the initial scene
 	var root = get_tree().root
@@ -125,10 +127,14 @@ func _handle_song_played_caption(song_id: String):
 	else:
 		captions.show_caption('%alt_song_' + song_id + '%', 'song')
 
-
 # sets the scene to the given scene and calls callback afterwards
 # the old one will be freed if 'free_old' is true, else it will be given as an argument to 'after'
+# if the old scene has a method called '_scene_change_initiated', it will be called
+# this should be used to disable further inputs while the scene laods
 func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: bool = true):
+	if '_scene_change_initiated' in current_scene:
+		current_scene._scene_change_initiated()
+		
 	await get_tree().process_frame
 	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
 
@@ -178,19 +184,27 @@ func detect_languages() -> bool:
 			lang.icon_path = icon_path
 		
 		found.append(lang)
-
-	# sort found languages, preferring the one matching user's locale
-	var locale = OS.get_locale_language()
+	
+	# sort languages, preferring the one matching user's locale, then the one matching language
+	var locale = OS.get_locale()
+	var locale_language = OS.get_locale_language()
 	var preferred = null
 	
 	for lang in found:
 		if lang.id == locale:
 			preferred = lang
-			found.remove_at(found.find(lang))
+			break
+	
+	if preferred == null:
+		for lang in found:
+			if lang.id == locale_language:
+				preferred = lang
+				break
 	
 	found.sort_custom(func(lang1: Lang, lang2: Lang): return lang2.name > lang1.name)
 	
 	if preferred != null:
+		found.erase(preferred)
 		found.insert(0, preferred)
 	
 	all_languages = found
@@ -239,7 +253,7 @@ func load_from_save(save: Dictionary, rollback: Rollback = null, gamelog: Log = 
 
 func _after_load_from_save(game_scene: TEGame, save: Dictionary, rollback: Rollback = null, gamelog: Log = null, stage_node_cache: Variant = null):
 	if rollback != null and gamelog != null:
-		game_scene.rollback.set_rollback(rollback.entries)
+		game_scene.rollback.set_rollback(rollback)
 		gamelog.remove_last()
 		game_scene.gamelog = gamelog
 	
@@ -338,15 +352,99 @@ func _redraw_all(node: Node):
 		node.queue_redraw()
 
 
-func _load_translation_package(files: Array[String]):
+# returns whether current scene supports changing loaded mods
+# this is true if the scene declares a method called '_change_mods_supported' and it returns true
+func change_mods_supported() -> bool:
+	return '_change_mods_supported' in current_scene and current_scene._change_mods_supported()
+
+
+# returns whether the extension of the given string, interpreted as a path, is .zip or .pck
+func is_valid_mod_extension(file: String) -> bool:
+	return file.get_extension() == 'zip' or file.get_extension() == 'pck'
+
+
+func _load_dropped_mods(files: Array[String]) -> void:
+	# mods not supported on web yet
+	if TE.is_web():
+		return
+	
+	if change_mods_supported():
+		var mods: Array[String] = []
+		
+		for file in files:
+			if is_valid_mod_extension(file):
+				mods.append(file)
+		
+		mod_files_dropped.emit(mods)
+
+
+# loads all the given files as mods
+# if loading a mod succeeds, it will be added to 'persistent.mods';
+# if loading a mod fails, it will be removed from there
+func load_mods(files: Array[String]):
+	if files.is_empty():
+		return
+	
+	var persistent_changed: bool = false
+	
 	for file in files:
-		if not ProjectSettings.load_resource_pack(file, false):
-			log_error(TE.Error.FILE_ERROR, "Could not load language package: '%s'" % file)
+		var success: bool = false
+		
+		if not FileAccess.file_exists(file):
+			log_info("Did not load mod '%s' (file doesn't exist)" % file)
+		elif not is_valid_mod_extension(file):
+			log_info("Did not load mod '%' (invalid extension)" % file)
+		elif not ProjectSettings.load_resource_pack(file, true):
+			log_info("Did not load mod '%s' (error while loading)" % file)
+		else:
+			success = true
+			log_info("Loaded mod '%s'" % file)
+			# add to known mods
+			if file not in persistent.mods:
+				persistent.mods.append(file)
+				persistent_changed = true
+		
+		# remove from known mods if loading failed
+		if not success:
+			if file in persistent.mods:
+				persistent.mods.erase(file)
+				persistent_changed = true
+	
+	if persistent_changed:
+		persistent.save_to_file()
 	
 	if detect_languages():
 		emit_signal('languages_changed')
-		
-		for file in files:
-			if file not in persistent.translation_packages:
-				persistent.translation_packages.append(file)
-		persistent.save_to_file()
+
+
+# returns a list of files in the executable file's folder that:
+# – are of extension .zip or .pck
+# – contain (case-insensitive) the string "mod"
+func _discover_mods() -> Array[String]:
+	# not supported on these platforms
+	if TE.is_web() or TE.is_mobile():
+		return []
+	
+	var discovered: Array[String] = []
+	var exec_dir: String = OS.get_executable_path().rsplit('/', false, 1)[0]
+	
+	for file in DirAccess.get_files_at(exec_dir):
+		# don't rediscover known mods
+		if file in persistent.mods:
+			continue
+		if (file.ends_with('.zip') or file.ends_with('.pck')) and 'mod' in file.to_lower():
+			discovered.append(discovered)
+	
+	return discovered
+
+
+func _input(event: InputEvent) -> void:
+	# limit frequency of 'game_rollback' and 'game_rollforward' events echoing
+	if event.is_action(&'game_rollback', true) or event.is_action(&'game_rollforward', true):
+		if event.is_echo():
+			var now: int = Time.get_ticks_msec()
+			# wait 50ms between events
+			if now < _last_key_rollback_or_rollforward_time + 50:
+				get_viewport().set_input_as_handled()
+			else:
+				_last_key_rollback_or_rollforward_time = now
