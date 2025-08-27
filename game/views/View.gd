@@ -193,7 +193,7 @@ func next_line(loading_from_save: bool = false) -> void:
 	var line: String = _lines[line_index]
 	
 	# parse lines containing engine-specific bbcode
-	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)	
+	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
 	
 	# parse custom tag and let subclass decide what to do with the line
 	if tag_bbcode != null and tag_bbcode.get_string('tag') in _supported_custom_tags():

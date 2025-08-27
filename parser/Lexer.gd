@@ -3,7 +3,7 @@ class_name Lexer extends RefCounted
 
 
 # regex for determining whether a character is a part of a tag
-var TAG_CHAR_REGEX: RegEx = RegEx.create_from_string('\\w')
+var TAG_CHAR_REGEX: RegEx = RegEx.create_from_string(r'[\p{L}_0-9]')  #   r'\w'
 # placeholder EOF character
 const EOF: String = '\uE000'
 # characters that can be a part of a Newline token after it starts with \n

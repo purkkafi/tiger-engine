@@ -10,7 +10,7 @@ var label_variation: String # theme type variation of the speaker label
 var log_color: Color # color in the log
 
 
-static var EXTRACT_ID: RegEx = RegEx.create_from_string('(\\w+)')
+static var EXTRACT_ID: RegEx = RegEx.create_from_string('(\\p{L}+)')
 static var EXTRACT_ARG: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<content>.+?)\\[\\/(?P=tag)\\]')
 
 
