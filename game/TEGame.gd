@@ -74,6 +74,10 @@ func _ready():
 	# and in that case, the call is not needed
 	if vm != null and vm.current_script != null:
 		next_blocking()
+	
+	# register speaker effect
+	if '\\speaker_effect' in TE.opts.vfx_registry.keys():
+		TE.game_speaker_speaks.connect(_on_speaker_speaks)
 
 
 func _gui_focus_changed(ctrl: Control):
@@ -718,9 +722,27 @@ func stage() -> VNStage:
 # prevents timing issues if user mashes rollback/rollforward while the game lags
 func _scene_change_initiated():
 	self.focus_mode = Control.FOCUS_NONE
+	
+	# disconnect signals
+	# TODO refactor to signal of this class instead?
+	if TE.game_speaker_speaks.is_connected(_on_speaker_speaks):
+		TE.game_speaker_speaks.disconnect(_on_speaker_speaks)
 
 
 # actions that happen when the user proceeds to the next line normally
 func _on_next_line(_block: Block, _line_index: int):
 	# clear rollforward since user is not going back
 	rollback.clear_rollforward()
+
+
+func _on_speaker_speaks(speaker: Speaker, skip_animations: bool):
+	var state = { 'skip_animations': skip_animations }
+	var tween = create_tween()
+	
+	for sprite in stage().get_sprites():
+		if sprite.associated_speaker == speaker.id:
+			stage().add_vfx('\\speaker_effect', sprite.id, null, state, tween)
+	
+	tween.tween_callback(func(): pass) # stop godot from complaining about empty tweens
+	# TODO some kind of View.wait_tween() equivalent to account for long animations
+	

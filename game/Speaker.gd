@@ -2,6 +2,7 @@ class_name Speaker extends RefCounted
 # runtime object used to indicate how a speaker of a line should
 # be displayed in different contexts
 
+var id: String # the speaker id
 var name: String # the name
 var name_color: Color # color of the speaker box
 var bg_color: Color # background color of the speaker box
@@ -37,6 +38,7 @@ static func resolve(declaration: String, ctxt: ControlExpr.BaseContext) -> Speak
 		resolved_name = ControlExpr.exec((name as Tag.ControlTag).string, ctxt).strip_edges()
 	
 	return Speaker.new(
+		id,
 		resolved_name,
 		def.name_color,
 		def.bg_color,
@@ -55,7 +57,8 @@ static func _get_log_color(def: Definitions.SpeakerDef):
 	return TETheme.default_text_color
 
 
-func _init(_name: String, _name_color: Color, _bg_color: Color, _label_variation: String, _textbox_variation: String, _log_color: Color):
+func _init(_id: String, _name: String, _name_color: Color, _bg_color: Color, _label_variation: String, _textbox_variation: String, _log_color: Color):
+	self.id = _id
 	self.name = _name
 	self.name_color = _name_color
 	self.bg_color = _bg_color

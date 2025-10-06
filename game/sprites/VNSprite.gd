@@ -42,6 +42,7 @@ var _debug_outline: Rect2 = Rect2(0, 0, 0, 0)
 # set by whoever is loading the sprite
 var id: String # id the sprite is referred to with
 var path: String # path of the sprite folder
+var associated_speaker: String # speaker id this sprite is associated with
 
 
 # signal for stage to rearrange sprites

@@ -66,6 +66,12 @@ signal mod_files_dropped(files: Array[String])
 @warning_ignore("unused_signal")
 signal game_next_line(block: Block, line_index: int)
 
+# fired when a speaker speaks
+# – speaker: the speaker object
+# – skip_animations: whether any applied effect(s) should be instant
+@warning_ignore("unused_signal")
+signal game_speaker_speaks(speaker: Speaker, skip_animations: bool)
+
 # user has opened an in-game overlay, i.e. the settings screen; everything should pause
 @warning_ignore("unused_signal")
 signal overlay_opened

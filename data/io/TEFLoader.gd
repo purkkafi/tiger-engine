@@ -270,10 +270,19 @@ func _resolve_definitions(tree: Tag):
 				
 			'sprite':
 				# just put the sprite path in there, it will be resolved later
+				var sprite_id: String = node.get_string_at(0)
 				var folder_path: String = node.get_string_at(1)
 				if folder_path.ends_with('/'):
 					push_error('sprite paths must not end in /: %s' % folder_path)
-				defs.sprites[node.get_string_at(0)] = folder_path
+				defs.sprites[sprite_id] = folder_path
+				
+				if node.length() == 3:
+					for tag in node.get_tags_at(2):
+						match tag.name:
+							'speaker':
+								defs.sprite_speakers[sprite_id] = tag.get_string()
+							_:
+								push_error('unknown tag in sprite definition: %s' % tag)
 			
 			'var':
 				var name: String = node.get_string_at(0)
@@ -400,7 +409,14 @@ func _resolve_options(tree: Tag):
 			'ingame_custom_controls':
 				opts.ingame_custom_controls = node.get_string()
 			'register_vfx':
-				opts.vfx_registry[node.get_string_at(0)] = node.get_string_at(1)
+				if node.get_string_at(0) != null:
+					opts.vfx_registry[node.get_string_at(0)] = node.get_string_at(1)
+				else:
+					match (node as Tag).get_tag_at(0).name:
+						'speaker_effect':
+							opts.vfx_registry['\\speaker_effect'] = node.get_string_at(1)
+						_:
+							push_error('not recognized special vfx (\\speaker_effect): ', node)
 			_:
 				push_error('unknown option: %s' % [node])
 	

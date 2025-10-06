@@ -210,6 +210,10 @@ func next_line(loading_from_save: bool = false) -> void:
 		if not loading_from_save:
 			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
 		
+		if speaker != null:
+			var skip_animations = loading_from_save or speedup != Speedup.NORMAL
+			TE.game_speaker_speaks.emit(speaker, skip_animations)
+		
 		_display_line(line + line_end_string(), speaker)
 	
 	line_index += 1
@@ -234,6 +238,7 @@ func next_line(loading_from_save: bool = false) -> void:
 			_to_end_of_line()
 			cooldown = _modified_skip_cooldown()
 			state = State.SKIPPING_COOLDOWN
+
 
 func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
 	var speaker_declaration: String = tag_bbcode.get_string('content')

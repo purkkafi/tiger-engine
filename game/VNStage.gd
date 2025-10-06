@@ -221,6 +221,9 @@ func _create_sprite(path: String) -> VNSprite:
 	# default id to being last part of sprite folder's path
 	sprite.id = path.split('/')[-1]
 	
+	if sprite.id in TE.defs.sprite_speakers.keys():
+		sprite.associated_speaker = TE.defs.sprite_speakers[sprite.id]
+	
 	sprite.connect('draw_order_changed', _sort_sprites)
 	return sprite
 
@@ -341,6 +344,14 @@ func find_sprite(id: String) -> VNSprite:
 		TE.log_error(TE.Error.ENGINE_ERROR, 'sprite not found: %s' % id)
 	
 	return sprite
+
+
+# returns an array containing all sprites objects on the stage
+func get_sprites() -> Array[VNSprite]:
+	var arr: Array[VNSprite] = []
+	for child in $Sprites.get_children():
+		arr.append(child)
+	return arr
 
 
 # returns an array containing the ids of all sprite objects on the stage

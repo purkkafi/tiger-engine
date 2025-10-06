@@ -39,6 +39,8 @@ var speakers: Dictionary = {}
 var _colors: Dictionary = {}
 # map of sprite ids to sprite paths
 var sprites: Dictionary = {}
+# map of sprite ids to their associated speakers
+var sprite_speakers: Dictionary = {}
 # map of variable names to their default values
 var variables: Dictionary = {}
 # registry of Views recognized by the game
