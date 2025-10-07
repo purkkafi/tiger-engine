@@ -22,7 +22,8 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'filename': func(): return null,
 	# null indicates no action should be taken
 	'sprite_id': func(): return null,
-	'sprite_as': func(): return null
+	'sprite_as': func(): return null,
+	'vfx_id': func(): return null
 }
 
 
@@ -181,6 +182,53 @@ func _exit_sprite(values: Dictionary):
 		return
 	_wait_tween(stage.exit_sprite(values['sprite_id'], values['trans'], null))
 
+
+func _on_vfx_pressed() -> void:
+	var targets: Array = [ '\\stage', '\\sprites', '\\bg', '\\fg' ]
+	targets.append_array(stage.get_sprite_ids())
+	
+	var available_vfxs: Array[String] = []
+	available_vfxs.append_array(stage.active_vfxs.map(func(avfx: VNStage.ActiveVfx): return avfx._as))
+	available_vfxs.append_array(TE.opts.vfx_registry.keys())
+	
+	show_dialog('Apply effect', [
+		{ 'id': 'vfx_id', 'name': 'VFX ID',
+			'suggestions': func(_state): return available_vfxs },
+		{ 'id': 'to', 'name': 'To', 'suggestions': func(_state): return targets }
+	], _apply_vfx_subdialog)
+
+
+func _apply_vfx_subdialog(values: Dictionary):
+	var vfx_id = values['vfx_id']
+	var to = values['to']
+	
+	if not vfx_id is String or not to is String:
+		return
+	
+	var arguments: Array = []
+	
+	if stage.has_active_vfx(vfx_id):
+		var avfx: VNStage.ActiveVfx = stage.find_active_vfx(vfx_id)
+		var state: Dictionary = avfx.vfx.get_state()
+		
+		for arg in avfx.vfx.recognized_arguments():
+			arguments.append({ 'id': arg, 'name': arg, 'default': func(): return state.get(arg, '') })
+	else:
+		var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
+		
+		for arg in instance.recognized_arguments():
+			arguments.append({ 'id': arg, 'name': arg, 'default': func(): return '' })
+	
+	show_dialog('%s on %s' % [vfx_id, to], arguments, _apply_vfx.bind(vfx_id, to))
+
+
+func _apply_vfx(values: Dictionary, vfx_id: String, to: String):
+	if stage.has_active_vfx(vfx_id):
+		var avfx: VNStage.ActiveVfx = stage.find_active_vfx(vfx_id)
+		_wait_tween(avfx.set_state(stage.get_vfx_target(avfx.target), values, create_tween()))
+	else:
+		var _as: String = 'AVFX #%s (%s)' % [ len(stage.active_vfxs)+1, vfx_id ]
+		_wait_tween(stage.add_vfx(vfx_id, to, _as, values, create_tween()))
 
 
 func _on_save_sprite_pressed():
@@ -347,9 +395,8 @@ func _call_callback(edits: Array[Control], callback: Callable):
 		
 		var value: Variant = _get_edit_text(edit)
 		
-		if value == '': # if nothing (empty string) is given, return default value
-			if id not in DEFAULT_HANDLERS:
-				push_error('no default handler for %s' % id)
+		# if empty string is given and there's a default handler, call it
+		if value == '' and id in DEFAULT_HANDLERS:
 			value = DEFAULT_HANDLERS[id].call()
 			
 		values[id] = value

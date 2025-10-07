@@ -33,6 +33,7 @@ class ActiveVfx:
 				TE.log_error(TE.Error.FILE_ERROR, "Unknown argument '%s' for vfx '%s'" % [key, _as])
 	
 	
+	# TODO is _target argument pointless? why would it change?
 	func set_state(_target: CanvasItem, new_state: Dictionary, tween: Tween) -> Tween:
 		verify_vfx_arguments(new_state)
 		return vfx.set_state(_target, new_state, tween)
@@ -392,6 +393,13 @@ func get_vfx_target(target_descriptor: String) -> CanvasItem:
 			return %Sprites
 		_:
 			return find_sprite(target_descriptor)
+
+
+func has_active_vfx(id: String) -> bool:
+	for avfx in active_vfxs:
+		if avfx._as == id:
+			return true
+	return false
 
 
 func find_active_vfx(id: String) -> ActiveVfx:
