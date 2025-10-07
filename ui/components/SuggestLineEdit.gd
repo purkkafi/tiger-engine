@@ -24,7 +24,12 @@ func _ready():
 	
 	connect('resized', func(): line_edit.custom_minimum_size = size)
 	
-	get_popup().connect('index_pressed', func(index): line_edit.text = get_popup().get_item_text(index))
+	get_popup().connect('index_pressed', _suggestion_picked)
+
+
+func _suggestion_picked(index):
+	line_edit.text = get_popup().get_item_text(index)
+	line_edit.text_changed.emit(line_edit.text)
 
 
 func set_edit_text(new_text: String):
@@ -36,6 +41,9 @@ func edit_text() -> String:
 
 
 func _show_menu():
+	if not line_edit.editable:
+		return
+	
 	get_popup().clear()
 	for suggestion in suggestion_provider.call():
 		get_popup().add_item(suggestion)

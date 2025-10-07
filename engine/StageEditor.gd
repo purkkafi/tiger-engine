@@ -22,8 +22,7 @@ var DEFAULT_HANDLERS: Dictionary = {
 	'filename': func(): return null,
 	# null indicates no action should be taken
 	'sprite_id': func(): return null,
-	'sprite_as': func(): return null,
-	'vfx_id': func(): return null
+	'sprite_as': func(): return null
 }
 
 
@@ -194,15 +193,26 @@ func _on_vfx_pressed() -> void:
 	show_dialog('Apply effect', [
 		{ 'id': 'vfx_id', 'name': 'VFX ID',
 			'suggestions': func(_state): return available_vfxs },
-		{ 'id': 'to', 'name': 'To', 'suggestions': func(_state): return targets }
+		{ 'id': 'to', 'name': 'To',
+			'suggestions': func(_state): return targets,
+			'update': _update_vfx_pressed_to }
 	], _apply_vfx_subdialog)
+
+
+func _update_vfx_pressed_to(id: String, new_val: String, edit: LineEdit):
+	if id == 'vfx_id':
+		if stage.has_active_vfx(new_val):
+			edit.text = stage.find_active_vfx(new_val).target
+			edit.editable = false
+		else:
+			edit.editable = true
 
 
 func _apply_vfx_subdialog(values: Dictionary):
 	var vfx_id = values['vfx_id']
 	var to = values['to']
 	
-	if not vfx_id is String or not to is String:
+	if vfx_id == '' or to == '':
 		return
 	
 	var arguments: Array = []
@@ -333,14 +343,19 @@ func only_sprite_id() -> String:
 # – 'id': the id; the callback will be given a state dict of ids -> values
 # – 'name': the name, displayed to the user
 # – 'suggestions': (optional) callback that, given the state, returns an array of
-#                  suggested strings displayed to the user
+#       suggested strings displayed to the user
 # – 'default': (optional) callback returning the initial string
+# – 'update': (optional) callback called with the id, the new value, and its LineEdit
+#       when state changes. you can probably make a recursive callback hell with this. don't.
 func show_dialog(title: String, settings: Array, callback: Callable):
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 2
 	grid.custom_minimum_size = Vector2(750, 0)
 	
 	var edits: Array[Control] = []
+	# index n of update_callbacks is associated with LineEdit n in update_callback_edits
+	var update_callbacks: Array[Callable] = []
+	var update_callback_edits: Array[LineEdit] = []
 	
 	for setting in settings:
 		var label: Label = Label.new()
@@ -361,10 +376,35 @@ func show_dialog(title: String, settings: Array, callback: Callable):
 		if 'tooltip' in setting:
 			edit.tooltip_text = setting['tooltip']
 		
+		if 'update' in setting:
+			update_callbacks.append(setting['update'] as Callable)
+			if edit is LineEdit:
+				update_callback_edits.append(edit)
+			else:
+				update_callback_edits.append((edit as SuggestLineEdit).line_edit)
+		
 		edit.set_meta('id', setting['id'])
 		edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		grid.add_child(edit)
 		edits.append(edit)
+	
+	# setup update callbacks
+	for edit in edits:
+		for i in len(update_callbacks):
+			var update_callback = update_callbacks[i]
+			var associated_edit = update_callback_edits[i]
+			
+			# don't connect LineEdits to their own changes
+			if edit == associated_edit:
+				continue
+			
+			var update = func(new_text): update_callback.call(edit.get_meta('id'), new_text, associated_edit)
+			
+			if edit is LineEdit:
+				edit.text_changed.connect(update)
+			elif edit is SuggestLineEdit:
+				edit.line_edit.text_changed.connect(update)
+
 	
 	var dialog: AcceptDialog = make_popup(title, grid)
 	dialog.connect('confirmed', _call_callback.bind(edits, callback))
