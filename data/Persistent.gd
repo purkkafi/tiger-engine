@@ -12,6 +12,9 @@ var _unlocked: Dictionary = {}
 var mods: Array[String] = []
 # game-specific data
 var custom: Dictionary = {}
+# should be an empty dictionary or have valid 'position' and 'size' Vector2i values
+# set in TE.quit_game() before the game exits
+var window: Dictionary = {}
 
 
 # path of file to store
@@ -87,6 +90,11 @@ static func load_from_file() -> Persistent:
 		instance.custom = json.data['custom']
 	if 'mods' in json.data:
 		instance.mods.append_array(json.data['mods'])
+	if 'window' in json.data:
+		instance.window = {
+			'position': Vector2i(str_to_var(json.data['window']['position'])),
+			'size': Vector2i(str_to_var(json.data['window']['size']))
+		}
 	
 	return instance
 
@@ -102,5 +110,6 @@ func save_to_file() -> void:
 	file.store_line(JSON.stringify({
 		'_unlocked': _unlocked,
 		'mods': mods,
-		'custom': custom
+		'custom': custom,
+		'window': window
 	}, '  '))

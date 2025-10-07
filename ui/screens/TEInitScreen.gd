@@ -24,6 +24,10 @@ func _ready():
 	self.color = TETheme.background_color
 	get_window().min_size = Vector2i(962, 542)
 	
+	if TE.persistent.window != {}:
+		get_window().position = TE.persistent.window['position']
+		get_window().size = TE.persistent.window['size']
+	
 	# setup basic actions in input map
 	VNInput.register_actions()
 	

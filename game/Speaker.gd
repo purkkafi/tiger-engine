@@ -2,6 +2,7 @@ class_name Speaker extends RefCounted
 # runtime object used to indicate how a speaker of a line should
 # be displayed in different contexts
 
+
 var id: String # the speaker id
 var name: String # the name
 var name_color: Color # color of the speaker box
@@ -17,6 +18,7 @@ static var EXTRACT_ARG: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<co
 
 # resolves a Speaker instance from a definition and a context
 static func resolve(declaration: String, ctxt: ControlExpr.BaseContext) -> Speaker:
+	@warning_ignore("shadowed_variable")
 	var id: String = EXTRACT_ID.search(declaration).get_string(0)
 	var def: Definitions.SpeakerDef = TE.defs.speakers[id]
 	@warning_ignore("shadowed_variable")

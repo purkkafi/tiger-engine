@@ -323,6 +323,12 @@ func _notification(what): # override default exit behavior
 func quit_game(exit_code=0):
 	if seen_blocks != null:
 		seen_blocks.write_to_disk()
+	
+	persistent.window = {
+		'position': var_to_str(get_window().position),
+		'size': var_to_str(get_window().size)
+	}
+	
 	persistent.save_to_file()
 	
 	await get_tree().process_frame
