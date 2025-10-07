@@ -4,6 +4,7 @@ extends Control
 @onready var stage: VNStage = $VNStage
 @onready var vn_controls: VNControls = $VNControls
 @onready var adv_view: ADVView = $ADVView
+@onready var hamburger: PopupMenu = %Hamburger.get_popup()
 var lexer: Lexer = Lexer.new()
 var parser: Parser = Parser.new()
 
@@ -29,6 +30,10 @@ var DEFAULT_HANDLERS: Dictionary = {
 var BACKGROUNDS: Array[String] = []
 var TRANSITIONS: Array[String] = []
 var SPRITES: Array[String] = []
+const HAMBURGER_SAVE = 1
+const HAMBURGER_LOAD = 2
+const HAMBURGER_SAVE_SPRITE = 3
+const SAVE_PATH: String = 'user://stage_editor.json'
 
 
 const SPRITE_AT_X_TOOLTIP = """
@@ -51,13 +56,40 @@ func _ready():
 	_enable_buttons()
 	$ScreenshotViewport.size = Vector2(0, 0)
 	
+	hamburger.add_item('Save', HAMBURGER_SAVE)
+	hamburger.add_item('Load', HAMBURGER_LOAD)
+	hamburger.add_separator()
+	hamburger.add_item('Save Sprite', HAMBURGER_SAVE_SPRITE)
+	hamburger.id_pressed.connect(_hamburger_pressed)
+	
 	vn_controls.adjust_size()
 	vn_controls.set_buttons_disabled(true)
 	vn_controls.visible = false
 	
 	adv_view.adjust_size(vn_controls)
 	adv_view.visible = false
-	
+
+
+func _hamburger_pressed(id: int):
+	match id:
+		HAMBURGER_SAVE:
+			_on_save_pressed()
+		HAMBURGER_LOAD:
+			_on_load_pressed()
+		HAMBURGER_SAVE_SPRITE:
+			_on_save_sprite_pressed()
+
+
+func _on_save_pressed():
+	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify(stage.get_state()))
+
+
+func _on_load_pressed():
+	if FileAccess.file_exists(SAVE_PATH):
+		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+		stage.set_state(JSON.parse_string(file.get_as_text()))
+		_enable_buttons()
 
 
 func _on_set_bg_pressed():
@@ -305,7 +337,7 @@ func _enable_buttons():
 	var has_sprites: bool = $VNStage.get_node('Sprites').get_child_count() > 0
 	
 	if not has_sprites:
-		for btn in [%Move, %Show, %Exit, %SaveSprite]:
+		for btn in [%Move, %Show, %Exit]:
 			btn.disabled = true
 
 

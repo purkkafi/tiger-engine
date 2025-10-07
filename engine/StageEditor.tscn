@@ -29,54 +29,58 @@ anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 
-[node name="Buttons" type="HBoxContainer" parent="Margins"]
+[node name="Base" type="HBoxContainer" parent="Margins"]
+layout_mode = 2
+
+[node name="Hamburger" type="MenuButton" parent="Margins/Base"]
 unique_name_in_owner = true
 layout_mode = 2
+text = "..."
+
+[node name="Buttons" type="HBoxContainer" parent="Margins/Base"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
-[node name="SetBG" type="Button" parent="Margins/Buttons"]
+[node name="SetBG" type="Button" parent="Margins/Base/Buttons"]
 layout_mode = 2
 text = "BG"
 
-[node name="SetFG" type="Button" parent="Margins/Buttons"]
+[node name="SetFG" type="Button" parent="Margins/Base/Buttons"]
 layout_mode = 2
 text = "FG
 "
 
-[node name="Enter" type="Button" parent="Margins/Buttons"]
+[node name="Enter" type="Button" parent="Margins/Base/Buttons"]
 layout_mode = 2
 text = "Enter"
 
-[node name="Move" type="Button" parent="Margins/Buttons"]
+[node name="Move" type="Button" parent="Margins/Base/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Move"
 
-[node name="Show" type="Button" parent="Margins/Buttons"]
+[node name="Show" type="Button" parent="Margins/Base/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Show"
 
-[node name="Exit" type="Button" parent="Margins/Buttons"]
+[node name="Exit" type="Button" parent="Margins/Base/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Exit"
 
-[node name="Vfx" type="Button" parent="Margins/Buttons"]
+[node name="Vfx" type="Button" parent="Margins/Base/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Vfx"
 
-[node name="SaveSprite" type="Button" parent="Margins/Buttons"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Save sprite"
-
-[node name="Debug" type="CheckButton" parent="Margins/Buttons"]
+[node name="Debug" type="CheckButton" parent="Margins/Base/Buttons"]
 layout_mode = 2
 text = "Debug"
 
-[node name="ADV" type="CheckButton" parent="Margins/Buttons"]
+[node name="ADV" type="CheckButton" parent="Margins/Base/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ADV"
@@ -86,13 +90,12 @@ transparent_bg = true
 handle_input_locally = false
 size = Vector2i(2, 2)
 
-[connection signal="pressed" from="Margins/Buttons/SetBG" to="." method="_on_set_bg_pressed"]
-[connection signal="pressed" from="Margins/Buttons/SetFG" to="." method="_on_set_fg_pressed"]
-[connection signal="pressed" from="Margins/Buttons/Enter" to="." method="_on_enter_pressed"]
-[connection signal="pressed" from="Margins/Buttons/Move" to="." method="_on_move_pressed"]
-[connection signal="pressed" from="Margins/Buttons/Show" to="." method="_on_show_pressed"]
-[connection signal="pressed" from="Margins/Buttons/Exit" to="." method="_on_exit_pressed"]
-[connection signal="pressed" from="Margins/Buttons/Vfx" to="." method="_on_vfx_pressed"]
-[connection signal="pressed" from="Margins/Buttons/SaveSprite" to="." method="_on_save_sprite_pressed"]
-[connection signal="toggled" from="Margins/Buttons/Debug" to="." method="_on_debug_toggled"]
-[connection signal="toggled" from="Margins/Buttons/ADV" to="." method="_on_adv_toggled"]
+[connection signal="pressed" from="Margins/Base/Buttons/SetBG" to="." method="_on_set_bg_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/SetFG" to="." method="_on_set_fg_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/Enter" to="." method="_on_enter_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/Move" to="." method="_on_move_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/Show" to="." method="_on_show_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/Exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="Margins/Base/Buttons/Vfx" to="." method="_on_vfx_pressed"]
+[connection signal="toggled" from="Margins/Base/Buttons/Debug" to="." method="_on_debug_toggled"]
+[connection signal="toggled" from="Margins/Base/Buttons/ADV" to="." method="_on_adv_toggled"]
