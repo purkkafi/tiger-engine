@@ -127,9 +127,10 @@ func move_to(to_x: Variant, to_y: Variant, to_zoom: Variant, to_order: Variant, 
 		y_tweener.set_trans(trans.trans_type)
 
 
-# the size of the stage (ie the parent node) this sprite is on
+# the size of the stage this sprite is on
+# TODO rethink this design, possibly to allow for resizing the stage?
 func _stage_size():
-	return get_parent().size
+	return (get_parent().get_parent() as VNStage).size
 
 
 # converts a relative x coordinate to stage pixels

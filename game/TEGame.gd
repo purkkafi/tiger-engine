@@ -736,7 +736,7 @@ func _on_next_line(_block: Block, _line_index: int):
 
 
 func _on_speaker_speaks(speaker: Speaker, skip_animations: bool):
-	var state = { 'skip_animations': skip_animations }
+	var state = { 'skip_animations': var_to_str(skip_animations) }
 	var tween = create_tween()
 	
 	for sprite in stage().get_sprites():

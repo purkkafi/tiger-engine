@@ -1,11 +1,14 @@
-class_name VNStage extends Node
+class_name VNStage extends Node2D
 # responsible for displaying and keeping track of game objects such as
 # the background and foreground layers and sprites
 
 
+var size: Vector2i = Vector2i(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
 var bg_id: String = ''
 var fg_id: String = ''
 var active_vfxs: Array[ActiveVfx] = []
+
+
 const TRANSPARENT: Color = Color(0, 0, 0, 0)
 
 
@@ -383,8 +386,7 @@ func _cmp_sprites(a: VNSprite, b: VNSprite, og_order: Array):
 func get_vfx_target(target_descriptor: String) -> CanvasItem:
 	match target_descriptor:
 		'\\stage':
-			push_error('effects on \\stage NYI')
-			return null
+			return self
 		'\\bg':
 			return bg()
 		'\\fg':
