@@ -3,6 +3,10 @@ class_name VNStage extends Node2D
 # the background and foreground layers and sprites
 
 
+@onready var viewport: SubViewport = %StageViewport
+@onready var camera: Camera2D = %Camera2D
+
+
 var size: Vector2i = Vector2i(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
 var bg_id: String = ''
 var fg_id: String = ''
@@ -10,6 +14,12 @@ var active_vfxs: Array[ActiveVfx] = []
 
 
 const TRANSPARENT: Color = Color(0, 0, 0, 0)
+
+
+func _ready() -> void:
+	var stage_viewport: SubViewportContainer = %StageViewportContainer
+	stage_viewport.size = size
+	camera.offset = size / 2
 
 
 # currently active Vfx instance applied to a specific target 
@@ -53,10 +63,10 @@ func set_background(new: Variant, transition: String, tween: Tween) -> Tween:
 		bg_id = new['id']
 		to_state = new['state']
 	
-	var result = _set_layer($BG, _get_layer_node(bg_id), TE.defs.transition(transition), tween, false)
+	var result = _set_layer(bg(), _get_layer_node(bg_id), TE.defs.transition(transition), tween, false)
 	
 	if to_state != null:
-		$BG.set_state(to_state)
+		bg().set_state(to_state)
 	
 	return result
 
@@ -72,10 +82,10 @@ func set_foreground(new: Variant, transition: String, tween: Tween) -> Tween:
 		fg_id = new['id']
 		to_state = new['state']
 	
-	var result = _set_layer($FG, _get_layer_node(fg_id), TE.defs.transition(transition), tween, true)
+	var result = _set_layer(fg(), _get_layer_node(fg_id), TE.defs.transition(transition), tween, true)
 	
 	if to_state != null:
-		$FG.set_state(to_state)
+		fg().set_state(to_state)
 	
 	return result
 
@@ -90,6 +100,7 @@ func _get_layer_node(id: String) -> Node:
 	elif TE.defs.color(id) != null: # id represents a color
 		var rect: ColorRect = ColorRect.new()
 		rect.color = TE.defs.color(id)
+		rect.size = size
 		return rect
 		
 	else: # id represents a path
@@ -105,6 +116,7 @@ func _get_layer_node(id: String) -> Node:
 		if not TE.defs.imgs[id] is String and TE.defs.imgs[id] == Definitions.PLACEHOLDER:
 			var placeholder: = preload('res://tiger-engine/game/PlaceholderImage.tscn').instantiate()
 			placeholder.set_text(id)
+			placeholder.size = size
 			return placeholder
 		
 		var path: String = TE.defs.imgs[id]
@@ -118,45 +130,49 @@ func _get_layer_node(id: String) -> Node:
 
 
 # transitions the given node to the new one with the given Transition
-# fade_old determines whether the old layer will be faded out in a reverse of the transition
-func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, fade_old: bool):
-	if new_layer is Control: # not needed for animations, which are Node2D's
-		new_layer.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
-		new_layer.position = Vector2(0, 0)
-	new_layer.name = 'New' + layer.name
-	layer.add_sibling(new_layer)
-	layer.set_meta('transitioning_into', new_layer)
-	
+# – crossfade: fade both new and old layers (works better with transparency)
+func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, crossfade: bool):
 	# skip tween in this case
 	if transition.duration == 0:
 		_replace_with(layer, new_layer)
 		return tween
 	
+	new_layer.name = layer.name
+	layer.name = 'Old_' + layer.name
+	viewport.add_child(new_layer)
+	viewport.move_child(new_layer, viewport.get_children().find(layer))
+	
 	if tween == null:
 		tween = create_tween()
 		tween.set_parallel(true)
 	
-	new_layer.modulate = Color(1, 1, 1, 0)
-	var tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
+	layer.modulate.a = 1.0
+	var tweener: PropertyTweener = tween.tween_property(layer, 'modulate:a', 0.0, transition.duration)
 	tweener.set_ease(transition.ease_type)
 	tweener.set_trans(transition.trans_type)
 	
-	if fade_old:
-		layer.modulate.a = 1.0
-		var old_tweener: PropertyTweener = tween.tween_property(layer, 'modulate:a', 0.0, transition.duration)
-		old_tweener.set_ease(transition.ease_type)
-		old_tweener.set_trans(transition.trans_type)
+	if crossfade:
+		new_layer.modulate.a = 0.0
+		var new_tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
+		new_tweener.set_ease(transition.ease_type)
+		new_tweener.set_trans(transition.trans_type)
 	
-	# schedule replacing the old layer with the new one
-	tween.tween_callback(_replace_with.bind(layer, new_layer)).set_delay(transition.duration)
+	# schedule cleaning old layer
+	tween.tween_callback(_free_layer.bind(layer)).set_delay(transition.duration)
 	
 	return tween
 
 
+func _free_layer(layer: Node):
+	viewport.remove_child(layer)
+	layer.queue_free()
+
+
 func _replace_with(layer: Node, new_layer: Node):
-	var old_pos: int = get_children().find(layer)
-	remove_child(layer)
-	move_child(new_layer, old_pos)
+	var old_pos: int = viewport.get_children().find(layer)
+	viewport.remove_child(layer)
+	viewport.add_child(new_layer)
+	viewport.move_child(new_layer, old_pos)
 	new_layer.name = layer.name
 	layer.queue_free()
 
@@ -181,7 +197,7 @@ func enter_sprite(id: String, _as: Variant, at_x: Variant, at_y: Variant, at_zoo
 		sprite.queue_free()
 		return tween
 	
-	$Sprites.add_child(sprite)
+	_sprites().add_child(sprite)
 	_sort_sprites()
 	sprite.enter_stage(_as)
 	
@@ -293,7 +309,7 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 
 
 func _finish_sprite_transition(old: VNSprite):
-	$Sprites.remove_child(old)
+	_sprites().remove_child(old)
 	old.queue_free()
 
 
@@ -318,7 +334,7 @@ func exit_sprite(id: String, with: Variant, tween: Tween) -> Tween:
 
 
 func _remove_sprite(sprite: VNSprite):
-	$Sprites.remove_child(sprite)
+	_sprites().remove_child(sprite)
 	
 	# remove effects affecting this sprite
 	# TODO implement and cleanup removed effects
@@ -340,7 +356,7 @@ func _parse_x_position_descriptor(desc: String) -> float:
 # returns the sprite object with the given id
 func find_sprite(id: String) -> VNSprite:
 	var sprite: VNSprite
-	for child in $Sprites.get_children():
+	for child in _sprites().get_children():
 		if child.id == id:
 			sprite = child
 	
@@ -350,10 +366,14 @@ func find_sprite(id: String) -> VNSprite:
 	return sprite
 
 
+func _sprites() -> Node:
+	return viewport.get_node('Sprites')
+
+
 # returns an array containing all sprites objects on the stage
 func get_sprites() -> Array[VNSprite]:
 	var arr: Array[VNSprite] = []
-	for child in $Sprites.get_children():
+	for child in _sprites().get_children():
 		arr.append(child)
 	return arr
 
@@ -361,19 +381,19 @@ func get_sprites() -> Array[VNSprite]:
 # returns an array containing the ids of all sprite objects on the stage
 func get_sprite_ids() -> Array[String]:
 	var ids: Array[String] = []
-	for child in $Sprites.get_children():
+	for child in _sprites().get_children():
 		ids.append(child.id)
 	return ids
 
 
 # sorts the sprites to make sure draw order is respected
 func _sort_sprites():
-	var og_order = $Sprites.get_children().duplicate()
-	var new_order = $Sprites.get_children().duplicate()
+	var og_order = _sprites().get_children().duplicate()
+	var new_order = _sprites().get_children().duplicate()
 	new_order.sort_custom(_cmp_sprites.bind(og_order))
 	
 	for child in og_order:
-		$Sprites.move_child(child, new_order.find(child))
+		_sprites().move_child(child, new_order.find(child))
 
 
 func _cmp_sprites(a: VNSprite, b: VNSprite, og_order: Array):
@@ -392,7 +412,7 @@ func get_vfx_target(target_descriptor: String) -> CanvasItem:
 		'\\fg':
 			return fg()
 		'\\sprites':
-			return %Sprites
+			return _sprites()
 		_:
 			return find_sprite(target_descriptor)
 
@@ -463,7 +483,7 @@ func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
 # returns current state as a Dict
 func get_state() -> Dictionary:
 	var sprites: Array = []
-	for sprite in $Sprites.get_children():
+	for sprite in _sprites().get_children():
 		sprites.append({
 			'x' : sprite.horizontal_position,
 			'y' : sprite.vertical_position,
@@ -485,8 +505,8 @@ func get_state() -> Dictionary:
 	
 	@warning_ignore("incompatible_ternary")
 	return {
-		'bg': { 'id': bg_id, 'state': $BG.get_state() } if $BG is StatefulLayer else bg_id,
-		'fg': { 'id': fg_id, 'state': $FG.get_state() } if $FG is StatefulLayer else fg_id,
+		'bg': { 'id': bg_id, 'state': bg().get_state() } if bg() is StatefulLayer else bg_id,
+		'fg': { 'id': fg_id, 'state': fg().get_state() } if fg() is StatefulLayer else fg_id,
 		'sprites': sprites,
 		'vfx': active_vfxs_json
 	}
@@ -498,20 +518,20 @@ func get_state() -> Dictionary:
 func get_node_cache() -> Dictionary:
 	var cache: Dictionary = {}
 	
-	var _bg = get_node('NewBG') if has_node('NewBG') else get_node('BG') if has_node('BG') else null
-	var _fg = get_node('NewFG') if has_node('NewFG') else get_node('FG') if has_node('FG') else null
+	var _bg = get_node('BG') if has_node('BG') else null
+	var _fg = get_node('FG') if has_node('FG') else null
 	
 	if _bg != null:
 		cache['BG:%s' % bg_id] = _bg
-		remove_child(_bg)
+		viewport.remove_child(_bg)
 	
 	if _fg != null:
 		cache['FG:%s' % fg_id] = _fg
-		remove_child(_fg)
+		viewport.remove_child(_fg)
 	
-	for sprite in $Sprites.get_children():
+	for sprite in _sprites().get_children():
 		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite
-		$Sprites.remove_child(sprite)
+		_sprites().remove_child(sprite)
 	
 	for avfx in active_vfxs:
 		cache['vfx:%s:%s' % [avfx.path(), avfx._as]] = avfx
@@ -525,8 +545,7 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 	var bg_from_cache: String = 'BG:%s' % state['bg']
 	if bg_from_cache in node_cache:
 		bg_id = state['bg']
-		$BG.add_sibling(node_cache[bg_from_cache])
-		_replace_with($BG, node_cache[bg_from_cache])
+		_replace_with(bg(), node_cache[bg_from_cache])
 	else:
 		set_background(state['bg'], '', null)
 	
@@ -534,8 +553,7 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 	var fg_from_cache: String = 'FG:%s' % state['fg']
 	if fg_from_cache in node_cache:
 		fg_id = state['fg']
-		$FG.add_sibling(node_cache[fg_from_cache])
-		_replace_with($FG, node_cache[fg_from_cache])
+		_replace_with(fg(), node_cache[fg_from_cache])
 	else:
 		set_foreground(state['fg'], '', null)
 	
@@ -546,10 +564,10 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		# get sprite from cache or create fresh object
 		if sprite_from_cache in node_cache:
 			sprite = node_cache[sprite_from_cache]
-			$Sprites.add_child(sprite)
+			_sprites().add_child(sprite)
 		else:
 			sprite = _create_sprite(sprite_data['path'])
-			$Sprites.add_child(sprite)
+			_sprites().add_child(sprite)
 			sprite.enter_stage()
 			sprite.id = sprite_data.id
 		
@@ -593,25 +611,21 @@ func clear():
 	set_background('', '', null)
 	set_foreground('', '', null)
 	
-	for sprite in $Sprites.get_children():
+	for sprite in _sprites().get_children():
 		_remove_sprite(sprite)
 
 
 func bg() -> Node:
-	if $BG.has_meta('transitioning_into'):
-		return $BG.get_meta('transitioning_into')
-	return $BG
+	return viewport.get_node('BG')
 
 
 func fg() -> Node:
-	if $FG.has_meta('transitioning_into'):
-		return $FG.get_meta('transitioning_into')
-	return $FG
+	return viewport.get_node('FG')
 
 
 func _sprite_debug_msg() -> String:
 	var msg: String = ''
-	for sprite in $Sprites.get_children():
+	for sprite in _sprites().get_children():
 		msg += '%s (x=%.3f, y=%.3f, zm=%.3f, ord=%d): %s\n' % [
 			sprite.id,
 			sprite.horizontal_position,

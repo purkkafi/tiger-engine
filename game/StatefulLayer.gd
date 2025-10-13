@@ -1,4 +1,5 @@
 class_name StatefulLayer extends Node2D
+# TODO deprecate, superseded by effects system
 # background/foreground that maintains an internal state
 
 

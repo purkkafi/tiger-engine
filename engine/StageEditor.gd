@@ -327,14 +327,14 @@ func _wait_tween(tween: Tween):
 	for child in %Buttons.get_children():
 		(child as Button).disabled = true
 	
-	tween.tween_callback(_enable_buttons)
+	tween.chain().tween_callback(_enable_buttons)
 
 
 func _enable_buttons():
 	for child in %Buttons.get_children():
 		(child as Button).disabled = false
 	
-	var has_sprites: bool = $VNStage.get_node('Sprites').get_child_count() > 0
+	var has_sprites: bool = len($VNStage.get_sprites()) > 0
 	
 	if not has_sprites:
 		for btn in [%Move, %Show, %Exit]:
@@ -364,7 +364,7 @@ func parse_tag(of: String) -> Variant:
 
 # returns the id of the only sprite on the stage or ''
 func only_sprite_id() -> String:
-	var sprites: Node = stage.get_node('Sprites')
+	var sprites: Node = stage._sprites()
 	if len(sprites.get_children()) == 1:
 		return (sprites.get_child(0) as VNSprite).id
 	return ''
