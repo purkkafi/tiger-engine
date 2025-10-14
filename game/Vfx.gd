@@ -42,3 +42,9 @@ func persistent() -> bool:
 func recognized_arguments() -> Array[String]:
 	TE.log_error(TE.Error.FILE_ERROR, "Vfx doesn't override 'recognized_arguments()'")
 	return []
+
+
+# can be overridden to provide suggestions about possible values in the stage editor
+@warning_ignore("unused_parameter")
+func get_debug_arg_suggestions(argument: String) -> Array[String]:
+	return []

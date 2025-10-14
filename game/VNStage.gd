@@ -22,6 +22,10 @@ func _ready() -> void:
 	camera.offset = size / 2
 
 
+func _exit_tree() -> void:
+	clear()
+
+
 # currently active Vfx instance applied to a specific target 
 class ActiveVfx:
 	var vfx: Vfx
@@ -471,13 +475,18 @@ func set_vfx_state(avfx_id: String, state: Dictionary, tween: Tween) -> Tween:
 func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
 	var avfx: ActiveVfx = find_active_vfx(avfx_id)
 	if tween == null:
-		tween = create_tween()
-		tween.set_parallel(true)
+		_remove_vfx(avfx)
+		return tween
 	
 	avfx.vfx.clear(get_vfx_target(avfx.target), tween)
+	tween.chain().tween_callback(func(): active_vfxs.erase(avfx))
 	
-	tween.chain().tween_callback(active_vfxs.erase.bind(avfx))
 	return tween
+
+
+func _remove_vfx(avfx: ActiveVfx):
+	avfx.vfx.clear(get_vfx_target(avfx.target), null)
+	active_vfxs.erase(avfx)
 
 
 # returns current state as a Dict
@@ -608,10 +617,13 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 
 # clears the stage, returning it to the empty initial state
 func clear():
+	for avfx in Array(active_vfxs):
+		_remove_vfx(avfx)
+	
 	set_background('', '', null)
 	set_foreground('', '', null)
 	
-	for sprite in _sprites().get_children():
+	for sprite in Array(_sprites().get_children()):
 		_remove_sprite(sprite)
 
 

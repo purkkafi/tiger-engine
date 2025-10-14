@@ -33,6 +33,7 @@ var SPRITES: Array[String] = []
 const HAMBURGER_SAVE = 1
 const HAMBURGER_LOAD = 2
 const HAMBURGER_SAVE_SPRITE = 3
+const HAMBURGER_CLEAR = 4
 const SAVE_PATH: String = 'user://stage_editor.json'
 
 
@@ -58,6 +59,7 @@ func _ready():
 	
 	hamburger.add_item('Save', HAMBURGER_SAVE)
 	hamburger.add_item('Load', HAMBURGER_LOAD)
+	hamburger.add_item('Clear', HAMBURGER_CLEAR)
 	hamburger.add_separator()
 	hamburger.add_item('Save Sprite', HAMBURGER_SAVE_SPRITE)
 	hamburger.id_pressed.connect(_hamburger_pressed)
@@ -78,6 +80,8 @@ func _hamburger_pressed(id: int):
 			_on_load_pressed()
 		HAMBURGER_SAVE_SPRITE:
 			_on_save_sprite_pressed()
+		HAMBURGER_CLEAR:
+			stage.clear()
 
 
 func _on_save_pressed():
@@ -254,12 +258,16 @@ func _apply_vfx_subdialog(values: Dictionary):
 		var state: Dictionary = avfx.vfx.get_state()
 		
 		for arg in avfx.vfx.recognized_arguments():
-			arguments.append({ 'id': arg, 'name': arg, 'default': func(): return state.get(arg, '') })
+			arguments.append({ 'id': arg, 'name': arg,
+				'default': func(): return state.get(arg, ''),
+				'suggestions': func(_state): return avfx.vfx.get_debug_arg_suggestions(arg) })
 	else:
 		var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
 		
 		for arg in instance.recognized_arguments():
-			arguments.append({ 'id': arg, 'name': arg, 'default': func(): return '' })
+			arguments.append({ 'id': arg, 'name': arg,
+				'default': func(): return '',
+				'suggestions': func(_state): return instance.get_debug_arg_suggestions(arg) })
 	
 	show_dialog('%s on %s' % [vfx_id, to], arguments, _apply_vfx.bind(vfx_id, to))
 

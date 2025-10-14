@@ -332,6 +332,7 @@ func quit_game(exit_code=0):
 	persistent.save_to_file()
 	
 	await get_tree().process_frame
+	
 	get_tree().quit(exit_code)
 
 
