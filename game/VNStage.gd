@@ -19,7 +19,6 @@ const TRANSPARENT: Color = Color(0, 0, 0, 0)
 func _ready() -> void:
 	var stage_viewport: SubViewportContainer = %StageViewportContainer
 	stage_viewport.size = size
-	camera.offset = size / 2
 
 
 func _exit_tree() -> void:

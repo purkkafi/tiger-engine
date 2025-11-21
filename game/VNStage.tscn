@@ -30,6 +30,7 @@ color = Color(1, 1, 1, 0)
 
 [node name="Camera2D" type="Camera2D" parent="StageViewportContainer/StageViewport"]
 unique_name_in_owner = true
+offset = Vector2(960, 540)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

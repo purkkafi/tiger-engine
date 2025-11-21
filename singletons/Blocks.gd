@@ -151,7 +151,11 @@ static func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContex
 							'as':
 								var as_value = args[arg].get_value()
 								if as_value is String:
-									_as = '[as_name]%s[/as_name]' % as_value
+									# transform '%id%' to suitable control tag
+									if as_value.begins_with('%') and as_value.ends_with('%'):
+										_as = '[as_ctrltag]localize("%s")[/as_ctrltag]' % as_value.substr(1, len(as_value)-2)
+									else: # else use string as-is
+										_as = '[as_name]%s[/as_name]' % as_value
 								else:
 									_as = '[as_ctrltag]%s[/as_ctrltag]' % (as_value as Tag.ControlTag).string
 							_:
