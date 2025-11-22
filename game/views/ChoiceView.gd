@@ -34,6 +34,10 @@ func initialize(ctxt: InitContext):
 	
 	TE.localize.translate(self)
 	shadow = Overlay.add_shadow(self, ctxt == InitContext.SAVESTATE)
+	
+	if has_theme_color('shadow_color', 'ChoiceView'):
+		shadow.color = get_theme_color('shadow_color', 'ChoiceView')
+	
 	game.save_rollback()
 
 
@@ -72,4 +76,3 @@ func is_temporary() -> bool:
 
 func get_skip_mode() -> SkipMode:
 	return SkipMode.DISABLED
-
