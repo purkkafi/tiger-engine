@@ -539,6 +539,7 @@ func get_node_cache() -> Dictionary:
 	
 	for sprite in _sprites().get_children():
 		cache['sprite:%s:%s' % [sprite.id, sprite.path]] = sprite
+		sprite.modulate.a = 1.0 # reset fade in transition
 		_sprites().remove_child(sprite)
 	
 	for avfx in active_vfxs:
