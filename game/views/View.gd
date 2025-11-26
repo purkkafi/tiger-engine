@@ -42,7 +42,7 @@ const SPEEDUP_THRESHOLD_FASTER: float = 1.5 # treshold to start speeding up fast
 const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	'\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
-	'.' : 14, '!' : 14, '?' : 14, '–' : 13, ':' : 14, ';' : 14,
+	'.' : 14, '!' : 14, '?' : 14, '–' : 13, ':' : 14, ';' : 14, '…': 14,
 	',' : 8,
 	DEL : 5
 }
