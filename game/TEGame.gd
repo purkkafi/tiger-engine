@@ -249,7 +249,7 @@ func _replace_view(new_view: Node):
 	new_view.name = old_view.name
 	new_view.game = self
 	
-	# store  previous_state for temporary views
+	# store previous_state for temporary views
 	if new_view.is_temporary():
 		# retain the original state if multiple temporary Views are used in succession
 		if old_view.is_temporary():
@@ -518,7 +518,7 @@ func _save_load(mode):
 	if mode == SavingOverlay.SavingMode.SAVE:
 		overlay.save = create_save()
 		overlay.screenshot = await take_save_screenshot()
-		overlay.saved_callback = Callable(self, '_record_last_save')
+		overlay.saved_callback = _record_last_save
 	overlay.warn_about_progress = Savefile.is_progress_made(last_save, create_save())
 	overlay.animating_out_callback = func(): after_overlay()
 	before_overlay()
@@ -546,6 +546,7 @@ func create_save() -> Dictionary:
 		'game_name' : game_name,
 		'game_version' : TE.opts.version_callback.call(),
 		'audio' : TE.audio.get_state(),
+		'log': gamelog.serialize(),
 		'save_name' : null,
 		'save_datetime' : null, # these 2 should be handled by saving screen
 		'save_utime' : null,
@@ -587,6 +588,9 @@ func load_save(save: Dictionary, stage_cache: Dictionary):
 	_custom_data = save['custom_data'].duplicate(true)
 	
 	TE.audio.set_state(save['audio'])
+	
+	if 'log' in save:
+		gamelog = Log.deserialize(save['log'])
 	
 	# if starting from a continue point, skip rest of the initialization
 	if 'continue_point' in save:
@@ -639,18 +643,19 @@ func take_user_screenshot():
 func _back():
 	# TODO implement caching for expensive View instances
 	rollback.push_rollforward(create_save())
-	TE.load_from_save(rollback.pop_rollback(), rollback, gamelog, $VNStage.get_node_cache())
+	TE.load_from_save(rollback.pop_rollback(), rollback, $VNStage.get_node_cache())
 
 
 func _forward():
 	# TODO clear rollforward when game is advanced normally
 	rollback.push_rollback(create_save())
-	TE.load_from_save(rollback.pop_rollforward(), rollback, gamelog, $VNStage.get_node_cache())
+	TE.load_from_save(rollback.pop_rollforward(), rollback, $VNStage.get_node_cache())
 
 
 func _log():
 	var log_overlay: LogOverlay = preload('res://tiger-engine/ui/screens/LogOverlay.tscn').instantiate()
 	log_overlay.gamelog = gamelog
+	log_overlay.context = context
 	log_overlay.animating_out_callback = func(): after_overlay()
 	before_overlay()
 	add_child(log_overlay)

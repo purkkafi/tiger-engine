@@ -129,6 +129,7 @@ func _supported_custom_tags() -> Array[String]:
 	return [ 'fullimg' ]
 
 
+# TODO migrate to some other mechanism for registering custom tags
 func _parse_custom_tag_line(_line: String, tag_bbcode: RegExMatch, loading_from_save: bool):
 	_display_line('')
 	
