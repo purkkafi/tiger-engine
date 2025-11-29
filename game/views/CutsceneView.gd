@@ -114,6 +114,9 @@ func get_skip_mode():
 
 
 func skip_pressed():
+	if 'cutscene_skipped' in cutscene:
+		cutscene.cutscene_skipped()
+	
 	is_finished = true
 	wait_input = false
 
