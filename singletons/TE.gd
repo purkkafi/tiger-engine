@@ -140,7 +140,10 @@ func _handle_song_played_caption(song_id: String):
 func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: bool = true):
 	if '_scene_change_initiated' in current_scene:
 		current_scene._scene_change_initiated()
-		
+	
+	# clear up any sound effects
+	TE.audio.play_sound('')
+	
 	await get_tree().process_frame
 	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
 
