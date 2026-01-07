@@ -17,9 +17,13 @@ var _transitions: Dictionary = {}
 var songs: Dictionary = {}
 # a map of song ids to custom volumes, which are in range [0, 1]
 var song_custom_volumes: Dictionary = {}
+# a map of song ids to audio buses (string "Music" or "SFX")
+var song_buses: Dictionary[String, String] = {}
 var song_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of sound effect ids to paths relative to the 'assets/sound' folder
 var sounds: Dictionary = {}
+# a map of sound ids to audio buses (string "Music" or "SFX")
+var sound_buses: Dictionary[String, String] = {}
 var sound_custom_volumes: Dictionary = {} # custom volumes in range [0, 1]
 var sound_metadata: Dictionary = {} # metadata specified with \meta{}
 # array of ids of unlockables
