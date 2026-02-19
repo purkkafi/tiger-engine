@@ -8,6 +8,7 @@ static var DROPCAP_END: RegEx = RegEx.create_from_string('\\[\\/dropcap\\]')
 
 
 var gamelog: Log = null # set this to the log before spawning the overlay
+var context: InGameContext = null # set this to the game context before spawning the overlay
 
 
 func _initialize_overlay():
@@ -15,16 +16,8 @@ func _initialize_overlay():
 	
 	%Text.get_v_scroll_bar().custom_step = 3 * TETheme.current_theme.default_font_size
 	
-	var text: String = ''
-	
-	for line in gamelog.lines:
-		if line is String: # log line is a plain String
-			text += line + '\n\n'
-		else: # log line has a speaker object
-			var speaker: Speaker = line['speaker']
-			
-			var name_label = '[color=%s][b]%s[/b][/color]    ' % [speaker.log_color.to_html(), speaker.name]
-			text += name_label + line['line'] + '\n\n'
+	# TODO show in a grid instead?
+	var text: String = '\n\n'.join(gamelog.entries.map(func(entry): return format_entry(entry)))
 	
 	text = DROPCAP_START.sub(text, '', true)
 	text = DROPCAP_END.sub(text, '', true)
@@ -36,6 +29,33 @@ func _initialize_overlay():
 	%Text.scroll_to_line(%Text.get_line_count())
 	
 	%Exit.grab_focus()
+
+
+# formats an entry for the log
+# TODO refactor speaker parsing, remove duplicate functionality from View
+func format_entry(entry: Log.Entry) -> String:
+	var bf: BlockFile = Assets.blockfiles.get_unqueued(entry.blockfile)
+	
+	if bf == null or not entry.block in bf.blocks:
+		return ''
+	
+	var block: Block = bf.blocks[entry.block]
+	var parts: Array[String] = Blocks.resolve_parts(block, context)
+	var texts: Array[String] = []
+	
+	for index in min(entry.line+1, len(parts)):
+		var part: String = parts[index]
+		var tag_bbcode: RegExMatch = View.GET_BBCODE.search(part)
+		
+		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
+			var _result: Dictionary  = View._parse_speaker_line(part, tag_bbcode, context)
+			var line = _result['line']
+			var speaker = _result['speaker']
+			texts.append('[color=%s][b]%s[/b][/color]    %s' % [speaker.log_color.to_html(), speaker.name, line])
+		else:
+			texts.append(part)
+	
+	return '\n\n'.join(texts)
 
 
 func _exit():

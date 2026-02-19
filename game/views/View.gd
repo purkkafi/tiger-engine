@@ -42,7 +42,7 @@ const SPEEDUP_THRESHOLD_FASTER: float = 1.5 # treshold to start speeding up fast
 const DEL = '\u007F' # Unicode delete character
 const CHAR_WAIT_DELTAS: Dictionary = { # see _char_wait_delta()
 	'\n' : 0, '"' : 0, "'" : 0, '▶' : 0,
-	'.' : 14, '!' : 14, '?' : 14, '–' : 13, ':' : 14, ';' : 14,
+	'.' : 14, '!' : 14, '?' : 14, '–' : 13, ':' : 14, ';' : 14, '…': 14,
 	',' : 8,
 	DEL : 5
 }
@@ -203,12 +203,12 @@ func next_line(loading_from_save: bool = false) -> void:
 		# handle speaker tag if present
 		var speaker: Speaker = null
 		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
-			var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode)
+			var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode, game.context)
 			line = _result['line']
 			speaker = _result['speaker']
 		
 		if not loading_from_save:
-			game.gamelog.add_line(convert_line_to_finished_form(line), speaker)
+			game.gamelog.update_log(block.blockfile_path, block.id, line_index)
 		
 		if speaker != null:
 			var skip_animations = loading_from_save or speedup != Speedup.NORMAL
@@ -240,12 +240,12 @@ func next_line(loading_from_save: bool = false) -> void:
 			state = State.SKIPPING_COOLDOWN
 
 
-func _parse_speaker_line(line: String, tag_bbcode: RegExMatch) -> Dictionary:
+static func _parse_speaker_line(line: String, tag_bbcode: RegExMatch, context: VariableContext) -> Dictionary:
 	var speaker_declaration: String = tag_bbcode.get_string('content')
 	
 	return {
 		'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
-		'speaker': Speaker.resolve(speaker_declaration, game.context)
+		'speaker': Speaker.resolve(speaker_declaration, context)
 	}
 
 

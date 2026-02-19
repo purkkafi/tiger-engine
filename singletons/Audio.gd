@@ -5,6 +5,8 @@ class_name Audio extends Node
 
 # tween used for fading song in
 var music_tween: Tween = null
+# tween used for currently playing sound
+var sound_tween: Tween = null
 # id of currently playing song; will be the empty string if no song is playing
 var song_id: String = ''
 # volume at which the currently playing song is played
@@ -52,6 +54,8 @@ func play_song(new_song_id: String, duration: float, with_local_volume: float = 
 	
 	music_tween.parallel().tween_method(_set_next_song_volume, 0.0, TE.defs.song_volume(song_id) * local_volume, duration)
 	$NextSongPlayer.set_stream(new_song)
+	if song_id != '':
+		$NextSongPlayer.bus = TE.defs.song_buses[song_id]
 	
 	# if switching to the same song, continue from playback position
 	# (for situations where we are transitioning to the same song at a different volume)
@@ -99,7 +103,6 @@ func _swap_song_trans_finished():
 	old_music.queue_free()
 	
 	new_music.name = 'SongPlayer'
-	new_music.bus = 'Music'
 	
 	var replacement = AudioStreamPlayer.new()
 	replacement.name = 'NextSongPlayer'
@@ -117,6 +120,12 @@ func set_paused(paused: bool):
 
 # plays a sound effect with the given id
 func play_sound(id: String):
+	if id == '':
+		if sound_tween != null and sound_tween.is_running():
+			sound_tween.set_speed_scale(INF)
+		$SoundPlayer.stream = null
+		return
+	
 	var path = TE.defs.sounds[id]
 	var sound: AudioStream = Assets.sounds.get_resource(path, 'res://assets/sound')
 	
@@ -125,20 +134,28 @@ func play_sound(id: String):
 	
 	$SoundPlayer.stream = sound
 	$SoundPlayer.volume_db = linear_to_db(TE.defs.sound_volume(id))
+	$SoundPlayer.bus = TE.defs.sound_buses[id]
 	$SoundPlayer.play()
 	
 	# emit appropriate signals
 	emit_signal('sound_played', id)
 	
-	var tween = create_tween()
-	tween.tween_interval(sound.get_length())
-	tween.tween_callback(func(): emit_signal('sound_finished', id))
+	sound_tween = create_tween()
+	sound_tween.tween_interval(sound.get_length())
+	sound_tween.tween_callback(func(): emit_signal('sound_finished', id))
 
 
 # returns the AudioStreamPlayer of currently playing song or null
 func song_player() -> AudioStreamPlayer:
 	if $SongPlayer.get_stream() != null:
 		return $SongPlayer
+	return null
+
+
+# returns the AudioStreamPlayer of currently playing sound or null
+func sound_player() -> AudioStreamPlayer:
+	if $SoundPlayer.get_stream() != null:
+		return $SoundPlayer
 	return null
 
 

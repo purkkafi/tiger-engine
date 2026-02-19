@@ -605,6 +605,7 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 			var target = get_vfx_target(cached_obj.target)
 			if target != null:
 				var tween = create_tween()
+				tween.tween_callback(func(): pass)
 				cached_obj.vfx.clear(target, tween)
 				tween.custom_step(INF)
 

@@ -325,12 +325,20 @@ func _parse_meta(id: String, option: Tag, metadata: Dictionary):
 
 
 func _parse_sound_definition(defs: Definitions, node: Tag):
-	node.expect_length(2, 3)
+	node.expect_length(3, 4)
 	var id: String = node.get_string_at(0)
 	var path: String = node.get_string_at(1)
 	
-	if node.has_index(2):
-		for option in node.get_tags_at(2):
+	match node.get_string_at(2):
+		'music':
+			defs.sound_buses[id] = 'Music'
+		'sfx':
+			defs.sound_buses[id] = 'SFX'
+		_:
+			push_error('unknown audio bus: %s' % node.get_string_at(2))
+	
+	if node.has_index(3):
+		for option in node.get_tags_at(3):
 			match option.name:
 				'meta':
 					_parse_meta(id, option, defs.sound_metadata)
@@ -343,12 +351,20 @@ func _parse_sound_definition(defs: Definitions, node: Tag):
 
 
 func _parse_song_definition(defs: Definitions, node: Tag) -> String:
-	node.expect_length(2, 3)
+	node.expect_length(3, 4)
 	var id: String = node.get_string_at(0)
 	var path: String = node.get_string_at(1)
 	
-	if node.has_index(2):
-		for option in node.get_tags_at(2):
+	match node.get_string_at(2):
+		'music':
+			defs.song_buses[id] = 'Music'
+		'sfx':
+			defs.song_buses[id] = 'SFX'
+		_:
+			push_error('unknown audio bus: %s' % node.get_string_at(2))
+	
+	if node.has_index(3):
+		for option in node.get_tags_at(3):
 			match option.name:
 				'volume':
 					defs.song_custom_volumes[id] = float(option.get_string())
