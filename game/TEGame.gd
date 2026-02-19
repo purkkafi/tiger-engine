@@ -231,7 +231,6 @@ func next_blocking():
 		_:
 			TE.log_error(TE.Error.SCRIPT_ERROR, 'cannot handle blocking instruction: %s' % [blocking])
 
-
 # replaces the current View with a new one, copying state over
 func _replace_view(new_view: Node):
 	var old_view: Node = $View

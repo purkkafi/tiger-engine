@@ -133,48 +133,42 @@ func _get_layer_node(id: String) -> Node:
 
 
 # transitions the given node to the new one with the given Transition
-# – crossfade: fade both new and old layers (works better with transparency)
-func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, crossfade: bool):
+# fade_old determines whether the old layer will be faded out in a reverse of the transition
+func _set_layer(layer: Node, new_layer: Node, transition: Definitions.Transition, tween: Tween, fade_old: bool):
+	new_layer.name = 'New' + layer.name
+	layer.add_sibling(new_layer)
+	layer.set_meta('transitioning_into', new_layer)
+	
+	
 	# skip tween in this case
 	if transition.duration == 0:
 		_replace_with(layer, new_layer)
 		return tween
 	
-	new_layer.name = layer.name
-	layer.name = 'Old_' + layer.name
-	viewport.add_child(new_layer)
-	viewport.move_child(new_layer, viewport.get_children().find(layer))
-	
 	if tween == null:
 		tween = create_tween()
 		tween.set_parallel(true)
 	
-	layer.modulate.a = 1.0
-	var tweener: PropertyTweener = tween.tween_property(layer, 'modulate:a', 0.0, transition.duration)
+	new_layer.modulate = Color(1, 1, 1, 0)
+	var tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
 	tweener.set_ease(transition.ease_type)
 	tweener.set_trans(transition.trans_type)
 	
-	if crossfade:
-		new_layer.modulate.a = 0.0
-		var new_tweener: PropertyTweener = tween.tween_property(new_layer, 'modulate:a', 1.0, transition.duration)
-		new_tweener.set_ease(transition.ease_type)
-		new_tweener.set_trans(transition.trans_type)
+	if fade_old:
+		layer.modulate.a = 1.0
+		var old_tweener: PropertyTweener = tween.tween_property(layer, 'modulate:a', 0.0, transition.duration)
+		old_tweener.set_ease(transition.ease_type)
+		old_tweener.set_trans(transition.trans_type)
 	
-	# schedule cleaning old layer
-	tween.tween_callback(_free_layer.bind(layer)).set_delay(transition.duration)
+	# schedule replacing the old layer with the new one
+	tween.tween_callback(_replace_with.bind(layer, new_layer)).set_delay(transition.duration)
 	
 	return tween
 
 
-func _free_layer(layer: Node):
-	viewport.remove_child(layer)
-	layer.queue_free()
-
-
 func _replace_with(layer: Node, new_layer: Node):
-	var old_pos: int = viewport.get_children().find(layer)
+	var old_pos: int = layer.get_index()
 	viewport.remove_child(layer)
-	viewport.add_child(new_layer)
 	viewport.move_child(new_layer, old_pos)
 	new_layer.name = layer.name
 	layer.queue_free()
@@ -628,11 +622,17 @@ func clear():
 
 
 func bg() -> Node:
-	return viewport.get_node('BG')
+	var _bg = viewport.get_node('BG')
+	if _bg.has_meta('transitioning_into'):
+		return _bg.get_meta('transitioning_into')
+	return _bg
 
 
 func fg() -> Node:
-	return viewport.get_node('FG')
+	var _fg = viewport.get_node('FG')
+	if _fg.has_meta('transitioning_into'):
+		return _fg.get_meta('transitioning_into')
+	return _fg
 
 
 func _sprite_debug_msg() -> String:

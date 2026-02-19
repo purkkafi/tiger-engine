@@ -452,6 +452,9 @@ func _discover_mods() -> Array[String]:
 
 
 func _input(event: InputEvent) -> void:
+	if not InputMap.has_action(&'game_rollback'):
+		return
+	
 	# limit frequency of 'game_rollback' and 'game_rollforward' events echoing
 	if event.is_action(&'game_rollback', true) or event.is_action(&'game_rollforward', true):
 		if event.is_echo():
