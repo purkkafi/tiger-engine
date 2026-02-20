@@ -58,6 +58,10 @@ signal toast_notification(toast: Dictionary)
 @warning_ignore("unused_signal")
 signal languages_changed
 
+# fired when load_language() is called to change the language
+@warning_ignore("unused_signal")
+signal current_language_changed
+
 # fired when user drops mod files on program
 @warning_ignore("unused_signal")
 signal mod_files_dropped(files: Array[String])
@@ -249,6 +253,8 @@ func load_language(new_lang: Lang):
 	if seen_blocks != null:
 		seen_blocks.write_to_disk()
 	seen_blocks = SeenBlocks.new(language.id)
+	
+	current_language_changed.emit()
 
 
 # loads the game from a save state, switching the scene to TEGame
