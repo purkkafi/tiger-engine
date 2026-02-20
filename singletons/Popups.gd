@@ -192,7 +192,7 @@ static func add_shadow(to_node: Node):
 	var shadow: ColorRect = ColorRect.new()
 	shadow.position = Vector2(0, 0)
 	shadow.size = Vector2(TE.SCREEN_WIDTH, TE.SCREEN_HEIGHT)
-	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shadow.mouse_filter = Control.MOUSE_FILTER_STOP
 	shadow.color = TETheme.shadow_color
 	shadow.z_index += 99
 	
