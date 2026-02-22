@@ -87,7 +87,7 @@ func _game_paused():
 	speaker_panel.visible = false
 
 
-func _display_line(line: String, speaker: Speaker = null):
+func _display_line(line: String, speaker: Speaker = null, _skip_animations: bool = false):
 	box.visible = true
 	decoration.visible = true
 	speaker_panel.visible = true

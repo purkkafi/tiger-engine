@@ -195,26 +195,22 @@ func next_line(loading_from_save: bool = false) -> void:
 	# parse lines containing engine-specific bbcode
 	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
 	
-	# parse custom tag and let subclass decide what to do with the line
-	if tag_bbcode != null and tag_bbcode.get_string('tag') in _supported_custom_tags():
-		_parse_custom_tag_line(line, tag_bbcode, loading_from_save)
-		
-	else: # no custom tags, display normally
-		# handle speaker tag if present
-		var speaker: Speaker = null
-		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
-			var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode, game.context)
-			line = _result['line']
-			speaker = _result['speaker']
-		
-		if not loading_from_save:
-			game.gamelog.update_log(block.blockfile_path, block.id, line_index)
-		
-		if speaker != null:
-			var skip_animations = loading_from_save or speedup != Speedup.NORMAL
-			TE.game_speaker_speaks.emit(speaker, skip_animations)
-		
-		_display_line(line + line_end_string(), speaker)
+	# handle speaker tag if present
+	var speaker: Speaker = null
+	if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
+		var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode, game.context)
+		line = _result['line']
+		speaker = _result['speaker']
+	
+	if not loading_from_save:
+		game.gamelog.update_log(block.blockfile_path, block.id, line_index)
+	
+	var skip_animations = loading_from_save or speedup != Speedup.NORMAL
+	
+	if speaker != null:
+		TE.game_speaker_speaks.emit(speaker, skip_animations)
+	
+	_display_line(line + line_end_string(), speaker, skip_animations)
 	
 	line_index += 1
 	next_effect.reset()
@@ -247,21 +243,6 @@ static func _parse_speaker_line(line: String, tag_bbcode: RegExMatch, context: V
 		'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
 		'speaker': Speaker.resolve(speaker_declaration, context)
 	}
-
-
-# returns an Array of custom bbcode tags this View is able to parse with
-# _parse_custom_tag_line()
-func _supported_custom_tags() -> Array[String]:
-	return []
-
-
-# parses lines with custom bbcode the View claims to support
-# should call _display_line() and game.gamelog.add_line() if needed
-# – line is the full line, as a String
-# – tag_bbcode is a RegExMatch resulting from GET_BBCODE.search()
-# – loading_from_save is whether game is being loaded from a save file/state
-func _parse_custom_tag_line(_line: String, _tag_bbcode: RegExMatch, _loading_from_save: bool) -> void:
-	TE.log_error(TE.Error.FILE_ERROR, "View doesn't override _parse_custom_tag_line() despite overriding _supported_custom_tags()")
 
 
 func _is_end_of_line() -> bool:
@@ -483,7 +464,7 @@ func skip_pressed():
 
 # internal implementation; Views should override to control how lines are shown
 # a Speaker may also additionally be specified
-func _display_line(_line: String, _speaker: Speaker = null):
+func _display_line(_line: String, _speaker: Speaker = null, skip_animations: bool = false):
 	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _display_line()")
 
 

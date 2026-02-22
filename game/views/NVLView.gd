@@ -67,18 +67,9 @@ func adjust_size(controls: VNControls):
 	var w = width
 	%Panel.size.x = w
 	%Panel.position.x = (TE.SCREEN_WIDTH - w)/2
-	
-	for child in paragraphs.get_children():
-		if child is TextureRect:
-			_set_full_img_size(child)
 
 
-# Speakers are not handled right now
-func _display_line(line: String, _speaker: Speaker = null):
-	var label: RichTextLabel = create_label()
-	label.fit_content = true
-	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	
+func _display_line(line: String, speaker: Speaker = null, skip_animations: bool = false):
 	if outline_size != 0:
 		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color.to_html(), line]
 	
@@ -93,75 +84,97 @@ func _display_line(line: String, _speaker: Speaker = null):
 		paragraphs.add_theme_constant_override('separation', 4)
 	
 	# remove the '[next] ▶[/next]' from previous paragraph
-	if paragraphs.get_child_count() > 0 and paragraphs.get_child(-1) is RichTextLabel:
-		var old_par: RichTextLabel = paragraphs.get_child(-1)
+	if paragraphs.get_child_count() > 0 and _current_label() != null:
+		var old_par: RichTextLabel = _current_label()
 		old_par.text = old_par.text.replace(line_end_string(), '')
 		# it may have been centered so remove leftover tags
 		old_par.text = old_par.text.replace('[center][/center]', '')
+		old_par.custom_minimum_size.y = 0
 	
-	# indent lines that come after non-empty lines
-	if paragraphs.get_child_count() > 0 and not _is_previous_line_empty():
-		label.text = INDENT + line
-	else:
-		label.text = line
+	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
 	
-	paragraphs.add_child(label)
+	# handle nvl img line
+	if tag_bbcode != null and tag_bbcode.get_string('tag') == 'nvl_img':
+		_handle_nvl_img_line(tag_bbcode, skip_animations)
+		
+	elif speaker != null: # handle speaker line
+		_handle_speaker_line(speaker, line)
+		
+	else: # handle normal narration line
+		var label: RichTextLabel = create_label()
+		label.fit_content = true
+		label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+	
+		if paragraphs.get_child_count() == 0: # don't indent initial line
+			label.text = line
+		elif not _is_previous_narration(): # no indent after non-standard text
+			label.text = '[br]' + line
+		else: # indent othwrerwise
+			label.text = INDENT + line
+		
+		paragraphs.add_child(label)
 
 
-func _is_previous_line_empty():
+func _is_previous_narration() -> bool:
 	var prev = paragraphs.get_child(-1)
-	if prev is RichTextLabel:
-		return len(prev.text.strip_edges()) == 0
-	return false
+	return prev is RichTextLabel
 
 
-func _current_label() -> RichTextLabel:
+func _previous_speaker_line_or_null() -> Variant:
 	if paragraphs.get_child_count() == 0:
 		return null
-	return paragraphs.get_child(-1)
+	var prev = paragraphs.get_child(-1)
+	return prev if prev is SpeakerNVLLine else null
 
 
-func _scroll_to_bottom():
-	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
-
-
-func _supported_custom_tags() -> Array[String]:
-	return [ 'fullimg' ]
-
-
-# TODO migrate to some other mechanism for registering custom tags
-func _parse_custom_tag_line(_line: String, tag_bbcode: RegExMatch, loading_from_save: bool):
-	_display_line('')
-	
+func _handle_nvl_img_line(tag_bbcode: RegExMatch, skip_animations: bool):
 	var path: String
-	var width: float
 	
 	for inner_tag in GET_BBCODE.search_all(tag_bbcode.get_string('content')):
 		match inner_tag.get_string('tag'):
 			'id':
 				path = Assets._resolve(TE.defs.imgs[inner_tag.get_string('content')], 'res://assets/img')
-			'width':
-				width = float(inner_tag.get_string('content'))
 	
-	var rect: TextureRect = TextureRect.new()
-	rect.texture = load(path)
-	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	rect.set_meta('width_ratio', width)
-	_set_full_img_size(rect)
+	var img_line = ImageNVLLine.new(load(path), create_label)
+	img_line.next_label.text = line_end_string()
 	
-	paragraphs.add_child(rect)
+	if not skip_animations:
+		TETheme.anim_nvl_image_in.call(img_line.rect)
 	
-	if not loading_from_save:
-		TETheme.anim_full_image_in.call(rect)
-	
-	_display_line('[center]%s[/center]' % line_end_string())
+	paragraphs.add_child(img_line)
 
 
-func _set_full_img_size(img: TextureRect):
-	var width: float = get_theme_constant('width', 'NVLView') * img.get_meta('width_ratio')
-	var height = width / img.texture.get_width() * img.texture.get_height()
-	img.custom_minimum_size = Vector2(width, height)
+func _handle_speaker_line(speaker: Speaker, line: String):
+		var speaker_line: SpeakerNVLLine = SpeakerNVLLine.new(speaker, line, create_label)
+		
+		var prev_speaker: SpeakerNVLLine = _previous_speaker_line_or_null()
+		var is_same_speaker: bool = prev_speaker != null and speaker_line.speaker.id == prev_speaker.speaker.id
+		
+		if paragraphs.get_child_count() == 0:
+			pass
+		elif is_same_speaker: # don't show name twice in consecutive dialogue
+			speaker_line.speaker_label.modulate.a = 0
+		else: # line break between different speakers or narration and dialogue
+			speaker_line.add_line_break()
+		
+		paragraphs.add_child(speaker_line)
+
+
+func _current_label() -> RichTextLabel:
+	if paragraphs.get_child_count() == 0:
+		return null
+	var current = paragraphs.get_child(-1)
+	if current is RichTextLabel:
+		return current
+	if current is SpeakerNVLLine:
+		return current.line_label
+	if current is ImageNVLLine:
+		return current.next_label
+	return null
+
+
+func _scroll_to_bottom():
+	scroll.get_v_scroll_bar().value = scroll.get_v_scroll_bar().max_value
 
 
 func previous_block_policy() -> View.PreviousBlocksPolicy:
