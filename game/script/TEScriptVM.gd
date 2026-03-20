@@ -118,11 +118,9 @@ func queue_resources(instructions: Array[TEScript.BaseInstruction]):
 			'FG':
 				if ins.fg_id in TE.defs.imgs and TE.defs.imgs[ins.fg_id] is String:
 					Assets.imgs.queue(TE.defs.imgs[ins.fg_id], 'res://assets/img')
-			'Music':
-				if ins.song_id != '':
-					Assets.songs.queue(TE.defs.songs[ins.song_id], 'res://assets/music')
-			'Sound':
-				Assets.sounds.queue(TE.defs.sounds[ins.sound_id], 'res://assets/sound')
+			'Play':
+				if ins.audio_id != '':
+					Assets.audio.queue(TE.defs.audio[ins.audio_id], 'res://assets/audio')
 			'Enter':
 				Assets.sprites.queue(TE.defs.sprites[ins.sprite] + '/sprite.tef', 'res://assets/sprites')
 			

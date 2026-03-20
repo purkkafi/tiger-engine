@@ -91,20 +91,21 @@ func parse_bg_or_fg(tag: Tag, tag_name: String) -> Variant:
 			return null
 
 
-# parses \music tag
-func parse_music(tag: Tag) -> Variant:
-	var song_id: String = ''
+# parses \play tag
+func parse_play(tag: Tag) -> Variant:
+	var bus_name: String = ''
+	var audio_id: String = ''
 	var transition: String = ''
 	var local_volume: float = 1.0
 	
 	match tag.length():
-		1:
-			pass
 		2:
-			var args = tag.get_tags_at(1)
+			pass
+		3:
+			var args = tag.get_tags_at(2)
 			
 			if len(args) == 0:
-				error('expected args in index 1 of \\music, got %s' % [tag])
+				error('expected args in index 2 of \\play, got %s' % [tag])
 				return null
 			
 			for arg in args:
@@ -121,22 +122,24 @@ func parse_music(tag: Tag) -> Variant:
 							return null
 						local_volume = float(arg.get_string())
 					_:
-						error("unknown argument '%s' for \\music: %s" % [arg.name, tag])
+						error("unknown argument '%s' for \\play: %s" % [arg.name, tag])
 						return null
 		_:
-			error('expected 1 or 2 arguments for \\music, got %s' % tag)
+			error('expected 2 or 3 arguments for \\play, got %s' % tag)
 			return null
 	
-	var value0 = tag.get_value_at(0)
-	if value0 is String:
-		song_id = value0
-	elif value0 is Tag and value0.name == 'clear' and value0.length() == 0:
-		song_id = ''
+	bus_name = tag.get_string_at(0)
+	
+	var value1 = tag.get_value_at(1)
+	if value1 is String:
+		audio_id = value1
+	elif value1 is Tag and value1.name == 'clear' and value1.length() == 0:
+		audio_id = ''
 	else:
-		error('expected id or \\clear in index 0 of \\music, got %s' % tag)
+		error('expected id or \\clear in index 1 of \\play, got %s' % tag)
 		return null
 	
-	return TEScript.IMusic.new(song_id, transition, local_volume)
+	return TEScript.IPlay.new(bus_name, audio_id, transition, local_volume)
 
 
 # parses \enter
@@ -501,15 +504,9 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 					error('expected transition for \\hideui, got %s' % tag)
 				else:
 					ins.append(TEScript.IHideUI.new(tag.get_string()))
-				
-			'sound':
-				if tag.length() != 1 or not tag.get_string() is String:
-					error('expected sound id for \\sound, got %s' % tag)
-				else:
-					ins.append(TEScript.ISound.new(tag.get_string()))
 			
-			'music':
-				var parsed = parse_music(tag)
+			'play':
+				var parsed = parse_play(tag)
 				if parsed != null:
 					ins.append(parsed)
 				

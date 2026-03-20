@@ -13,25 +13,17 @@ var img_metadata: Dictionary = {} # metadata specified with \meta{}
 # a map of transition ids to Transition objects
 # users should not access directly, use Definitions.transition()
 var _transitions: Dictionary = {}
-# a map of song ids to paths relative to the 'assets/music' folder
-var songs: Dictionary = {}
-# a map of song ids to custom volumes, which are in range [0, 1]
-var song_custom_volumes: Dictionary = {}
-# a map of song ids to audio buses (string "Music" or "SFX")
-var song_buses: Dictionary[String, String] = {}
-var song_metadata: Dictionary = {} # metadata specified with \meta{}
-# a map of sound effect ids to paths relative to the 'assets/sound' folder
-var sounds: Dictionary = {}
-# a map of sound ids to audio buses (string "Music" or "SFX")
-var sound_buses: Dictionary[String, String] = {}
-var sound_custom_volumes: Dictionary = {} # custom volumes in range [0, 1]
-var sound_metadata: Dictionary = {} # metadata specified with \meta{}
+# a map of audio ids to paths relative to the 'assets/audio' folder
+var audio: Dictionary = {}
+# a map of audio ids to custom volumes, which are in range [0, 1]
+var audio_custom_volumes: Dictionary = {}
+var audio_metadata: Dictionary = {} # metadata specified with \meta{}
 # array of ids of unlockables
 var unlockables: Array[String] = []
 # ids of unlockables that should be unlocked automatically
 var unlocked_from_start: Array[String] = []
-# map of song ids to Array of unlockable ids that should be unlocked when the song is played
-var unlocked_by_song: Dictionary = {}
+# map of audio ids to Array of unlockable ids that should be unlocked when the audio is played
+var unlocked_by_audio: Dictionary = {}
 # map of img ids to Array of unlockable ids unlocked when the image is shown
 var unlocked_by_img: Dictionary = {}
 # map of unlockable ids to Array of other unlockables they silently & automatically unlock
@@ -98,18 +90,11 @@ func unlockables_in_namespace(prefix: String) -> Array[String]:
 	return found
 
 
-# returns the volume at which the given song_id should be played
-# this is the value in song_custom_volumes or 1.0 if not set
-func song_volume(song_id: String) -> float:
-	if song_id in song_custom_volumes:
-		return song_custom_volumes[song_id]
-	return 1.0
-
-
-# like song_volume()but for sounds
-func sound_volume(sound_id: String):
-	if sound_id in sound_custom_volumes:
-		return sound_custom_volumes[sound_id]
+# returns the volume at which the given audio_id should be played
+# this is the value in audio_custom_volumes or 1.0 if not set
+func audio_volume(audio_id: String) -> float:
+	if audio_id in audio_custom_volumes:
+		return audio_custom_volumes[audio_id]
 	return 1.0
 
 

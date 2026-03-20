@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://c0sxw2etw1wjh"]
+
+[ext_resource type="Script" uid="uid://bp266i3f55e3k" path="res://tiger-engine/singletons/BusPlayer.gd" id="1_dahr3"]
+
+[node name="BusPlayer" type="Node" unique_id=673927008]
+script = ExtResource("1_dahr3")
+
+[node name="CurrentPlayer" type="AudioStreamPlayer" parent="." unique_id=1287664714]
+
+[node name="NextPlayer" type="AudioStreamPlayer" parent="." unique_id=699966134]

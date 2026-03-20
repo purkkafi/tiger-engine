@@ -3,177 +3,78 @@ class_name Audio extends Node
 # plays songs and sound effects defined in the definitions file
 
 
-# tween used for fading song in
-var music_tween: Tween = null
-# tween used for currently playing sound
-var sound_tween: Tween = null
-# id of currently playing song; will be the empty string if no song is playing
-var song_id: String = ''
-# volume at which the currently playing song is played
-# (not the final value; further affected by audio settings etc)
-var local_volume: float = 1.0
+var bus_players: Array[BusPlayer] = []
 
 
-# emitted with the song id when a song is played
-signal song_played
-# emitted with the sound effect id when a sound is played
-signal sound_played
-# emitted with the sound effect id when a played sound finishes
-signal sound_finished
-# emitted when audio is paused with id of current song & whether paused or unapaused
-signal song_paused
+# emitted with the audio id when audio is played
+@warning_ignore("unused_signal")
+signal audio_played(audio_id: String, bus_name: String)
+# emitted when a non-looping audio finishes playing
+@warning_ignore("unused_signal")
+signal audio_finished(audio_id: String, bus_name: String)
+# emitted when audio is paused
+@warning_ignore("unused_signal")
+signal audio_paused(audio_id: String, bus_name: String, paused: bool)
 
 
-# plays a song with the given id, fading in with the given duration in seconds
-# if another song is playing, it is faded out simultaneously
-# an empty string can be passed to stop playing a song
-func play_song(new_song_id: String, duration: float, with_local_volume: float = 1.0):
-	song_id = new_song_id
-	self.local_volume = with_local_volume
-	var new_song: AudioStream
-	
-	if new_song_id != '':
-		var path = TE.defs.songs[song_id]
-		new_song = Assets.songs.get_resource(path, 'res://assets/music', false)
-		
-		if not _is_looping(new_song):
-			TE.log_warning("looping disabled for song '%s'" % new_song_id)
-	else:
-		new_song = null
-	
-	# if new song already fading in, end the transition
-	if music_tween != null and music_tween.is_running():
-		music_tween.kill()
-		_swap_song_trans_finished()
-	
-	music_tween = create_tween()
-	
-	if $SongPlayer.get_stream() != null:
-		# fade out currently playing song
-		music_tween.parallel().tween_method(_set_song_volume, db_to_linear($SongPlayer.volume_db), 0.0, duration)
-	
-	music_tween.parallel().tween_method(_set_next_song_volume, 0.0, TE.defs.song_volume(song_id) * local_volume, duration)
-	$NextSongPlayer.set_stream(new_song)
-	if song_id != '':
-		$NextSongPlayer.bus = TE.defs.song_buses[song_id]
-	
-	# if switching to the same song, continue from playback position
-	# (for situations where we are transitioning to the same song at a different volume)
-	var from_position: float = 0
-	if $NextSongPlayer.get_stream() == $SongPlayer.get_stream():
-		from_position = $SongPlayer.get_playback_position()
-	
-	$NextSongPlayer.play(from_position)
-	
-	# TODO wrong timing ? investigate?
-	music_tween.parallel().tween_callback(_swap_song_trans_finished).set_delay(duration)
-	
-	# unlock possible unlockable
-	if song_id in TE.defs.unlocked_by_song:
-		for unlockable in TE.defs.unlocked_by_song[song_id]:
-			TE.persistent.unlock(unlockable)
-	
-	emit_signal('song_played', song_id)
+func _ready() -> void:
+	for bus_id in range(AudioServer.bus_count):
+		var bus_name: String = AudioServer.get_bus_name(bus_id)
+		if bus_name not in ['Master', 'Music', 'SFX']:
+			var bus_player: BusPlayer = preload('res://tiger-engine/singletons/BusPlayer.tscn').instantiate()
+			bus_player.set_bus(bus_id)
+			add_child(bus_player)
+			bus_players.append(bus_player)
 
 
-func _is_looping(stream: AudioStream):
-	if stream is AudioStreamOggVorbis:
-		return stream.loop
-	elif stream is AudioStreamMP3:
-		return stream.loop
-	elif stream is AudioStreamWAV:
-		return stream.loop_mode != AudioStreamWAV.LOOP_DISABLED
-	return false # unknown type
-
-
-func _set_song_volume(val: float):
-	$SongPlayer.volume_db = linear_to_db(val)
-
-
-func _set_next_song_volume(val: float):
-	$NextSongPlayer.volume_db = linear_to_db(val)
-
-
-func _swap_song_trans_finished():
-	var old_music: AudioStreamPlayer = $SongPlayer
-	var new_music: AudioStreamPlayer = $NextSongPlayer
-	
-	old_music.stop()
-	remove_child(old_music)
-	old_music.queue_free()
-	
-	new_music.name = 'SongPlayer'
-	
-	var replacement = AudioStreamPlayer.new()
-	replacement.name = 'NextSongPlayer'
-	replacement.bus = 'Music'
-	add_child(replacement, true)
+# returns the BusPlayer corresponding to the given bus name
+func bus(by_bus_name: String) -> BusPlayer:
+	for bus_player in bus_players:
+		if bus_player.bus_name == by_bus_name:
+			return bus_player
+	return null
 
 
 # sets pause status of all playing audio
-func set_paused(paused: bool):
-	$SongPlayer.stream_paused = paused
-	$NextSongPlayer.stream_paused = paused
-	$SoundPlayer.stream_paused = paused
-	emit_signal('song_paused', song_id, paused)
+func set_all_paused(paused: bool):
+	for bus_player in bus_players:
+		bus_player.set_paused(paused)
 
 
-# plays a sound effect with the given id
-func play_sound(id: String):
-	if id == '':
-		if sound_tween != null and sound_tween.is_running():
-			sound_tween.set_speed_scale(INF)
-		$SoundPlayer.stream = null
-		return
-	
-	var path = TE.defs.sounds[id]
-	var sound: AudioStream = Assets.sounds.get_resource(path, 'res://assets/sound')
-	
-	if _is_looping(sound):
-			TE.log_warning("looping enabled for sound '%s'" % id)
-	
-	$SoundPlayer.stream = sound
-	$SoundPlayer.volume_db = linear_to_db(TE.defs.sound_volume(id))
-	$SoundPlayer.bus = TE.defs.sound_buses[id]
-	$SoundPlayer.play()
-	
-	# emit appropriate signals
-	emit_signal('sound_played', id)
-	
-	sound_tween = create_tween()
-	sound_tween.tween_interval(sound.get_length())
-	sound_tween.tween_callback(func(): emit_signal('sound_finished', id))
+# interrupts all nonlooping, sound effect-like audio
+func clear_transient():
+	for bus_player in bus_players:
+		bus_player.clear_if_transient()
 
 
-# returns the AudioStreamPlayer of currently playing song or null
-func song_player() -> AudioStreamPlayer:
-	if $SongPlayer.get_stream() != null:
-		return $SongPlayer
-	return null
-
-
-# returns the AudioStreamPlayer of currently playing sound or null
-func sound_player() -> AudioStreamPlayer:
-	if $SoundPlayer.get_stream() != null:
-		return $SoundPlayer
-	return null
+# interrupts and stops all audio
+func clear_all():
+	for bus_player in bus_players:
+		bus_player.clear()
 
 
 # returns current state related to audio
 func get_state() -> Dictionary:
-	return {
-		'song_id': song_id,
-		'local_volume': local_volume
-	}
+	var dict: Dictionary = {}
+	for bus_player in bus_players:
+		dict[bus_player.bus_name] = {
+				'audio_id': bus_player.audio_id,
+				'local_volume': bus_player.local_volume
+			}
+	return dict
+
 
 # restores audio state from a dict returned by get_state()
 func set_state(state: Dictionary):
-	play_song(state['song_id'], 0, state['local_volume'])
+	for bus_name in state.keys():
+		var audio_data: Dictionary = state[bus_name]
+		bus(bus_name).play(audio_data['audio_id'], 0, audio_data['local_volume'])
 
 
 # returns debug text that displays volumes of audio buses
 # and all playing sounds 
 func debug_text() -> String:
+	"""
 	var msg: String = ''
 	
 	var buses: Array[String] = ['Master', 'Music', 'SFX']
@@ -195,3 +96,5 @@ func debug_text() -> String:
 		msg += '%s (%s): %s %s %s\n' % [player.name, player.bus, song, vol, time]
 	
 	return msg
+	"""
+	return "" # TODO reimplement

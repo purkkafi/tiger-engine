@@ -122,11 +122,8 @@ func next_blocking():
 			repeat_ids[ins.repeat_id()] = true
 		
 		match ins.name:
-			'Music':
-				TE.audio.play_song(ins.song_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
-			
-			'Sound':
-				TE.audio.play_sound(ins.sound_id)
+			'Play':
+				TE.audio.bus(ins.bus_name).play(ins.audio_id, TE.defs.transition(ins.transition_id).duration, ins.local_volume)
 			
 			'Meta':
 				game_name = TE.localize[ins.game_name_uistring]

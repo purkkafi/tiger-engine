@@ -7,7 +7,7 @@ var path: String = '' # the full path to the scene
 var cutscene: Node2D
 var is_finished: bool
 var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
-var stop_music: bool = true # if true, previous song is stopped
+var stop_audio: bool = true # if true, all playing audio is stopped
 var custom_options: Dictionary[String, String] = {} # custom options
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
@@ -22,8 +22,8 @@ func parse_options(tags: Array[Tag]):
 				path = tag.get_string()
 			'wait_input':
 				wait_input = tag.get_string() == 'true'
-			'stop_music':
-				stop_music = tag.get_string() == 'true'
+			'stop_audio':
+				stop_audio = tag.get_string() == 'true'
 			_:
 				custom_options[tag.name] = tag.get_string()
 
@@ -41,8 +41,8 @@ func initialize(_ctxt: InitContext):
 	TE.overlay_opened.connect(_pause_on_overlay)
 	TE.overlay_closed.connect(_resume_after_overlay)
 	
-	if stop_music:
-		TE.audio.play_song('', 0) # stop previous song, if any
+	if stop_audio:
+		TE.audio.clear_all() # stop all audio
 	
 	if len(custom_options) != 0:
 		if 'set_custom_options' in cutscene:

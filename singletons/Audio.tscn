@@ -1,15 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://dmbp1yukfvgb1"]
+[gd_scene format=3 uid="uid://dmbp1yukfvgb1"]
 
 [ext_resource type="Script" uid="uid://saah5vfdqjvd" path="res://tiger-engine/singletons/Audio.gd" id="1_ogqy8"]
 
-[node name="Root" type="Node"]
+[node name="Root" type="Node" unique_id=1350144251]
 script = ExtResource("1_ogqy8")
 
-[node name="SongPlayer" type="AudioStreamPlayer" parent="."]
-bus = &"Music"
+[node name="SongPlayer" type="AudioStreamPlayer" parent="." unique_id=1010981532]
 
-[node name="NextSongPlayer" type="AudioStreamPlayer" parent="."]
-bus = &"Music"
+[node name="NextSongPlayer" type="AudioStreamPlayer" parent="." unique_id=562757020]
 
-[node name="SoundPlayer" type="AudioStreamPlayer" parent="."]
-bus = &"SFX"
+[node name="SoundPlayer" type="AudioStreamPlayer" parent="." unique_id=686337341]

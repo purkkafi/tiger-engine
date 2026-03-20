@@ -163,80 +163,59 @@ func test_hideui_should_take_transition():
 	)
 
 
-func test_sound():
+func test_play_default_values():
 	assert_equals(
-		instructions('\\sound{sfx}'),
-		[ TEScript.ISound.new('sfx') ]
+		instructions('\\play{bus}{cool_song}'),
+		[ TEScript.IPlay.new('bus', 'cool_song', '', 1.0) ]
 	)
 
 
-func test_sound_should_take_1_arg():
+func test_play_transition_and_volume():
 	assert_equals(
-		errors('\\sound{a}{b}'),
-		[ 'expected sound id for \\sound, got \\sound[["a"], ["b"]]' ]
+		instructions('\\play{bus}{my_song}{ \\with{transition} \\volume{0.5} }'),
+		[ TEScript.IPlay.new('bus', 'my_song', 'transition', 0.5) ]
 	)
 
 
-func test_sound_should_take_sound_id():
+func test_play_should_have_args_in_index_2():
 	assert_equals(
-		errors('\\sound{\\bad}'),
-		[ 'expected sound id for \\sound, got \\sound[[\\bad[]]]' ]
+		errors('\\play{bus}{id}{bad}'),
+		[ 'expected args in index 2 of \\play, got \\music[["bus"], ["id"], ["bad"]]' ]
 	)
 
 
-func test_music_default_values():
+func test_play_should_take_max_3_args():
 	assert_equals(
-		instructions('\\music{cool_song}'),
-		[ TEScript.IMusic.new('cool_song', '', 1.0) ]
+		errors('\\play{1}{2}{3}{4}'),
+		[ 'expected 2 or 3 arguments for \\play, got \\play[["1"], ["2"], ["3"], ["4"]]' ]
 	)
 
 
-func test_music_transition_and_volume():
+func test_play_should_error_on_unknown_argument():
 	assert_equals(
-		instructions('\\music{my_song}{ \\with{transition} \\volume{0.5} }'),
-		[ TEScript.IMusic.new('my_song', 'transition', 0.5) ]
+		errors('\\play{bus}{id}{ \\bad }'),
+		[ 'unknown argument \'bad\' for \\play: \\music[["bus"], ["id"], [\\bad[]]]' ]
 	)
 
 
-func test_music_should_have_args_in_index_1():
+func test_play_volume_should_be_float():
 	assert_equals(
-		errors('\\music{id}{bad}'),
-		[ 'expected args in index 1 of \\music, got \\music[["id"], ["bad"]]' ]
+		errors('\\play{mybus}{id}{ \\volume{not_a_volume} }'),
+		[ 'expected float for \\volume, got \\play[["mybus"], ["id"], [\\volume[["not_a_volume"]]]]' ]
 	)
 
 
-func test_music_should_take_max_2_args():
+func test_play_only_accepts_id_or_clear():
 	assert_equals(
-		errors('\\music{1}{2}{3}'),
-		[ 'expected 1 or 2 arguments for \\music, got \\music[["1"], ["2"], ["3"]]' ]
+		errors('\\play{bus}{\\bad}'),
+		[ 'expected id or \\clear in index 1 of \\play, got \\play[["bus"], [\\bad[]]]' ]
 	)
 
 
-func test_music_should_error_on_unknown_argument():
+func test_play_with_should_take_transition():
 	assert_equals(
-		errors('\\music{id}{ \\bad }'),
-		[ 'unknown argument \'bad\' for \\music: \\music[["id"], [\\bad[]]]' ]
-	)
-
-
-func test_music_volume_should_be_float():
-	assert_equals(
-		errors('\\music{id}{ \\volume{not_a_volume} }'),
-		[ 'expected float for \\volume, got \\music[["id"], [\\volume[["not_a_volume"]]]]' ]
-	)
-
-
-func test_music_only_accepts_id_or_clear():
-	assert_equals(
-		errors('\\music{\\bad}'),
-		[ 'expected id or \\clear in index 0 of \\music, got \\music[[\\bad[]]]' ]
-	)
-
-
-func test_music_with_should_take_transition():
-	assert_equals(
-		errors('\\music{id}{ \\with{\\bad} }'),
-		[ 'expected transition for \\with, got \\music[["id"], [\\with[[\\bad[]]]]]' ]
+		errors('\\play{bus}{id}{ \\with{\\bad} }'),
+		[ 'expected transition for \\with, got \\play[["bus"], ["id"], [\\with[[\\bad[]]]]]' ]
 	)
 
 

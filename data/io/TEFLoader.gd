@@ -181,20 +181,17 @@ func _resolve_definitions(tree: Tag):
 				
 				defs._transitions[id] = trans
 				
-			'song':
-				_parse_song_definition(defs, node)
+			'audio':
+				_parse_audio_definition(defs, node)
 				
-			'song_unlockable':
-				var id: String = _parse_song_definition(defs, node)
+			'audio_unlockable':
+				var id: String = _parse_audio_definition(defs, node)
 				
-				var unlockable_id = 'song:%s' % id
+				var unlockable_id = 'audio:%s' % id
 				defs.unlockables.append(unlockable_id)
-				if id not in defs.unlocked_by_song:
-					defs.unlocked_by_song[id] = []
-				defs.unlocked_by_song[id].append(unlockable_id)
-				
-			'sound':
-				_parse_sound_definition(defs, node)
+				if id not in defs.unlocked_by_audio:
+					defs.unlocked_by_audio[id] = []
+				defs.unlocked_by_audio[id].append(unlockable_id)
 			
 			'unlockable':
 				var id: String = node.get_string_at(0)
@@ -213,11 +210,11 @@ func _resolve_definitions(tree: Tag):
 							defs.unlocked_from_start.append(id)
 						'manual':
 							pass
-						'by_song':
-							var song_id: String = trigger.get_string()
-							if song_id not in defs.unlocked_by_song:
-								defs.unlocked_by_song[song_id] = []
-							defs.unlocked_by_song[song_id].append(id)
+						'by_audio':
+							var audio_id: String = trigger.get_string()
+							if audio_id not in defs.unlocked_by_audio:
+								defs.unlocked_by_audio[audio_id] = []
+							defs.unlocked_by_audio[audio_id].append(id)
 						'by_img':
 							var img_id: String = trigger.get_string()
 							if img_id not in defs.unlocked_by_img:
@@ -324,56 +321,22 @@ func _parse_meta(id: String, option: Tag, metadata: Dictionary):
 		metadata[id].append(dict)
 
 
-func _parse_sound_definition(defs: Definitions, node: Tag):
-	node.expect_length(3, 4)
+func _parse_audio_definition(defs: Definitions, node: Tag) -> String:
+	node.expect_length(2, 3)
 	var id: String = node.get_string_at(0)
 	var path: String = node.get_string_at(1)
 	
-	match node.get_string_at(2):
-		'music':
-			defs.sound_buses[id] = 'Music'
-		'sfx':
-			defs.sound_buses[id] = 'SFX'
-		_:
-			push_error('unknown audio bus: %s' % node.get_string_at(2))
-	
-	if node.has_index(3):
-		for option in node.get_tags_at(3):
-			match option.name:
-				'meta':
-					_parse_meta(id, option, defs.sound_metadata)
-				'volume':
-					defs.sound_custom_volumes[id] = float(option.get_string())
-				_:
-					push_error('unknown option in sound definition: %s' % option)
-	
-	defs.sounds[id] = path
-
-
-func _parse_song_definition(defs: Definitions, node: Tag) -> String:
-	node.expect_length(3, 4)
-	var id: String = node.get_string_at(0)
-	var path: String = node.get_string_at(1)
-	
-	match node.get_string_at(2):
-		'music':
-			defs.song_buses[id] = 'Music'
-		'sfx':
-			defs.song_buses[id] = 'SFX'
-		_:
-			push_error('unknown audio bus: %s' % node.get_string_at(2))
-	
-	if node.has_index(3):
-		for option in node.get_tags_at(3):
+	if node.has_index(2):
+		for option in node.get_tags_at(2):
 			match option.name:
 				'volume':
-					defs.song_custom_volumes[id] = float(option.get_string())
+					defs.audio_custom_volumes[id] = float(option.get_string())
 				'meta':
-					_parse_meta(id, option, defs.song_metadata)
+					_parse_meta(id, option, defs.audio_metadata)
 				_:
-					push_error('unknown option in song definition: %s' % option)
+					push_error('unknown option in audio definition: %s' % option)
 	
-	defs.songs[id] = path
+	defs.audio[id] = path
 	return id
 
 

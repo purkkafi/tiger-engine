@@ -92,34 +92,27 @@ class IHideUI extends BaseInstruction:
 		return 'hideui %s' % [transition_id]
 
 
-class ISound extends BaseInstruction:
-	const name: String = 'Sound'
-	var sound_id: String
+class IPlay extends BaseInstruction:
+	const name: String = 'Play'
+	var bus_name: String # audio bus to play in
+	var audio_id: String # audio id or the empty string to clear
+	var transition_id: String # transition applied to crossfade
+	var local_volume: float # local volume to play audio with in range [0, 1]
 	
 	
-	func _init(_sound_id: String):
-		self.sound_id = _sound_id
-	
-	
-	func _to_string() -> String:
-		return 'sound %s' % [sound_id]
-
-
-class IMusic extends BaseInstruction:
-	const name: String = 'Music'
-	var song_id: String # song id or the empty string to clear
-	var transition_id: String
-	var local_volume: float # local volume to play song with in range [0, 1]
-	
-	
-	func _init(_song_id: String, _transition_id: String, _local_volume):
-		self.song_id = _song_id
+	func _init(_bus_name: String, _audio_id: String, _transition_id: String, _local_volume):
+		self.bus_name = _bus_name
+		self.audio_id = _audio_id
 		self.transition_id = _transition_id
 		self.local_volume = _local_volume
 	
 	
 	func _to_string() -> String:
-		return 'playsong %s, %s, %s' % [song_id, transition_id, local_volume]
+		return 'play %s, %s, %s, %s' % [bus_name, audio_id, transition_id, local_volume]
+	
+	
+	func repeat_id() -> String:
+		return 'Play_%s_%s_%s' % [bus_name, audio_id, local_volume]
 
 
 class IBG extends BaseInstruction:

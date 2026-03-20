@@ -3,8 +3,7 @@ class_name Assets extends Node
 # contains specific Cache instances for different resources
 
 
-static var songs: Cache = Cache.new('songs', 5)
-static var sounds: Cache = Cache.new('sounds', 5)
+static var audio: Cache = Cache.new('audio', 10)
 static var imgs: Cache = Cache.new('imgs', 10)
 static var blockfiles: Cache = Cache.new('blockfiles', 10)
 static var scripts: Cache = Cache.new('scripts', 10)
@@ -67,8 +66,7 @@ static func _scriptfile_hash(scriptfile: ScriptFile, hashes: Dictionary):
 
 static func _debug_message() -> String:
 	var msg: String = ''
-	msg += 'Songs:\n' + songs._debug_message() + '\n'
-	msg += 'Sounds:\n' + sounds._debug_message() + '\n'
+	msg += 'Audio:\n' + audio._debug_message() + '\n'
 	msg += 'Imgs:\n' + imgs._debug_message() + '\n'
 	msg += 'Blockfiles:\n' + blockfiles._debug_message() + '\n'
 	msg += 'Scripts:\n' + scripts._debug_message() + '\n'

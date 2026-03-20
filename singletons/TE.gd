@@ -117,9 +117,8 @@ func _ready():
 	# instantiate captions singleton
 	captions = preload('res://tiger-engine/singletons/Captions.tscn').instantiate()
 	get_tree().root.add_child.call_deferred(captions)
-	TE.audio.song_played.connect(_handle_song_played_caption)
-	TE.audio.sound_played.connect(func(sound): captions.show_caption('%alt_sound_' + sound + '%', sound))
-	TE.audio.sound_finished.connect(func(sound): captions.hide_caption(sound))
+	TE.audio.audio_played.connect(_handle_audio_played_caption)
+	TE.audio.audio_finished.connect(_handle_audio_finished_caption)
 	
 	get_tree().get_root().connect('files_dropped', _load_dropped_mods)
 	
@@ -131,11 +130,16 @@ func _ready():
 	get_tree().set_auto_accept_quit(false)
 
 
-func _handle_song_played_caption(song_id: String):
-	if song_id == '':
-		captions.hide_caption('song')
+func _handle_audio_played_caption(audio_id: String, bus_name: String):
+	if audio_id == '':
+		captions.hide_caption(bus_name)
 	else:
-		captions.show_caption('%alt_song_' + song_id + '%', 'song')
+		captions.show_caption('%alt_audio_' + audio_id + '%', bus_name)
+
+
+func _handle_audio_finished_caption(_audio_id: String, bus_name: String):
+	captions.hide_caption(bus_name)
+
 
 # sets the scene to the given scene and calls callback afterwards
 # the old one will be freed if 'free_old' is true, else it will be given as an argument to 'after'
@@ -146,7 +150,7 @@ func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: boo
 		current_scene._scene_change_initiated()
 	
 	# clear up any sound effects
-	TE.audio.play_sound('')
+	TE.audio.clear_transient()
 	
 	await get_tree().process_frame
 	call_deferred('_switch_scene_deferred', new_scene, after, free_old)
