@@ -68,6 +68,7 @@ func play(new_audio_id: String, crossfade_duration: float = 0.0, with_local_volu
 		crossfade_tween.parallel().tween_method(_set_current_volume, db_to_linear($CurrentPlayer.volume_db), 0.0, crossfade_duration)
 	
 	crossfade_tween.parallel().tween_method(_set_next_volume, 0.0, TE.defs.audio_volume(new_audio_id) * local_volume, crossfade_duration)
+	
 	$NextPlayer.set_stream(new_stream)
 	
 	# if switching to the same audio, continue from playback position
@@ -77,6 +78,10 @@ func play(new_audio_id: String, crossfade_duration: float = 0.0, with_local_volu
 		from_position = $CurrentPlayer.get_playback_position()
 	
 	$NextPlayer.play(from_position)
+	
+	# hook for supporting custom AudioStreamPolyphonic resources by initializing them with 'set_playback'
+	if new_stream is AudioStreamPolyphonic and 'intialize' in new_stream:
+		new_stream.intialize($NextPlayer)
 	
 	# TODO wrong timing ? investigate?
 	crossfade_tween.parallel().tween_callback(_swap_players).set_delay(crossfade_duration)
