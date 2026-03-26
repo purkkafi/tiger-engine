@@ -478,8 +478,11 @@ func clear_vfx(avfx_id: String, tween: Tween) -> Tween:
 
 
 func _remove_vfx(avfx: ActiveVfx):
-	avfx.vfx.clear(get_vfx_target(avfx.target), null)
+	var dummy_tween = create_tween()
+	avfx.vfx.clear(get_vfx_target(avfx.target), dummy_tween)
 	active_vfxs.erase(avfx)
+	dummy_tween.tween_callback(func(): pass)
+	dummy_tween.set_speed_scale(INF)
 
 
 # returns current state as a Dict

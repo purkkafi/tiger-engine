@@ -78,6 +78,7 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 	var found: Array[TEScript.BaseInstruction] = []
 	var blocking_count = 0
 	
+	# TODO these limits are pretty conservative, try bigger ones
 	while lookahead_index < len(current_script.instructions):
 		var ins = current_script.instructions[lookahead_index]
 		

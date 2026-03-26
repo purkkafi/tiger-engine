@@ -292,21 +292,28 @@ func _on_save_sprite_pressed():
 
 func _save_sprite(values: Dictionary):
 	var sprite: VNSprite = stage.find_sprite(values['sprite_id'])
-	var sprites: Node = stage.get_node('Sprites')
+	var sprites: Node = stage._sprites()
 	
 	var file = values['filename']
 	if not file is String:
 		show_error('File name must be specified')
 		return
 	
-	$ScreenshotViewport.size = sprite.size
-	
 	# steal the sprite from the stage and add it to the Viewport
 	var sprite_index = sprite.get_index()
 	sprites.remove_child(sprite)
 	$ScreenshotViewport.add_child(sprite)
-	var sprite_position = sprite.position
+	var original_position = sprite.position
+	var original_scale = sprite.scale
+	var original_size = sprite.size
 	sprite.position = Vector2(0, 0)
+	
+	# TODO: hacky assumption: sprite is displayed using its first child
+	# need to make an API for this instead?
+	var internal_obj: Control = sprite.get_child(0)
+	sprite.scale = Vector2(1.0 / internal_obj.scale.x , 1.0 / internal_obj.scale.y)
+	@warning_ignore("narrowing_conversion")
+	$ScreenshotViewport.size = Vector2i(sprite.size.x / internal_obj.scale.x, sprite.size.y / internal_obj.scale.y)
 	
 	# render the Viewport
 	$ScreenshotViewport.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -323,7 +330,9 @@ func _save_sprite(values: Dictionary):
 	$ScreenshotViewport.remove_child(sprite)
 	sprites.add_child(sprite)
 	sprites.move_child(sprite, sprite_index)
-	sprite.position = sprite_position
+	sprite.position = original_position
+	sprite.scale = original_scale
+	sprite.size = original_size
 
 
 # disables UI until given tween finishes
@@ -495,6 +504,7 @@ func make_popup(title: String, content: Control)-> AcceptDialog:
 	popup.unresizable = true
 	popup.title = title
 	popup.exclusive = true
+	popup.transparent_bg = true
 	popup.get_ok_button().text = 'OK'
 	
 	var margins = MarginContainer.new()

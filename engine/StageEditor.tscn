@@ -1,11 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://hekxp6y8nfsu"]
+[gd_scene format=3 uid="uid://hekxp6y8nfsu"]
 
 [ext_resource type="Script" uid="uid://p7vjo070qiok" path="res://tiger-engine/engine/StageEditor.gd" id="1_8xaur"]
 [ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="1_o0gew"]
 [ext_resource type="PackedScene" uid="uid://dj5b2g3xmpfgs" path="res://tiger-engine/game/VNControls.tscn" id="3_4kxbx"]
 [ext_resource type="PackedScene" uid="uid://b3rlrbanr73ci" path="res://tiger-engine/game/views/ADVView.tscn" id="4_fhyyp"]
 
-[node name="StageEditor" type="Control"]
+[node name="StageEditor" type="Control" unique_id=1725317567]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,77 +14,77 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_8xaur")
 
-[node name="VNStage" parent="." instance=ExtResource("1_o0gew")]
+[node name="VNStage" parent="." unique_id=860363025 instance=ExtResource("1_o0gew")]
 
-[node name="ADVView" parent="." instance=ExtResource("4_fhyyp")]
+[node name="ADVView" parent="." unique_id=1697025328 instance=ExtResource("4_fhyyp")]
 layout_mode = 1
 
-[node name="VNControls" parent="." instance=ExtResource("3_4kxbx")]
+[node name="VNControls" parent="." unique_id=529002579 instance=ExtResource("3_4kxbx")]
 layout_mode = 1
 
-[node name="Margins" type="MarginContainer" parent="."]
+[node name="Margins" type="MarginContainer" parent="." unique_id=1897679373]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 
-[node name="Base" type="HBoxContainer" parent="Margins"]
+[node name="Base" type="HBoxContainer" parent="Margins" unique_id=1376660320]
 layout_mode = 2
 
-[node name="Hamburger" type="MenuButton" parent="Margins/Base"]
+[node name="Hamburger" type="MenuButton" parent="Margins/Base" unique_id=217200562]
 unique_name_in_owner = true
 layout_mode = 2
 text = "..."
 
-[node name="Buttons" type="HBoxContainer" parent="Margins/Base"]
+[node name="Buttons" type="HBoxContainer" parent="Margins/Base" unique_id=792869575]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 
-[node name="SetBG" type="Button" parent="Margins/Base/Buttons"]
+[node name="SetBG" type="Button" parent="Margins/Base/Buttons" unique_id=89269225]
 layout_mode = 2
 text = "BG"
 
-[node name="SetFG" type="Button" parent="Margins/Base/Buttons"]
+[node name="SetFG" type="Button" parent="Margins/Base/Buttons" unique_id=994885388]
 layout_mode = 2
 text = "FG
 "
 
-[node name="Enter" type="Button" parent="Margins/Base/Buttons"]
+[node name="Enter" type="Button" parent="Margins/Base/Buttons" unique_id=1718310220]
 layout_mode = 2
 text = "Enter"
 
-[node name="Move" type="Button" parent="Margins/Base/Buttons"]
+[node name="Move" type="Button" parent="Margins/Base/Buttons" unique_id=903847406]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Move"
 
-[node name="Show" type="Button" parent="Margins/Base/Buttons"]
+[node name="Show" type="Button" parent="Margins/Base/Buttons" unique_id=354281468]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Show"
 
-[node name="Exit" type="Button" parent="Margins/Base/Buttons"]
+[node name="Exit" type="Button" parent="Margins/Base/Buttons" unique_id=675600979]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Exit"
 
-[node name="Vfx" type="Button" parent="Margins/Base/Buttons"]
+[node name="Vfx" type="Button" parent="Margins/Base/Buttons" unique_id=913186683]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Vfx"
 
-[node name="Debug" type="CheckButton" parent="Margins/Base/Buttons"]
+[node name="Debug" type="CheckButton" parent="Margins/Base/Buttons" unique_id=1975087023]
 layout_mode = 2
 text = "Debug"
 
-[node name="ADV" type="CheckButton" parent="Margins/Base/Buttons"]
+[node name="ADV" type="CheckButton" parent="Margins/Base/Buttons" unique_id=1172810597]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ADV"
 
-[node name="ScreenshotViewport" type="SubViewport" parent="."]
+[node name="ScreenshotViewport" type="SubViewport" parent="." unique_id=1676590125]
 transparent_bg = true
 handle_input_locally = false
 size = Vector2i(2, 2)
