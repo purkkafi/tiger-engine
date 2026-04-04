@@ -19,7 +19,6 @@ var focus_now: WeakRef # control that last had focus
 var tabbing: bool = false # whether user is navigating buttons by tabbing
 var focus_before_overlay: Control # the Control that had focus before an overlay was spawned
 var custom_controls: Variant = null # custom controls or null if not specified
-var user_hiding: bool = false # whether user is hiding game UI with H key
 
 
 enum DebugMode { NONE, AUDIO, SPRITES, VIEW }
@@ -303,16 +302,18 @@ func _unhandled_key_input(event):
 		take_user_screenshot()
 	
 	# hide when key pressed
-	if event.is_action_pressed(&'game_hide', false, true) and not user_hiding:
-		toggle_user_hide()
-	
-	# show when key released
-	if event.is_action_released(&'game_hide', true) and user_hiding:
-		toggle_user_hide()
+	if event.is_action_pressed(&'game_hide', false, true) and not overlay_active:
+		user_hide()
 	
 	if event.is_action_pressed(&'debug_toggle', false, true) and TE.is_debug():
 		toggle_debug_mode()
 		update_debug_mode_text()
+
+
+# spawns the user hide overlay
+func user_hide():
+	var user_hide: UserHideOverlay = preload("res://tiger-engine/game/UserHideOverlay.tscn").instantiate()
+	user_hide.initialize_for(self)
 
 
 func _process(delta):
@@ -672,21 +673,21 @@ func get_custom_data(key: String):
 	return _custom_data[key]
 
 
-# toggles whether VNControls and the view are hidden
-func toggle_user_hide():
-	user_hiding = not user_hiding
+# sets whether VNControls and the view are hidden
+func set_user_hide_controls(hidden: bool):
+	overlay_active = hidden
 	
-	$VNControls.visible = !user_hiding
+	$VNControls.visible = !hidden
 	if custom_controls != null:
-		custom_controls.set_hidden(user_hiding)
+		custom_controls.set_hidden(hidden)
 	
 	var hidable_view_control = $View.get_hidable_control()
 	if hidable_view_control != null:
 		if hidable_view_control is Control:
-			hidable_view_control.visible = !user_hiding
+			hidable_view_control.visible = !hidden
 		elif hidable_view_control is Array:
 			for ctrl in hidable_view_control:
-				(ctrl as Control).visible = !user_hiding
+				(ctrl as Control).visible = !hidden
 		else:
 			TE.log_error(TE.Error.ENGINE_ERROR, "View.get_hidable_control() returned '%s', not Control or Array" % hidable_view_control)
 

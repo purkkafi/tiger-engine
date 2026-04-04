@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dqel7txfiple8"]
+
+[ext_resource type="Script" uid="uid://dyqfmrwsb036v" path="res://tiger-engine/game/UserHideOverlay.gd" id="1_5ocf1"]
+
+[node name="UserHideOverlay" type="ColorRect" unique_id=1129297861]
+offset_right = 50.0
+offset_bottom = 50.0
+color = Color(1, 1, 1, 0)
+script = ExtResource("1_5ocf1")
