@@ -242,6 +242,8 @@ func _create_sprite(path: String) -> VNSprite:
 		sprite.associated_speaker = TE.defs.sprite_speakers[sprite.id]
 	
 	sprite.connect('draw_order_changed', _sort_sprites)
+	# ensure effects can be applied to the parent sprites object
+	sprite.use_parent_material = true
 	return sprite
 
 

@@ -74,27 +74,33 @@ func set_state(state: Dictionary):
 # returns debug text that displays volumes of audio buses
 # and all playing sounds 
 func debug_text() -> String:
-	"""
 	var msg: String = ''
 	
-	var buses: Array[String] = ['Master', 'Music', 'SFX']
+	var bus_msgs: Array[String] = []
+	for bus_ind in AudioServer.bus_count:
+		var vol_lin: float = AudioServer.get_bus_volume_linear(bus_ind)
+		var vol_db: float = AudioServer.get_bus_volume_db(bus_ind)
+		bus_msgs.append('%s: %.2f (%.2f dB)' % [AudioServer.get_bus_name(bus_ind), vol_lin, vol_db])
 	
-	for bus in buses:
-		var vol: float = AudioServer.get_bus_volume_db(AudioServer.get_bus_index(bus))
-		msg += '%s: %.2f dB\n' % [bus, vol]
+	msg += ', '.join(bus_msgs)
+	msg += '\n---\n'
 	
-	msg += '\n'
-	
-	var players: Array = [$SongPlayer, $NextSongPlayer, $SoundPlayer]
-	
-	msg += 'Song volume: %s / Local volume: %s\n' % [TE.defs.song_volume(song_id), local_volume]
-	for player in players:
-		var active = player.playing and player.get_playback_position() != 1.0
-		var song: String = player.get_stream().resource_path.split('/')[-1] if active else ''
-		var vol: String = ': %.2f (%.2f dB)' % [db_to_linear(player.volume_db), player.volume_db] if active else ''
-		var time: String = '%.2f / %.2f s' % [player.get_playback_position(), player.stream.get_length()] if active else ''
-		msg += '%s (%s): %s %s %s\n' % [player.name, player.bus, song, vol, time]
+	for player in bus_players:
+		msg += '%s: %s [AV: %s LV: %s]\n' % [player.bus_name, player.audio_id, TE.defs.audio_volume(player.audio_id), player.local_volume]
+		var debug_current = _debug_for(player.current_player())
+		if debug_current != '':
+			msg += '    C: ' + debug_current + '\n'
+		var debug_next = _debug_for(player.next_player())
+		if debug_next != '':
+			msg += '    N: ' + debug_next + '\n'
 	
 	return msg
-	"""
-	return "" # TODO reimplement
+
+
+func _debug_for(asp: AudioStreamPlayer):
+	if (not asp.playing) or asp.get_playback_position() == 1.0:
+		return ''
+	var song: String = asp.get_stream().resource_path.split('/')[-1]
+	var vol: String = ': %.2f (%.2f dB)' % [db_to_linear(asp.volume_db), asp.volume_db]
+	var time: String = '%.2f / %.2f s' % [asp.get_playback_position(), asp.stream.get_length()]
+	return '%s %s %s' % [time, vol, song]

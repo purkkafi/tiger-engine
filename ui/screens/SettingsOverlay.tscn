@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://uccko4wx3nlu"]
+[gd_scene format=3 uid="uid://uccko4wx3nlu"]
 
 [ext_resource type="Script" uid="uid://d21e1kkp58w32" path="res://tiger-engine/ui/screens/SettingsOverlay.gd" id="2_2w7fv"]
 
-[node name="SettingsOverlay" type="PanelContainer"]
+[node name="SettingsOverlay" type="PanelContainer" unique_id=258948027]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -13,64 +13,64 @@ offset_bottom = -100.0
 theme_type_variation = &"Overlay"
 script = ExtResource("2_2w7fv")
 
-[node name="Margins" type="MarginContainer" parent="."]
+[node name="Margins" type="MarginContainer" parent="." unique_id=1492719496]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins"]
+[node name="VBox" type="VBoxContainer" parent="Margins" unique_id=1069307743]
 layout_mode = 2
 
-[node name="TopRow" type="HBoxContainer" parent="Margins/VBox"]
+[node name="TopRow" type="HBoxContainer" parent="Margins/VBox" unique_id=135576035]
 layout_mode = 2
 
-[node name="SettingsLabel" type="Label" parent="Margins/VBox/TopRow"]
+[node name="SettingsLabel" type="Label" parent="Margins/VBox/TopRow" unique_id=995601269]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"Header"
 text = "%settings_title%"
 
-[node name="HSeparator2" type="HSeparator" parent="Margins/VBox"]
+[node name="HSeparator2" type="HSeparator" parent="Margins/VBox" unique_id=551869549]
 layout_mode = 2
 
-[node name="Scroll" type="ScrollContainer" parent="Margins/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="Margins/VBox" unique_id=218994472]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 follow_focus = true
 
-[node name="OverlayContent" type="PanelContainer" parent="Margins/VBox/Scroll"]
+[node name="OverlayContent" type="PanelContainer" parent="Margins/VBox/Scroll" unique_id=113612978]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 1
 theme_type_variation = &"OverlayContent"
 
-[node name="Sections" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent"]
+[node name="Sections" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent" unique_id=1174835449]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SettingsSections"
 
-[node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Video" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=543991890]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video" unique_id=945572237]
 layout_mode = 2
 
-[node name="VideoHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox"]
+[node name="VideoHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox" unique_id=1649272310]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_video%"
 
-[node name="WindowModeContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox"]
+[node name="WindowModeContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox" unique_id=2022637297]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
+[node name="WindowModeLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer" unique_id=421033930]
 unique_name_in_owner = true
 layout_mode = 2
 text = "%settings_window_mode%"
 
-[node name="WindowOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
+[node name="WindowOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer" unique_id=1863331915]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_window_mode_tooltip%"
@@ -80,31 +80,31 @@ popup/item_0/id = 0
 popup/item_1/text = "%settings_window_windowed%"
 popup/item_1/id = 1
 
-[node name="WebFullscreen" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer"]
+[node name="WebFullscreen" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Video/VBox/WindowModeContainer" unique_id=1350177116]
 unique_name_in_owner = true
 layout_mode = 2
 text = "%settings_window_fullscreen%"
 
-[node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Audio" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=499386739]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio" unique_id=1557564905]
 layout_mode = 2
 
-[node name="AudioHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox"]
+[node name="AudioHeader" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox" unique_id=305873964]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_audio%"
 
-[node name="VolGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox"]
+[node name="VolGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox" unique_id=619279416]
 layout_mode = 2
 columns = 2
 
-[node name="MusicVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
+[node name="MusicVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid" unique_id=818982805]
 layout_mode = 2
 text = "%settings_music_volume%"
 
-[node name="MusicVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
+[node name="MusicVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid" unique_id=1346771405]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -113,11 +113,11 @@ tooltip_text = "%settings_music_volume_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="SFXVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
+[node name="SFXVolume" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid" unique_id=1506991526]
 layout_mode = 2
 text = "%settings_sfx_volume%"
 
-[node name="SFXVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid"]
+[node name="SFXVolSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Audio/VBox/VolGrid" unique_id=466456365]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -126,26 +126,26 @@ tooltip_text = "%settings_sfx_volume_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="Text" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Text" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=818624699]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text" unique_id=73463323]
 layout_mode = 2
 
-[node name="TextLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
+[node name="TextLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox" unique_id=176487367]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_text%"
 
-[node name="TextSpeed" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
+[node name="TextSpeed" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox" unique_id=1734646589]
 layout_mode = 2
 columns = 2
 
-[node name="TextSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+[node name="TextSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed" unique_id=618122740]
 layout_mode = 2
 text = "%settings_text_speed%"
 
-[node name="TextSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+[node name="TextSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed" unique_id=839633327]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -154,11 +154,11 @@ tooltip_text = "%settings_text_speed_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="SkipSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+[node name="SkipSpeedLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed" unique_id=1130084760]
 layout_mode = 2
 text = "%settings_skip_speed%"
 
-[node name="SkipSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed"]
+[node name="SkipSpeedSlider" type="HSlider" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/TextSpeed" unique_id=250132321]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
@@ -167,69 +167,69 @@ tooltip_text = "%settings_skip_speed_tooltip%"
 max_value = 1.0
 step = 0.01
 
-[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
+[node name="DynTextSpeed" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox" unique_id=167935363]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_dynamic_text_speed_tooltip%"
 text = "%settings_dynamic_text_speed%"
 
-[node name="SkipUnseenText" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
+[node name="SkipUnseenText" type="CheckBox" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox" unique_id=659998203]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_skip_unseen_text_tooltip%"
 text = "%settings_skip_unseen_text%"
 
-[node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox"]
+[node name="Language" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox" unique_id=1880457891]
 layout_mode = 2
 
-[node name="LanguageLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language"]
+[node name="LanguageLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language" unique_id=1752887659]
 layout_mode = 2
 text = "%settings_language%"
 
-[node name="LangOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language"]
+[node name="LangOptions" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Text/VBox/Language" unique_id=1082738038]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_language_tooltip%"
 
-[node name="Keys" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Keys" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=305952575]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys" unique_id=1764748160]
 layout_mode = 2
 
-[node name="KeysLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
+[node name="KeysLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox" unique_id=27902466]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_keys%"
 
-[node name="KeysFlow" type="HFlowContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox"]
+[node name="KeysFlow" type="HFlowContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Keys/VBox" unique_id=140191662]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SettingsKeysFlow"
 
-[node name="Accessibility" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Accessibility" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=2144525675]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility"]
+[node name="VBox" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility" unique_id=2069033063]
 layout_mode = 2
 
-[node name="AccessibiltyLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
+[node name="AccessibiltyLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox" unique_id=1132275254]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_accessibility%"
 
-[node name="GUIScaleContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
+[node name="GUIScaleContainer" type="HBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox" unique_id=1333070410]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="GUIScaleLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer"]
+[node name="GUIScaleLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer" unique_id=962518465]
 layout_mode = 2
 text = "%settings_gui_scale%"
 
-[node name="GUIScale" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer"]
+[node name="GUIScale" type="OptionButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox/GUIScaleContainer" unique_id=1005622988]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "%settings_gui_scale_tooltip%"
@@ -239,55 +239,55 @@ popup/item_0/id = 0
 popup/item_1/text = "%settings_gui_scale_large%"
 popup/item_1/id = 1
 
-[node name="DyslexicFont" type="CheckButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
+[node name="DyslexicFont" type="CheckButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox" unique_id=891392268]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_dyslexic_font_tooltip%"
 text = "%settings_dyslexic_font%"
 
-[node name="AudioCaptions" type="CheckButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox"]
+[node name="AudioCaptions" type="CheckButton" parent="Margins/VBox/Scroll/OverlayContent/Sections/Accessibility/VBox" unique_id=1526040722]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "%settings_audio_captions_tooltip%"
 text = "%settings_audio_captions%"
 
-[node name="Mods" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections"]
+[node name="Mods" type="MarginContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections" unique_id=919181131]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods" unique_id=2026403161]
 layout_mode = 2
 
-[node name="ModsLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+[node name="ModsLabel" type="Label" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer" unique_id=1266915390]
 layout_mode = 2
 theme_type_variation = &"Subheader"
 text = "%settings_subheader_mods%"
 
-[node name="AddModButton" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+[node name="AddModButton" type="Button" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer" unique_id=1502495522]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 text = "%settings_mod_add%"
 
-[node name="ModsGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer"]
+[node name="ModsGrid" type="GridContainer" parent="Margins/VBox/Scroll/OverlayContent/Sections/Mods/VBoxContainer" unique_id=639751318]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HSeparator" type="HSeparator" parent="Margins/VBox"]
+[node name="HSeparator" type="HSeparator" parent="Margins/VBox" unique_id=1424811866]
 layout_mode = 2
 
-[node name="BottomRow" type="HBoxContainer" parent="Margins/VBox"]
+[node name="BottomRow" type="HBoxContainer" parent="Margins/VBox" unique_id=1737980314]
 layout_mode = 2
 alignment = 2
 
-[node name="Discard" type="Button" parent="Margins/VBox/BottomRow"]
+[node name="Discard" type="Button" parent="Margins/VBox/BottomRow" unique_id=204043775]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerButton"
 text = "%settings_discard%"
 
-[node name="SaveExit" type="Button" parent="Margins/VBox/BottomRow"]
+[node name="SaveExit" type="Button" parent="Margins/VBox/BottomRow" unique_id=2112812519]
 unique_name_in_owner = true
 layout_mode = 2
 text = "%settings_save_exit%"

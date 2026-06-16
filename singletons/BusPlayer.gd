@@ -104,6 +104,10 @@ func _set_next_volume(val: float):
 	$NextPlayer.volume_db = linear_to_db(val)
 
 
+func current_player() -> AudioStreamPlayer: return $CurrentPlayer
+func next_player() -> AudioStreamPlayer: return $NextPlayer
+
+
 # concludes transition between CurrentPlayer and NextPlayer, turning Next into Current
 # and creating a fresh Next
 func _swap_players():

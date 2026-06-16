@@ -1,11 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://cfb4wk2phunje"]
+[gd_scene format=3 uid="uid://cfb4wk2phunje"]
 
 [ext_resource type="PackedScene" uid="uid://dj5b2g3xmpfgs" path="res://tiger-engine/game/VNControls.tscn" id="1_0evqp"]
 [ext_resource type="Script" uid="uid://bqnsycodh2vb6" path="res://tiger-engine/game/TEGame.gd" id="1_8iwxg"]
 [ext_resource type="PackedScene" uid="uid://bqd11tl7n11it" path="res://tiger-engine/game/VNStage.tscn" id="2_w8ob5"]
 [ext_resource type="PackedScene" uid="uid://cdstpj7eud5op" path="res://tiger-engine/ui/components/ToastContainer.tscn" id="4_6341s"]
 
-[node name="TEGame" type="Control"]
+[node name="TEGame" type="Control" unique_id=1212616454]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,15 +15,14 @@ grow_vertical = 2
 focus_mode = 2
 script = ExtResource("1_8iwxg")
 
-[node name="VNStage" parent="." instance=ExtResource("2_w8ob5")]
-layout_mode = 1
+[node name="VNStage" parent="." unique_id=593608503 instance=ExtResource("2_w8ob5")]
 
-[node name="View" type="Control" parent="."]
+[node name="View" type="Control" parent="." unique_id=1565918095]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="VNControls" parent="." instance=ExtResource("1_0evqp")]
+[node name="VNControls" parent="." unique_id=1376940925 instance=ExtResource("1_0evqp")]
 layout_mode = 0
 anchors_preset = 0
 anchor_right = 0.0
@@ -31,11 +30,11 @@ anchor_bottom = 0.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="ToastContainer" parent="." instance=ExtResource("4_6341s")]
+[node name="ToastContainer" parent="." unique_id=450404544 instance=ExtResource("4_6341s")]
 unique_name_in_owner = true
 layout_mode = 1
 
-[node name="DebugMsg" type="Label" parent="."]
+[node name="DebugMsg" type="Label" parent="." unique_id=1669784832]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -44,3 +43,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"DebugMsg"
+autowrap_mode = 3
