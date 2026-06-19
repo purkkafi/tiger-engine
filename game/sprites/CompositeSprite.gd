@@ -303,7 +303,8 @@ func get_sprite_state() -> Variant:
 
 
 func set_sprite_state(_state: Variant):
-	state = _state.duplicate()
+	# allow setting partial state by retaining previous values by default
+	state.merge(_state, true)
 	
 	for key in state.keys():
 		if key == '\\flipped':

@@ -149,6 +149,11 @@ func _draw():
 		var font_size = int(TETheme.current_theme.default_font_size * 0.75)
 		var text_offset = Vector2(0, int(font_size) * 0.5)
 		
+		var xmiddle = Vector2(_debug_outline.size.x/2, 0)
+		var ymiddle = Vector2(0, _debug_outline.size.y/2)
+		draw_line(_debug_outline.position + xmiddle, _debug_outline.end - xmiddle, Color.GREEN)
+		draw_line(_debug_outline.position + ymiddle, _debug_outline.end - ymiddle, Color.GREEN)
+		
 		draw_rect(_debug_outline, Color.RED, false)
 		draw_string(font, -text_offset, id, HORIZONTAL_ALIGNMENT_LEFT,
 			-1, font_size, Color.RED)

@@ -72,6 +72,66 @@ func _ready():
 	adv_view.visible = false
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		var min_d: float = INF
+		var found_sprite: VNSprite = null
+		
+		for sprite in stage.get_sprites():
+			var sprite_rect: Rect2 = Rect2(sprite.position, sprite.size)
+			if sprite_rect.has_point(event.position):
+				var d = sprite_rect.get_center().distance_squared_to(event.position)
+				if d < min_d:
+					min_d = d
+					found_sprite = sprite
+		
+		if found_sprite != null and found_sprite is CompositeSprite:
+			print(found_sprite.id)
+			make_popup("Edit '%s'" % found_sprite.id, _sprite_state_editor(found_sprite))
+
+
+func _sprite_state_editor(sprite: CompositeSprite) -> Control:
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 3
+	
+	for attr in sprite.attributes.keys():
+		var label: Label = Label.new()
+		label.custom_minimum_size.x = 400
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.tooltip_text = attr
+		label.mouse_filter = Control.MOUSE_FILTER_PASS
+		
+		var prev: Button = Button.new()
+		prev.text = '<'
+		prev.pressed.connect(_change_sprite_attr_index.bind(sprite, attr, label, -1))
+		
+		var next: Button = Button.new()
+		next.text = '>'
+		next.pressed.connect(_change_sprite_attr_index.bind(sprite, attr, label, 1))
+		
+		grid.add_child(prev)
+		grid.add_child(label)
+		grid.add_child(next)
+		
+		_change_sprite_attr_index(sprite, attr, label, 0)
+	
+	return grid
+
+
+func _change_sprite_attr_index(sprite: CompositeSprite, attr: String, label: Label, diff: int):
+	var values: Array[String] = []
+	for value in sprite.attributes[attr]:
+		if value is String:
+			values.append(value)
+	
+	var index = (values.find(sprite.state[attr]) + diff) % len(values)
+	var state = sprite.state.duplicate()
+	state[attr] = values[index]
+	sprite.set_sprite_state(state)
+	label.text = values[index].split(':')[-1]
+
+
 func _hamburger_pressed(id: int):
 	match id:
 		HAMBURGER_SAVE:
@@ -90,6 +150,7 @@ func _on_save_pressed():
 
 
 func _on_load_pressed():
+	stage.clear()
 	if FileAccess.file_exists(SAVE_PATH):
 		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
 		stage.set_state(JSON.parse_string(file.get_as_text()))
