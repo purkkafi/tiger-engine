@@ -5,7 +5,7 @@ class_name CompositeSprite extends VNSprite
 # attribute values are strings with ':' separating parts
 # or ghost values (as returned by _ghost_value())
 var attributes: Dictionary = {}
-# the state; dict of attribute ids to current values
+# the state; dict of attribute ids to current values or special values defined by default
 var state: Dictionary = {}
 # additional state
 # whether sprite is rendered as flipped horizontally
@@ -21,10 +21,26 @@ var resource: SpriteResource
 
 # factor size is multiplied by
 var sprite_scale: float = 1.0
-# downwad vertical displacement of the sprite as a % of stage height
-var y_offset: float = 0.0
-# horizontal displacement of sprite as % of sprite width
-var x_offset: float = 0.0
+
+# set to change; horizontal displacement of sprite as % of sprite width
+var x_offset = 0.0:
+	get():
+		return x_offset
+	set(new_x_offset):
+		x_offset = new_x_offset
+		self.container.position.x = _stage_size().x * x_offset
+
+var x_offset_case: Case = null # if non-null, evaluate to get value for x_offset
+
+# float stored in state; downwad vertical displacement of the sprite as a % of stage height
+var y_offset = 0.0:
+	get():
+		return y_offset
+	set(new_y_offset):
+		y_offset = new_y_offset
+		self.container.position.y = _stage_size().y * y_offset
+
+var y_offset_case: Case = null # if non-null, evaluate to get value for y_offset
 
 
 # properties to be used by Effects
@@ -61,6 +77,11 @@ func _init(_resource: SpriteResource):
 	viewport = SubViewport.new()
 	viewport.transparent_bg = true
 	container.add_child(viewport)
+	
+	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	
+	var x_offset_case_tags = []
+	var y_offset_case_tags = []
 	
 	for tag in resource.tag.get_tags():
 		match tag.name:
@@ -132,18 +153,22 @@ func _init(_resource: SpriteResource):
 						shorthands[value['value']] = [ EqPredicate.new(attr_id, value['shorthand_for'], self)]
 			
 			'x_offset':
-				if tag.get_string() == null:
+				if tag.get_tags() != null:
+					x_offset_case_tags.append_array(tag.get_tags())
+				elif tag.get_string() != null:
+					x_offset = float(tag.get_string())
+				else:
 					TE.log_error(TE.Error.FILE_ERROR,
-						"\\x_offset requires float, got '%s'" % tag)
-					continue
-				x_offset = float(tag.get_string())
+						"\\x_offset requires cases or float, got '%s'" % tag)
 			
 			'y_offset':
-				if tag.get_string() == null:
+				if tag.get_tags() != null:
+					y_offset_case_tags.append_array(tag.get_tags())
+				elif tag.get_string() == null:
+					y_offset = float(tag.get_string())
+				else:
 					TE.log_error(TE.Error.FILE_ERROR,
-						"\\y_offset requires float, got '%s'" % tag)
-					continue
-				y_offset = float(tag.get_string())
+						"\\y_offset requires cases or float, got '%s'" % tag)
 			
 			'scale':
 				if tag.get_string() == null:
@@ -165,7 +190,19 @@ func _init(_resource: SpriteResource):
 		if attr not in state:
 			TE.log_error(TE.Error.FILE_ERROR, "attribute '%s' has no possible values" % attr)
 	
-	#
+	# create root case for evaluating x_offset
+	if len(x_offset_case_tags) != 0:
+		var subcases: Array = []
+		for case_tag in x_offset_case_tags:
+			subcases.append(Case.of_tag(case_tag, self, CaseType.FLOAT))
+		x_offset_case = Case.new(TruePredicate.new(), subcases, self, CaseType.FLOAT)
+	
+	# create root case for evaluating y_offset
+	if len(y_offset_case_tags) != 0:
+		var subcases: Array = []
+		for case_tag in y_offset_case_tags:
+			subcases.append(Case.of_tag(case_tag, self, CaseType.FLOAT))
+		y_offset_case = Case.new(TruePredicate.new(), subcases, self, CaseType.FLOAT)
 	
 	# remove invalid layers to reduce runtime errors
 	# errors should already be reported during parsing
@@ -211,8 +248,6 @@ func _read_attribute(attr_id: String, prefix: String, tags: Array):
 
 
 func enter_stage(initial_state: Variant = null):
-	self.container.position.x = _stage_size().x * x_offset
-	self.container.position.y = _stage_size().y * y_offset
 	self.container.scale = Vector2(sprite_scale, sprite_scale)
 	self.container.use_parent_material = true
 	
@@ -291,6 +326,13 @@ func show_as(tag: Tag):
 		viewport.canvas_transform = Transform2D.FLIP_X.translated(Vector2(viewport.size.x, 0))
 	else:
 		viewport.canvas_transform = Transform2D.IDENTITY
+	
+	if x_offset_case != null:
+		x_offset = float(x_offset_case.match())
+	if y_offset_case != null:
+		y_offset = float(y_offset_case.match())
+	
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 # additional state is serialized as special keys prefixed with '\'
@@ -377,6 +419,14 @@ class Layer extends RefCounted:
 		return 'Layer(%s, %s)' % [id, root_case.content]
 
 
+# what kind of final value a case is expected to hold
+enum CaseType {
+	SPRITE_FILE, # a path string representing one of the sprite's packed files
+	STRING, # any string
+	FLOAT # a string representing a valid float
+}
+
+
 class EmptyCase extends RefCounted:
 	pass
 
@@ -387,11 +437,13 @@ class Case extends RefCounted:
 	# EMPTY_CASE, or an Array of nested Case instances
 	var content: Variant
 	var sprite: CompositeSprite
+	var case_type: CaseType
 	
-	func _init(_predicate: Predicate, _content: Variant, _sprite: CompositeSprite):
+	func _init(_predicate: Predicate, _content: Variant, _sprite: CompositeSprite, _case_type: CaseType = CaseType.SPRITE_FILE):
 		self.predicate = _predicate
 		self.content = _content
 		self.sprite = _sprite
+		self.case_type = _case_type
 		
 		if content is Array:
 			# validate not without inner cases (would always produce an error)
@@ -413,7 +465,7 @@ class Case extends RefCounted:
 				used_predicates.append(predicate_string)
 	
 	
-	static func of_tag(from_tag: Tag, _sprite: CompositeSprite) -> Case:
+	static func of_tag(from_tag: Tag, _sprite: CompositeSprite, _case_type: CaseType = CaseType.SPRITE_FILE) -> Case:
 		if len(from_tag.args) != 2:
 			TE.log_error(TE.Error.FILE_ERROR,
 				"case should have predicate and contents, got '%s'" % from_tag)
@@ -436,9 +488,19 @@ class Case extends RefCounted:
 		
 		if from_tag.get_string_at(1) != null: # is the result
 			content = from_tag.get_string_at(1)
-			if content not in _sprite.resource.textures.keys():
-				TE.log_error(TE.Error.FILE_ERROR,
-					"case result file does not exist: %s" % content)
+			
+			match _case_type:
+				CaseType.SPRITE_FILE:
+					if content not in _sprite.resource.textures.keys():
+						TE.log_error(TE.Error.FILE_ERROR,
+							"case result file does not exist: %s" % content)
+				CaseType.FLOAT:
+					if not content.is_valid_float():
+						TE.log_error(TE.Error.FILE_ERROR,
+						"case is not valid float: %s" % content)
+				CaseType.STRING:
+					pass
+				
 		elif from_tag.get_tag_at(1) != null and from_tag.get_tag_at(1).name == 'empty':
 			# is a single \empty tag
 			content = CompositeSprite.EMPTY_CASE
@@ -449,7 +511,7 @@ class Case extends RefCounted:
 			for nested_case_tag in nested_cases:
 				content.append(Case.of_tag(nested_case_tag, _sprite))
 		
-		return Case.new(predicate, content, _sprite)
+		return Case.new(predicate, content, _sprite, _case_type)
 	
 	
 	# matches against this case recursively
@@ -471,14 +533,21 @@ class Case extends RefCounted:
 	
 	# returns whether this case is valid, checking that:
 	# – the predicate is valid
-	# – if 'content' is a String, it refers to an existing image
+	# – 'content' is valid according to 'case_type'
 	# – if 'content' is an Array of sub-cases, they are all valid
 	func _is_valid() -> bool:
 		if not predicate._is_valid():
 			return false
 		if content is String:
-			if content not in sprite.resource.textures.keys():
-				return false
+			match case_type:
+				CaseType.SPRITE_FILE:
+					if content not in sprite.resource.textures.keys():
+						return false
+				CaseType.FLOAT:
+					if not content.is_valid_float():
+						return false
+				CaseType.STRING:
+					return true
 		elif content is EmptyCase:
 			return true
 		else:

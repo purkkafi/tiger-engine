@@ -86,7 +86,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					found_sprite = sprite
 		
 		if found_sprite != null and found_sprite is CompositeSprite:
-			print(found_sprite.id)
 			make_popup("Edit '%s'" % found_sprite.id, _sprite_state_editor(found_sprite))
 
 

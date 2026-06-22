@@ -98,11 +98,13 @@ func _get_layer_node(id: String) -> Node:
 	if id == '': # id represents an empty layer
 		var empty: ColorRect = ColorRect.new()
 		empty.color = Color.TRANSPARENT
+		empty.mouse_filter = Control.MOUSE_FILTER_PASS
 		return empty
 	
 	elif TE.defs.color(id) != null: # id represents a color
 		var rect: ColorRect = ColorRect.new()
 		rect.color = TE.defs.color(id)
+		rect.mouse_filter = Control.MOUSE_FILTER_PASS
 		rect.size = size
 		return rect
 		
