@@ -159,7 +159,6 @@ func switch_scene(new_scene: Node, after: Callable = func(): pass, free_old: boo
 func _switch_scene_deferred(new_scene: Node, after: Callable, free_old: bool):
 	var old_scene = current_scene
 	current_scene = new_scene
-	#current_scene.theme = TETheme.current_theme
 	get_tree().root.add_child(new_scene)
 	get_tree().set_current_scene(new_scene)
 	

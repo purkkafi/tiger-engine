@@ -65,13 +65,14 @@ func _ready():
 	
 	context = InGameContext.new(var_names, var_values, self)
 	
-	# initial View
-	_replace_view(TE.defs.view_registry['adv'].instantiate())
-	$View.initialize(View.InitContext.NEW_VIEW)
-	
 	# vm is null if game is being loaded from the save
 	# and in that case, the call is not needed
 	if vm != null and vm.current_script != null:
+		# set up initial View
+		_replace_view(TE.defs.view_registry['adv'].instantiate())
+		$View.initialize(View.InitContext.NEW_VIEW)
+		
+		# deal with initial instructions
 		next_blocking()
 	
 	# register speaker effect
