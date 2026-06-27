@@ -168,7 +168,7 @@ func is_next_line_requested():
 # displays the given block next
 func show_block(new_block: Block) -> void:
 	var old_block: Variant = block
-	if old_block != null and not old_block in _previous_blocks:
+	if old_block != null:
 		_previous_blocks.append(old_block)
 	
 	block = new_block

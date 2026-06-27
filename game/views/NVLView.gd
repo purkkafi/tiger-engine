@@ -225,6 +225,12 @@ func from_state(savestate: Dictionary):
 
 # TODO optimize further by not clearing the entire block
 func from_state_fast_path(savestate: Dictionary):
+	# reset _previous_blocks as parent's from_state() does
+	_previous_blocks = []
+	for old_block in savestate['previous_blocks']:
+		var _block = _resolve_block(old_block)
+		_previous_blocks.append(_block)
+	
 	var blockfile = savestate['blockfile']
 	var block_id = savestate['block']
 	var index = savestate['line_index']
