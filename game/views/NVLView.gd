@@ -227,6 +227,7 @@ func from_state(savestate: Dictionary):
 func from_state_fast_path(savestate: Dictionary):
 	var blockfile = savestate['blockfile']
 	var block_id = savestate['block']
+	var index = savestate['line_index']
 	
 	var has_matching: bool = false
 	for par in paragraphs.get_children():
@@ -234,9 +235,9 @@ func from_state_fast_path(savestate: Dictionary):
 			has_matching = true
 			break
 	
-	if has_matching: # going backwards
+	if has_matching: # this means we're going back
 		
-		# first remove everything that doesn't match
+		# if present, first remove everything that doesn't match current block
 		while paragraphs.get_child_count() > 0:
 			var last = paragraphs.get_children().back()
 			if not (last.get_meta('blockfile') == blockfile and last.get_meta('block') == block_id):
@@ -245,26 +246,25 @@ func from_state_fast_path(savestate: Dictionary):
 			else:
 				break
 		
-		# continue removing last as long as it matches View's values
+		# then remove current block because it will be re-displayed
 		while paragraphs.get_child_count() > 0:
 			var last = paragraphs.get_children().back()
-			if last.get_meta('blockfile') == blockfile and last.get_meta('block') == block_id:
+			if last.get_meta('blockfile') == blockfile and last.get_meta('block') == block_id and last.get_meta('line_index') >= index-1:
 				paragraphs.remove_child(last)
 				last.queue_free()
 			else:
 				break
 		
-		
 	else: # going forward, NOP
 		pass
 	
-	# show current block
+	# show fresh block if necessary
 	if block != _resolve_block(savestate):
 		block = _resolve_block(savestate)
 		_lines = Blocks.resolve_parts(block, game.context)
-	line_index = 0
 	
-	# skip to the correct line
-	while line_index <= savestate['line_index']-1:
-		next_line(true)
-		_to_end_of_line()
+	line_index = index-1
+	
+	# go forward to the correct line
+	next_line(true)
+	_to_end_of_line()
