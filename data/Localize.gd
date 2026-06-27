@@ -4,6 +4,8 @@ class_name Localize extends RefCounted
 
 
 var strings: Dictionary
+# key is present if the string was previously reported as unknown
+var unknown_localize_strings: Dictionary = {}
 
 
 # functions that translate the given Control type
@@ -71,7 +73,9 @@ func _init(dict):
 
 func _get(string):
 	if not string in strings:
-		push_error('unknown localize string: %s' % [string])
+		if not string in unknown_localize_strings:
+			push_error('unknown localize string: %s' % [string])
+			unknown_localize_strings[string] = true
 		return '%' + string + '%'
 	return strings[string]
 

@@ -17,6 +17,13 @@ func full_id() -> String:
 	return '%s:%s' % [ blockfile_path, id ]
 
 
+# returns whether both given blocks are non-null and equal
+static func equals(block1: Variant, block2: Variant):
+	if block1 == null or block2 == null:
+		return false
+	return block1.full_id() == block2.full_id()
+
+
 # calculates the hash code of this block
 func resolve_hash() -> String:
 	var ctxt: HashingContext = HashingContext.new()

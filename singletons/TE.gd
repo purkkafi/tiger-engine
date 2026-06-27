@@ -265,16 +265,17 @@ func load_language(new_lang: Lang):
 # rollback can be provided to keep and update its values
 # appropriately, which is used for implementing rollback
 # stage objects can be reused if loading from in-game, see VNStage.get_node_cache()
-func load_from_save(save: Dictionary, rollback: Rollback = null, stage_node_cache: Variant = null):
+# the previous View, if any, may be cached to optimize loading as cached_view
+func load_from_save(save: Dictionary, rollback: Rollback = null, stage_node_cache: Variant = null, cached_view: Variant = null):
 	var game_scene: TEGame = preload('res://tiger-engine/game/TEGame.tscn').instantiate()
-	switch_scene(game_scene, _after_load_from_save.bind(game_scene, save, rollback, stage_node_cache))
+	switch_scene(game_scene, _after_load_from_save.bind(game_scene, save, rollback, stage_node_cache, cached_view))
 
 
-func _after_load_from_save(game_scene: TEGame, save: Dictionary, rollback: Rollback = null, stage_node_cache: Variant = null):
+func _after_load_from_save(game_scene: TEGame, save: Dictionary, rollback: Rollback = null, stage_node_cache: Variant = null, cached_view: Variant = null):
 	if rollback != null:
 		game_scene.rollback.set_rollback(rollback)
 	
-	game_scene.load_save.call(save, stage_node_cache if stage_node_cache != null else {})
+	game_scene.load_save.call(save, stage_node_cache if stage_node_cache != null else {}, cached_view)
 
 
 func _log_time() -> String:

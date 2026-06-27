@@ -112,7 +112,14 @@ func _display_line(line: String, speaker: Speaker = null, skip_animations: bool 
 		else: # indent othwrerwise
 			label.text = INDENT + line
 		
-		paragraphs.add_child(label)
+		add_paragraph(label)
+
+
+func add_paragraph(par: Control):
+	par.set_meta('blockfile', block.blockfile_path)
+	par.set_meta('block', block.id)
+	par.set_meta('line_index', line_index)
+	paragraphs.add_child(par)
 
 
 func _is_previous_narration() -> bool:
@@ -141,7 +148,7 @@ func _handle_nvl_img_line(tag_bbcode: RegExMatch, skip_animations: bool):
 	if not skip_animations:
 		TETheme.anim_nvl_image_in.call(img_line.rect)
 	
-	paragraphs.add_child(img_line)
+	add_paragraph(img_line)
 
 
 func _handle_speaker_line(speaker: Speaker, line: String):
@@ -157,7 +164,7 @@ func _handle_speaker_line(speaker: Speaker, line: String):
 		else: # line break between different speakers or narration and dialogue
 			speaker_line.add_line_break()
 		
-		paragraphs.add_child(speaker_line)
+		add_paragraph(speaker_line)
 
 
 func _current_label() -> RichTextLabel:
@@ -208,4 +215,56 @@ func from_state(savestate: Dictionary):
 	if 'text_color' in savestate:
 		text_color = Color.html(savestate['text_color'])
 	
-	super.from_state(savestate)
+	if paragraphs.get_child_count() != 0:
+		# fast path when using view from cache
+		from_state_fast_path(savestate)
+	else:
+		# slow path for when using fresh view instance
+		super.from_state(savestate)
+
+
+# TODO optimize further by not clearing the entire block
+func from_state_fast_path(savestate: Dictionary):
+	var blockfile = savestate['blockfile']
+	var block_id = savestate['block']
+	
+	var has_matching: bool = false
+	for par in paragraphs.get_children():
+		if par.get_meta('blockfile') == blockfile and par.get_meta('block') == block_id:
+			has_matching = true
+			break
+	
+	if has_matching: # going backwards
+		
+		# first remove everything that doesn't match
+		while paragraphs.get_child_count() > 0:
+			var last = paragraphs.get_children().back()
+			if not (last.get_meta('blockfile') == blockfile and last.get_meta('block') == block_id):
+				paragraphs.remove_child(last)
+				last.queue_free()
+			else:
+				break
+		
+		# continue removing last as long as it matches View's values
+		while paragraphs.get_child_count() > 0:
+			var last = paragraphs.get_children().back()
+			if last.get_meta('blockfile') == blockfile and last.get_meta('block') == block_id:
+				paragraphs.remove_child(last)
+				last.queue_free()
+			else:
+				break
+		
+		
+	else: # going forward, NOP
+		pass
+	
+	# show current block
+	if block != _resolve_block(savestate):
+		block = _resolve_block(savestate)
+		_lines = Blocks.resolve_parts(block, game.context)
+	line_index = 0
+	
+	# skip to the correct line
+	while line_index <= savestate['line_index']-1:
+		next_line(true)
+		_to_end_of_line()

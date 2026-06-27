@@ -570,7 +570,7 @@ func jump_to_continue_point(continue_point: String):
 
 # loads the game from the given save
 # call this after switching the scene to TEGame
-func load_save(save: Dictionary, stage_cache: Dictionary):
+func load_save(save: Dictionary, stage_cache: Dictionary, cached_view: Variant):
 	last_save = save
 	game_name = save['game_name']
 	
@@ -598,16 +598,25 @@ func load_save(save: Dictionary, stage_cache: Dictionary):
 	vm = TEScriptVM.from_state(save['vm'])
 	$VNStage.set_state(save['stage'], stage_cache)
 	
-	# replace View with the correct scene first
-	var view_scene = load(save['view']['scene'])
-	if view_scene == null:
-		TE.log_error(TE.Error.ENGINE_ERROR, 'cannot load View: %s' % save['view']['scene'], true)
-		return
-	
-	var view = view_scene.instantiate()
-	_replace_view(view)
-	view.from_state(save['view'])
-	view.initialize(View.InitContext.SAVESTATE)
+	# use cached view, fast path
+	if cached_view != null and (cached_view.scene_file_path == save['view']['scene']):
+		_replace_view(cached_view)
+		cached_view.from_state(save['view'])
+		cached_view.initialize(View.InitContext.SAVESTATE)
+	else: # can't use cache
+		if cached_view != null:
+			cached_view.queue_free()
+		
+		# replace View with the correct scene first
+		var view_scene = load(save['view']['scene'])
+		if view_scene == null:
+			TE.log_error(TE.Error.ENGINE_ERROR, 'cannot load View: %s' % save['view']['scene'], true)
+			return
+		
+		var view = view_scene.instantiate()
+		_replace_view(view)
+		view.from_state(save['view'])
+		view.initialize(View.InitContext.SAVESTATE)
 	
 	# remember this save state in rollback
 	next_rollback = save
@@ -640,13 +649,21 @@ func take_user_screenshot():
 func _back():
 	# TODO implement caching for expensive View instances
 	rollback.push_rollforward(create_save())
-	TE.load_from_save(rollback.pop_rollback(), rollback, $VNStage.get_node_cache())
+	
+	var cached_view = $View
+	remove_child($View)
+	
+	TE.load_from_save(rollback.pop_rollback(), rollback, $VNStage.get_node_cache(), cached_view)
 
 
 func _forward():
 	# TODO clear rollforward when game is advanced normally
 	rollback.push_rollback(create_save())
-	TE.load_from_save(rollback.pop_rollforward(), rollback, $VNStage.get_node_cache())
+	
+	var cached_view = $View
+	remove_child($View)
+	
+	TE.load_from_save(rollback.pop_rollforward(), rollback, $VNStage.get_node_cache(), cached_view)
 
 
 func _log():

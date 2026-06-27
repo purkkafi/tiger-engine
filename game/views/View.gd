@@ -168,7 +168,7 @@ func is_next_line_requested():
 # displays the given block next
 func show_block(new_block: Block) -> void:
 	var old_block: Variant = block
-	if old_block != null:
+	if old_block != null and not old_block in _previous_blocks:
 		_previous_blocks.append(old_block)
 	
 	block = new_block
@@ -552,9 +552,9 @@ func get_state() -> Dictionary:
 			savestate['previous_blocks'] = []
 			for old_block in _previous_blocks:
 				savestate['previous_blocks'].append({
-					'hash': Assets.blockfiles.hashes[block.full_id()],
+					'hash': Assets.blockfiles.hashes[old_block.full_id()],
 					'blockfile': old_block.blockfile_path,
-					'block': block.id
+					'block': old_block.id
 				})
 	
 	return savestate
@@ -584,10 +584,11 @@ func from_state(savestate: Dictionary):
 			var _block = _resolve_block(old_block)
 			_previous_blocks.append(_block)
 			
-			var lines = Blocks.resolve_parts(_block, game.context)
+			show_block(_block)
 			
-			for line in lines:
-				_display_line(line, null)
+			for i in len(Blocks.resolve_parts(_block, game.context)):
+				next_line(true)
+				_to_end_of_line()
 	
 	show_block(_resolve_block(savestate))
 	
