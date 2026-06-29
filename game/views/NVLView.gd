@@ -146,7 +146,14 @@ func _handle_nvl_img_line(tag_bbcode: RegExMatch, skip_animations: bool):
 	img_line.next_label.text = line_end_string()
 	
 	if not skip_animations:
-		TETheme.anim_nvl_image_in.call(img_line.rect)
+		var tween = TETheme.anim_nvl_image_in.call(img_line.rect)
+		
+		# show line end string only after animation finishes
+		img_line.next_label.text = ' '
+		if tween != null:
+			tween.chain().tween_callback(func(): img_line.next_label.text = line_end_string())
+		else:
+			img_line.next.label.text = line_end_string()
 	
 	add_paragraph(img_line)
 

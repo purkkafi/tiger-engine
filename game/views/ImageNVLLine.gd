@@ -11,7 +11,7 @@ func _init(texture: Texture2D, label_provider: Callable = func(): return RichTex
 	
 	var initial_blank_line: RichTextLabel = label_provider.call()
 	initial_blank_line.fit_content = true
-	initial_blank_line.text = '[br]'
+	initial_blank_line.text = ' '
 	add_child(initial_blank_line)
 	
 	rect = TextureRect.new()

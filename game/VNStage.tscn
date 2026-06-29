@@ -35,3 +35,4 @@ offset = Vector2(960, 540)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=422493313]
 unique_name_in_owner = true
+callback_mode_process = 0

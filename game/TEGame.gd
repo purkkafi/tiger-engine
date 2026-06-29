@@ -651,6 +651,11 @@ func _back():
 	# TODO implement caching for expensive View instances
 	rollback.push_rollforward(create_save())
 	
+	# reset state to prevent problems from recycling the View
+	if $View.waiting_tween != null:
+		$View.waiting_tween.custom_step(INF)
+	_unhide_ui()
+	
 	var cached_view = $View
 	remove_child($View)
 	
