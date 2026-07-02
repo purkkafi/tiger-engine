@@ -78,18 +78,17 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 	var found: Array[TEScript.BaseInstruction] = []
 	var blocking_count = 0
 	
-	# TODO these limits are pretty conservative, try bigger ones
 	while lookahead_index < len(current_script.instructions):
 		var ins = current_script.instructions[lookahead_index]
 		
 		# limit how far ahead we look
-		if lookahead_index > index+5:
+		if lookahead_index > index+10:
 			break 
 		
 		# limit the amount of blocking instructions we look past
 		if _is_blocking(ins):
 			blocking_count += 1
-			if blocking_count >= 3:
+			if blocking_count >= 5:
 				break
 		
 		# do not go past instructions that affect control flow unpredictably

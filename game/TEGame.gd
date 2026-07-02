@@ -246,7 +246,7 @@ func _replace_view(new_view: Node):
 	new_view.game = self
 	
 	# store previous_state for temporary views
-	if new_view.is_temporary():
+	if old_view is View and new_view.is_temporary():
 		# retain the original state if multiple temporary Views are used in succession
 		if old_view.is_temporary():
 			new_view.previous_state = old_view.previous_state
