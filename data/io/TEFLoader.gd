@@ -388,14 +388,50 @@ func _resolve_options(tree: Tag):
 			'ingame_custom_controls':
 				opts.ingame_custom_controls = node.get_string()
 			'register_vfx':
-				if node.get_string_at(0) != null:
-					opts.vfx_registry[node.get_string_at(0)] = node.get_string_at(1)
+				var vfx_id = node.get_string_at(0)
+				
+				if vfx_id != null:
+					opts.vfx_registry[vfx_id] = node.get_string_at(1)
 				else:
 					match (node as Tag).get_tag_at(0).name:
 						'speaker_effect':
 							opts.vfx_registry['\\speaker_effect'] = node.get_string_at(1)
 						_:
 							push_error('not recognized special vfx (\\speaker_effect): ', node)
+				
+				match len(node.args):
+					2:
+						pass
+					3:
+						var autoload_tag = node.get_tag_at(2)
+						if autoload_tag is Tag and autoload_tag.name == 'autoload':
+							var _as: String = ''
+							var to: String = ''
+							
+							for val in autoload_tag.get_tags():
+								match val.name:
+									'as':
+										_as = val.get_string()
+									'to':
+										if val.get_tag() != null:
+											to = '\\' + val.get_tag().name
+										else:
+											to = val.get_string()
+									_:
+										push_error('\\register_vfx \\autoload accepts \\as and \\to, got %s' % val)
+							
+							if _as == '' or to == '':
+								push_error('\\register_vfx \\autoload requires specifying \\as and \\to')
+							
+							opts.autoload_vfxs[vfx_id] = {
+								'as': _as,
+								'to': to
+							}
+							
+						else:
+							push_error('\\register_vfx takes \\autoload as argument 3, got %s' % node)
+					_:
+						push_error('\\register_vfx requires 2 or 3 arguments, got %s' % node)
 			_:
 				push_error('unknown option: %s' % [node])
 	

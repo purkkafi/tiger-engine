@@ -150,6 +150,7 @@ func _on_save_pressed():
 
 func _on_load_pressed():
 	stage.clear()
+	
 	if FileAccess.file_exists(SAVE_PATH):
 		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
 		stage.set_state(JSON.parse_string(file.get_as_text()))

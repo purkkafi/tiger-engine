@@ -19,6 +19,15 @@ const TRANSPARENT: Color = Color(0, 0, 0, 0)
 func _ready() -> void:
 	var stage_viewport: SubViewportContainer = %StageViewportContainer
 	stage_viewport.size = size
+	
+	if len(TE.opts.autoload_vfxs) != 0:
+		var tween = create_tween()
+		
+		for auto_vfx_id in TE.opts.autoload_vfxs.keys():
+			var args: Dictionary = TE.opts.autoload_vfxs[auto_vfx_id]
+			add_vfx(auto_vfx_id, args['to'], args['as'], {}, tween)
+		
+		tween.tween_callback(func(): pass)
 
 
 func _exit_tree() -> void:
@@ -486,7 +495,7 @@ func _remove_vfx(avfx: ActiveVfx):
 	avfx.vfx.clear(get_vfx_target(avfx.target), dummy_tween)
 	active_vfxs.erase(avfx)
 	dummy_tween.tween_callback(func(): pass)
-	dummy_tween.set_speed_scale(INF)
+	dummy_tween.custom_step(INF)
 
 
 # returns current state as a Dict

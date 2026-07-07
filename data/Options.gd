@@ -23,3 +23,5 @@ var bug_report_url: Variant = null
 var ingame_custom_controls: Variant = null
 # dict of vfx ids to paths of scripts
 var vfx_registry: Dictionary = {}
+# dict of vfx ids that should be automatically loaded to their setting dicts
+var autoload_vfxs: Dictionary[String, Dictionary] = {}
