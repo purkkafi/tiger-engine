@@ -20,6 +20,11 @@ func _ready() -> void:
 	var stage_viewport: SubViewportContainer = %StageViewportContainer
 	stage_viewport.size = size
 	
+	init_autoload_vfxs()
+
+
+# TODO optimize to skip this if loading from cache
+func init_autoload_vfxs():
 	if len(TE.opts.autoload_vfxs) != 0:
 		var tween = create_tween()
 		
@@ -456,6 +461,11 @@ func add_vfx(vfx_id: String, to: String, _as: Variant, initial_state: Dictionary
 		TE.log_error(TE.Error.FILE_ERROR, 'unknown vfx: %s' % vfx_id)
 		return tween
 	
+	for _avfx in active_vfxs:
+		if _avfx._as == _as:
+			TE.log_error(TE.Error.FILE_ERROR, "tried to add duplicate persistent vfx '%s' as '%s" % [vfx_id, _as])
+			return tween
+	
 	var instance: Vfx = (load(TE.opts.vfx_registry[vfx_id]) as GDScript).new() as Vfx
 	var avfx: ActiveVfx = ActiveVfx.new(instance, to, _as)
 	avfx.set_state(get_vfx_target(to), initial_state, tween)
@@ -593,6 +603,8 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 		sprite.set_sprite_state(sprite_data['state'])
 		sprite.move_to(sprite_data['x'], sprite_data['y'], sprite_data['zoom'], sprite_data['order'], Definitions.INSTANT)
 	
+	# have to do this currently because autoloads from init_autoload_vfxs() might be present
+	active_vfxs.clear()
 	for vfx_data in state['vfx']:
 		var vfx_from_cache: String = 'vfx:%s:%s' % [vfx_data['path'], vfx_data.as]
 		var avfx: ActiveVfx
