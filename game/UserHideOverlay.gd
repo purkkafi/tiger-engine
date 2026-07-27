@@ -18,6 +18,12 @@ func initialize_for(_game: TEGame):
 
 func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
+	
+	# take screenshot before UI is shown again
+	if event.is_action_pressed(&'game_screenshot', false, true):
+		game.take_user_screenshot()
+		await RenderingServer.frame_post_draw
+	
 	if event is InputEventMouseButton:
 		_close()
 	elif event is InputEventKey and (event as InputEventKey).pressed:
