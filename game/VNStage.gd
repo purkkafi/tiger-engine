@@ -19,6 +19,9 @@ const TRANSPARENT: Color = Color(0, 0, 0, 0)
 func _ready() -> void:
 	var stage_viewport: SubViewportContainer = %StageViewportContainer
 	stage_viewport.size = size
+	%Backdrop.size = size
+	if TETheme.current_theme.has_color('stage_backdrop_color', 'Global'):
+		%Backdrop.color = TETheme.current_theme.get_color('stage_backdrop_color', 'Global')
 	
 	init_autoload_vfxs()
 
@@ -306,6 +309,8 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	
 	with = TE.defs.transition(with)
 	
+	# TODO implement reverse functionality
+	
 	var new_sprite = _create_sprite(sprite.path)
 	new_sprite.id = sprite.id
 	sprite.add_sibling(new_sprite, false)
@@ -421,7 +426,7 @@ func _cmp_sprites(a: VNSprite, b: VNSprite, og_order: Array):
 func get_vfx_target(target_descriptor: String) -> CanvasItem:
 	match target_descriptor:
 		'\\stage':
-			return self
+			return %StageViewportContainer
 		'\\bg':
 			return bg()
 		'\\fg':

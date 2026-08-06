@@ -5,6 +5,12 @@
 [node name="VNStage" type="Node2D" unique_id=527932477]
 script = ExtResource("1_6p0cu")
 
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1374877354]
+unique_name_in_owner = true
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(1, 1, 1, 0)
+
 [node name="StageViewportContainer" type="SubViewportContainer" parent="." unique_id=1644975954]
 unique_name_in_owner = true
 stretch = true
