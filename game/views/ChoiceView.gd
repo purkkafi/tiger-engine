@@ -21,6 +21,9 @@ func parse_options(options: Array[Tag]):
 func adjust_size(_controls: VNControls):
 	var width: float = get_theme_constant('width', 'ChoiceView')
 	vbox.custom_minimum_size.x = width
+	
+	if has_theme_constant('separation', 'ChoiceView'):
+		vbox.add_theme_constant_override('separation', get_theme_constant('separation', 'ChoiceView'))
 
 
 func initialize(ctxt: InitContext):
