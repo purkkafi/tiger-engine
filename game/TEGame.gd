@@ -146,7 +146,7 @@ func next_blocking():
 				tween = $VNStage.move_sprite(ins.sprite, ins.to_x, ins.to_y, ins.to_zoom, ins.to_order, ins.with, tween)
 			
 			'Show':
-				tween = $VNStage.show_sprite(ins.sprite, ins._as, ins.with, tween)
+				tween = $VNStage.show_sprite(ins.sprite, ins._as, ins.with, ins.reverse, tween)
 			
 			'Exit':
 				tween = $VNStage.exit_sprite(ins.sprite, ins.with, tween)

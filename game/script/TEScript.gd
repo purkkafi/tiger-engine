@@ -232,12 +232,14 @@ class IShow extends BaseInstruction:
 	var sprite: String
 	var _as: Tag
 	var with: Variant # null or a transition id String
+	var reverse: bool
 	
 	
-	func _init(_sprite: String, __as: Tag, _with: Variant):
+	func _init(_sprite: String, __as: Tag, _with: Variant, _reverse: bool):
 		self.sprite = _sprite
 		self._as = __as
 		self.with = _with
+		self.reverse = _reverse
 	
 	
 	func repeat_id() -> String:
@@ -245,7 +247,7 @@ class IShow extends BaseInstruction:
 	
 	
 	func _to_string() -> String:
-		return 'show %s as %s with %s' % [sprite, str(_as), with]
+		return 'show %s as %s with %s%s' % [sprite, str(_as), with, ' reverse' if reverse else '']
 
 
 class IExit extends BaseInstruction:

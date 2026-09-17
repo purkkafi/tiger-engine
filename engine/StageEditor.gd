@@ -261,7 +261,7 @@ func _get_sprite_as_suggestions(state: Dictionary) -> Array:
 func _show_sprite(values: Dictionary):
 	if values['sprite_id'] == null or values['sprite_as'] == null:
 		return
-	_wait_tween(stage.show_sprite(values['sprite_id'], parse_tag('\\as{%s}' % values['sprite_as']), values['trans'], null))
+	_wait_tween(stage.show_sprite(values['sprite_id'], parse_tag('\\as{%s}' % values['sprite_as']), values['trans'], false, null,))
 
 
 func _on_exit_pressed():

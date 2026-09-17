@@ -294,9 +294,10 @@ func move_sprite(id: String, to_x: Variant, to_y: Variant, to_zoom: Variant, to_
 
 
 # shows the sprite with the specified sprite state
-# if with (a transition descriptor) is given, the new state will fade in on
-# top of the sprite (animated with the tween, if given)
-func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
+# if 'with' (a transition descriptor) is given, a transition is shown
+# if 'reverse' is false, the new state is shown fading in above the old one;
+# if 'reverse' is true, the old state is shown fading out above the new one
+func show_sprite(id: String, _as: Tag, with: Variant, reverse: bool, tween: Tween) -> Tween:
 	var sprite: VNSprite = find_sprite(id)
 	
 	if with == null:
@@ -309,21 +310,30 @@ func show_sprite(id: String, _as: Tag, with: Variant, tween: Tween) -> Tween:
 	
 	with = TE.defs.transition(with)
 	
-	# TODO implement reverse functionality
-	
 	var new_sprite = _create_sprite(sprite.path)
 	new_sprite.id = sprite.id
 	sprite.add_sibling(new_sprite, false)
+	
 	new_sprite.enter_stage()
 	new_sprite.set_sprite_state(sprite.get_sprite_state())
 	new_sprite.show_as(_as)
 	new_sprite.move_to(sprite.horizontal_position, sprite.vertical_position, sprite.zoom, sprite.draw_order, Definitions.INSTANT)
 	
-	new_sprite.modulate.a = 0.0
-	var tweener = tween.tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
-	tweener.set_ease(with.ease_type)
-	tweener.set_trans(with.trans_type)
-	tween.tween_callback(_finish_sprite_transition.bind(sprite)).set_delay(with.duration)
+	if not reverse:
+		# normal transition: new is faded in above old
+		new_sprite.modulate.a = 0.0
+		var tweener = tween.tween_property(new_sprite, 'modulate:a', 1.0, with.duration)
+		tweener.set_ease(with.ease_type)
+		tweener.set_trans(with.trans_type)
+		tween.tween_callback(_finish_sprite_transition.bind(sprite)).set_delay(with.duration)
+	else:
+		# reverse transition: old is faded out above new
+		_sprites().move_child(sprite, new_sprite.get_index())
+		var tweener = tween.tween_property(sprite, 'modulate:a', 0.0, with.duration)
+		tweener.set_ease(with.ease_type)
+		tweener.set_trans(with.trans_type)
+		tween.tween_callback(_finish_sprite_transition.bind(sprite)).set_delay(with.duration)
+		
 	
 	return tween
 
@@ -645,7 +655,8 @@ func set_state(state: Dictionary, node_cache: Dictionary = {}):
 
 # clears the stage, returning it to the empty initial state
 func clear():
-	for avfx in Array(active_vfxs):
+	var avfxs = active_vfxs.duplicate()
+	for avfx in avfxs:
 		_remove_vfx(avfx)
 	
 	set_background('', '', null)

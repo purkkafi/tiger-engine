@@ -180,7 +180,7 @@ func test_play_transition_and_volume():
 func test_play_should_have_args_in_index_2():
 	assert_equals(
 		errors('\\play{bus}{id}{bad}'),
-		[ 'expected args in index 2 of \\play, got \\music[["bus"], ["id"], ["bad"]]' ]
+		[ 'expected args in index 2 of \\play, got \\play[["bus"], ["id"], ["bad"]]' ]
 	)
 
 
@@ -194,7 +194,7 @@ func test_play_should_take_max_3_args():
 func test_play_should_error_on_unknown_argument():
 	assert_equals(
 		errors('\\play{bus}{id}{ \\bad }'),
-		[ 'unknown argument \'bad\' for \\play: \\music[["bus"], ["id"], [\\bad[]]]' ]
+		[ 'unknown argument \'bad\' for \\play: \\play[["bus"], ["id"], [\\bad[]]]' ]
 	)
 
 
@@ -327,14 +327,28 @@ func test_move_x_should_take_string():
 func test_show():
 	assert_equals(
 		instructions('\\show{id}{ \\as{state} }'),
-		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  null) ]
+		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  null, false) ]
 	)
 
 
 func test_show_with_transition():
 	assert_equals(
 		instructions('\\show{id}{ \\as{state} \\with{trans} }'),
-		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  'trans') ]
+		[ TEScript.IShow.new('id', Tag.new('as', [[ 'state' ]]),  'trans', false) ]
+	)
+
+
+func test_show_with_reverse():
+	assert_equals(
+		instructions('\\show{id}{ \\as{s} \\reverse \\with{t} }'),
+		[ TEScript.IShow.new('id', Tag.new('as', [[ 's' ]]), 't', true) ]
+	)
+
+
+func test_show_reverse_requires_no_args():
+	assert_equals(
+		errors('\\show{id}{ \\as{s} \\reverse{bad} \\with{t} }'),
+		[ 'expected \\reverse without arguments, got \\show[[\"id\"], [\\as[[\"s\"]], \" \", \\reverse[[\"bad\"]], \" \", \\with[[\"t\"]]]]' ]
 	)
 
 

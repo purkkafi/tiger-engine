@@ -293,6 +293,7 @@ func parse_show(tag: Tag):
 	var sprite_id: String
 	var _as: Tag
 	var with: Variant = null
+	var reverse: bool = false
 	
 	match tag.length():
 		2:
@@ -309,6 +310,12 @@ func parse_show(tag: Tag):
 							with = arg.get_string()
 						else:
 							error('expected transition for \\with, got %s' % tag)
+							return null
+					'reverse':
+						if arg.length() == 0:
+							reverse = true
+						else:
+							error('expected \\reverse without arguments, got %s' % tag)
 							return null
 					'as':
 						_as = arg
@@ -329,7 +336,7 @@ func parse_show(tag: Tag):
 		error('expected \\show to specify \\as, got %s' % tag)
 		return null
 	
-	return TEScript.IShow.new(sprite_id, _as, with)
+	return TEScript.IShow.new(sprite_id, _as, with, reverse)
 
 
 # parses \exit
