@@ -480,7 +480,7 @@ func parse_clear_vfx(tag: Tag):
 	return TEScript.IClearVfx.new(id)
 
 
-func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstruction]:
+func to_instructions(tags: Array, script_id: String, conditional_destination = null) -> Array[TEScript.BaseInstruction]:
 	var ins: Array[TEScript.BaseInstruction] = []
 	
 	for index in range(len(tags)):
@@ -569,26 +569,28 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				# generate a script to jump to if the condition is true
 				
 				# name of the script containing the rest of the instructions
-				var rest_name = generate_label(script_id) + '_after_if'
+				var rest_name = conditional_destination if conditional_destination != null else generate_label(script_id) + '_after_if'
 				
 				var condition: String = tag.get_control_at(0)
 				var branch_tags: Array = tag.get_tags_at(1)
 				var branch_name = generate_label(script_id) + '_if'
-				var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name)
+				var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name, rest_name)
 				# move on after the branch is over
 				branch_ins.append(TEScript.IJmp.new(rest_name))
 				
 				scripts[branch_name] = TEScript.new(branch_name, branch_ins)
 				
-				# generate a script for the rest of the instructions
-				var rest_tags = tags.slice(index+1)
-				var rest_ins: Array[TEScript.BaseInstruction] = to_instructions(rest_tags, rest_name)
-				
-				scripts[rest_name] = TEScript.new(rest_name, rest_ins)
+				if conditional_destination == null:
+					# generate a script for the rest of the instructions
+					var rest_tags = tags.slice(index+1)
+					var rest_ins: Array[TEScript.BaseInstruction] = to_instructions(rest_tags, rest_name)
+					
+					scripts[rest_name] = TEScript.new(rest_name, rest_ins)
 				
 				# the instructions for the current script
 				ins.append(TEScript.IJmpIf.new(condition, branch_name))
-				ins.append(TEScript.IJmp.new(rest_name))
+				if conditional_destination == null:
+					ins.append(TEScript.IJmp.new(rest_name))
 				
 				return ins
 			
@@ -603,13 +605,13 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 				
 				var expr: String = tag.get_control_at(0)
 				# where every branch will jump to
-				var rest_name = generate_label(script_id) + '_after_match'
+				var rest_name = conditional_destination if conditional_destination != null else generate_label(script_id) + '_after_match'
 				
 				for arm in tag.get_tags_at(1):
 					# compile the contents of the branch
 					var branch_tags = arm.get_tags_at(len(arm.args)-1)
 					var branch_name = generate_label(script_id) + ('_%s' % arm.name)
-					var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name)
+					var branch_ins: Array[TEScript.BaseInstruction] = to_instructions(branch_tags, branch_name, rest_name)
 					branch_ins.append(TEScript.IJmp.new(rest_name))
 					scripts[branch_name] = TEScript.new(branch_name, branch_ins)
 					
@@ -637,13 +639,17 @@ func to_instructions(tags: Array, script_id: String) -> Array[TEScript.BaseInstr
 						error('unknown arm type for \\match, expected case or default: %s' % arm.name)
 						return ins
 				
-				# jump to after branch; will be executed if there is no match and no default arm
-				ins.append(TEScript.IJmp.new(rest_name))
 				
+				# jump to after branch; will be executed if there is no match and no default arm
+				if conditional_destination == null:
+					ins.append(TEScript.IJmp.new(rest_name))
+			
 				# finally, generate branch for the rest of the instructions in the script
 				var rest_tags = tags.slice(index+1)
+				
 				var rest_ins: Array[TEScript.BaseInstruction] = to_instructions(rest_tags, rest_name)
 				scripts[rest_name] = TEScript.new(rest_name, rest_ins)
+				
 				return ins
 			
 			'jmp':

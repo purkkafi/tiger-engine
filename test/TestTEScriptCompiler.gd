@@ -524,6 +524,77 @@ func test_match_case_takes_correct_number_of_args():
 	)
 
 
+func test_nested_if():
+	var scripts = compiled_scripts("""
+\\if{{COND}}{
+	\\if{{SUBCOND}}{
+		\\block{b:inner}
+	}
+}
+\\block{b:after}
+	""")
+	
+	# test main branch contains outer if
+	assert_equals(
+		scripts['test'].instructions,
+		[ TEScript.IJmpIf.new('COND', 'test$2_if'), TEScript.IJmp.new('test$1_after_if') ])
+	
+	# test final destination contains the block
+	assert_equals(
+		scripts['test$1_after_if'].instructions,
+		[ TEScript.IBlock.new('b:after') ]
+	)
+	
+	# test outer if contains inner if and jump to final destination
+	assert_equals(
+		scripts['test$2_if'].instructions,
+		[ TEScript.IJmpIf.new('SUBCOND', 'test$3_if'), TEScript.IJmp.new('test$1_after_if') ]
+	)
+	
+	# test inner if contains block and jump to final destination
+	assert_equals(
+		scripts['test$3_if'].instructions,
+		[ TEScript.IBlock.new('b:inner'), TEScript.IJmp.new('test$1_after_if') ]
+	)
+
+
+func test_nested_match():
+	var scripts = compiled_scripts("""
+\\match{{COND}}{
+	\\case{{CASE}}{
+		\\match{{INNER_COND}}{
+			\\case{{INNER_CASE}}{
+				\\block{b:inner}
+			}
+		}
+	}
+}
+\\block{b:after}""")
+	
+	# test main branch contains outer match
+	assert_equals(
+		scripts['test'].instructions,
+		[ TEScript.IJmpIf.new('(COND) == (CASE)', 'test$2_case'), TEScript.IJmp.new('test$1_after_match') ])
+	
+	# test final destination contains the block
+	assert_equals(
+		scripts['test$1_after_match'].instructions,
+		[ TEScript.IBlock.new('b:after') ]
+	)
+	
+	# test outer match contains inner match and jump to final destination
+	assert_equals(
+		scripts['test$2_case'].instructions,
+		[ TEScript.IJmpIf.new('(INNER_COND) == (INNER_CASE)', 'test$3_case'), TEScript.IJmp.new('test$1_after_match') ]
+	)
+	
+	# test inner match contains block and jump to final destination
+	assert_equals(
+		scripts['test$3_case'].instructions,
+		[ TEScript.IBlock.new('b:inner'), TEScript.IJmp.new('test$1_after_match') ]
+	)
+
+
 func test_jmp_in_same_file():
 	assert_equals(
 		instructions('\\jmp{there}'),
