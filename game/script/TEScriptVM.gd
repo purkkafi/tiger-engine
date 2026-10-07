@@ -82,7 +82,7 @@ func lookahead() -> Array[TEScript.BaseInstruction]:
 		var ins = current_script.instructions[lookahead_index]
 		
 		# limit how far ahead we look
-		if lookahead_index > index+10:
+		if lookahead_index > index+20:
 			break 
 		
 		# limit the amount of blocking instructions we look past
@@ -175,6 +175,9 @@ static func from_state(state: Dictionary) -> TEScriptVM:
 	if vm.index > len(vm.current_script.instructions):
 		TE.log_error(TE.Error.BAD_SAVE, "instruction index out of range in script '%s' in '%s'" % [script, _scriptfile.id], true)
 		return
+	
+	# TODO experimental: do an initial lookahead
+	vm.queue_resources(vm.lookahead())
 	
 	return vm
 
