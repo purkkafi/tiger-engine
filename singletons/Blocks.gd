@@ -99,18 +99,6 @@ static func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContex
 			elif node.name == 'n' and len(node.args) == 0:
 				parts.push_back(parts.pop_back() + '\n')
 			
-			# full image image declaration
-			elif node.name == 'fullimg':
-				var id: String = (node.args[0][0] as String).strip_edges()
-				var width: float = 1.0
-				for opt in node.get_tags():
-					match opt.name:
-						'width':
-							width = float(opt.get_string())
-						_:
-							TE.log_error(TE.Error.FILE_ERROR, 'unknown argument for fullimg: %s' % opt.name)
-				parts.push_back(parts.pop_back() + '[fullimg][id]%s[/id][width]%s[/width][/fullimg]' % [id, width])
-			
 			# is user-defined special formatting
 			elif node.name in TE.defs.text_styles:
 				var args: Array[String] = node.get_strings() as Array[String]
