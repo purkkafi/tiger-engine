@@ -69,7 +69,7 @@ func adjust_size(controls: VNControls):
 	%Panel.position.x = (TE.SCREEN_WIDTH - w)/2
 
 
-func _display_line(line: String, speaker: Speaker = null, skip_animations: bool = false):
+func _display_line(line: String, speaker: Speaker = null, full_img: Texture2D = null, skip_animations: bool = false):
 	if outline_size != 0:
 		line = '[outline_size=%s][outline_color=%s]%s[/outline_color][/outline_size]' % [outline_size, outline_color.to_html(), line]
 	
@@ -93,9 +93,9 @@ func _display_line(line: String, speaker: Speaker = null, skip_animations: bool 
 	
 	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
 	
-	# handle nvl img line
-	if tag_bbcode != null and tag_bbcode.get_string('tag') == 'nvl_img':
-		_handle_nvl_img_line(tag_bbcode, skip_animations)
+	# handle full image line
+	if full_img != null:
+		_handle_full_img_line(full_img, skip_animations)
 		
 	elif speaker != null: # handle speaker line
 		_handle_speaker_line(speaker, line)
@@ -134,15 +134,8 @@ func _previous_speaker_line_or_null() -> Variant:
 	return prev if prev is SpeakerNVLLine else null
 
 
-func _handle_nvl_img_line(tag_bbcode: RegExMatch, skip_animations: bool):
-	var path: String
-	
-	for inner_tag in GET_BBCODE.search_all(tag_bbcode.get_string('content')):
-		match inner_tag.get_string('tag'):
-			'id':
-				path = Assets._resolve(TE.defs.imgs[inner_tag.get_string('content')], 'res://assets/img')
-	
-	var img_line = ImageNVLLine.new(load(path), create_label)
+func _handle_full_img_line(img: Texture2D, skip_animations: bool):
+	var img_line = ImageNVLLine.new(img, create_label)
 	img_line.next_label.text = line_end_string()
 	
 	if not skip_animations:

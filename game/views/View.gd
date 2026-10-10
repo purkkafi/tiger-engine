@@ -190,17 +190,12 @@ func next_line(loading_from_save: bool = false) -> void:
 	
 	TE.seen_blocks.mark_read(block, line_index)
 	
-	var line: String = _lines[line_index]
+	# parse line bbcode and extract values
+	var parsed_line: Dictionary = Blocks.parse_line(_lines[line_index], game.context)
 	
-	# parse lines containing engine-specific bbcode
-	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
-	
-	# handle speaker tag if present
-	var speaker: Speaker = null
-	if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
-		var _result: Dictionary  = _parse_speaker_line(line, tag_bbcode, game.context)
-		line = _result['line']
-		speaker = _result['speaker']
+	var line: String = parsed_line['line'] if 'line' in parsed_line else ''
+	var speaker: Speaker = parsed_line['speaker'] if 'speaker' in parsed_line else null
+	var full_img: Texture2D = parsed_line['full_img'] if 'full_img' in parsed_line else null
 	
 	if not loading_from_save:
 		game.gamelog.update_log(block.blockfile_path, block.id, line_index)
@@ -210,7 +205,7 @@ func next_line(loading_from_save: bool = false) -> void:
 	if speaker != null:
 		TE.game_speaker_speaks.emit(speaker, skip_animations)
 	
-	_display_line(line + line_end_string(), speaker, skip_animations)
+	_display_line(line + line_end_string(), speaker, full_img, skip_animations)
 	
 	line_index += 1
 	next_effect.reset()
@@ -234,15 +229,6 @@ func next_line(loading_from_save: bool = false) -> void:
 			_to_end_of_line()
 			cooldown = _modified_skip_cooldown()
 			state = State.SKIPPING_COOLDOWN
-
-
-static func _parse_speaker_line(line: String, tag_bbcode: RegExMatch, context: VariableContext) -> Dictionary:
-	var speaker_declaration: String = tag_bbcode.get_string('content')
-	
-	return {
-		'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
-		'speaker': Speaker.resolve(speaker_declaration, context)
-	}
 
 
 func _is_end_of_line() -> bool:
@@ -463,8 +449,11 @@ func skip_pressed():
 
 
 # internal implementation; Views should override to control how lines are shown
-# a Speaker may also additionally be specified
-func _display_line(_line: String, _speaker: Speaker = null, skip_animations: bool = false):
+# line: the line to show
+# speaker: optional, the Speaker object to use
+# full_img: the full image to show; if specified, line and speaker are meaningless
+# skip_animations: whether to skip any View-specific animations
+func _display_line(_line: String, _speaker: Speaker = null, _full_img: Texture2D = null, _skip_animations: bool = false):
 	TE.log_error(TE.Error.ENGINE_ERROR, "view doesn't implement _display_line()")
 
 

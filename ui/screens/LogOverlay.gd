@@ -32,7 +32,7 @@ func _initialize_overlay():
 
 
 # formats an entry for the log
-# TODO refactor speaker parsing, remove duplicate functionality from View
+# TODO add nvl img support
 func format_entry(entry: Log.Entry) -> String:
 	var bf: BlockFile = Assets.blockfiles.get_unqueued(entry.blockfile)
 	
@@ -45,15 +45,18 @@ func format_entry(entry: Log.Entry) -> String:
 	
 	for index in min(entry.line+1, len(parts)):
 		var part: String = parts[index]
-		var tag_bbcode: RegExMatch = View.GET_BBCODE.search(part)
 		
-		if tag_bbcode != null and tag_bbcode.get_string('tag') == 'speaker':
-			var _result: Dictionary  = View._parse_speaker_line(part, tag_bbcode, context)
-			var line = _result['line']
-			var speaker = _result['speaker']
+		var parsed_line: Dictionary = Blocks.parse_line(part, context)
+		var line: String = parsed_line['line'] if 'line' in parsed_line else ''
+		
+		if 'full_img' in parsed_line:
+			# TODO add full img support in log
+			continue
+		elif 'speaker' in parsed_line:
+			var speaker: Speaker = parsed_line['speaker']
 			texts.append('[color=%s][b]%s[/b][/color]    %s' % [speaker.log_color.to_html(), speaker.name, line])
 		else:
-			texts.append(part)
+			texts.append(line)
 	
 	return '\n\n'.join(texts)
 

@@ -10,6 +10,9 @@ const USED_ARGUMENT_MARKER: String = '!!!<<[USED_ARGUMENT_MARKER]>>!!!'
 # a null object representing an empty block
 static var EMPTY_BLOCK = Block.new([])
 
+# parses a bbcode tag surrounding a string
+static var GET_BBCODE: RegEx = RegEx.create_from_string('\\[(?<tag>.+?)\\](?<content>.+?)\\[\\/(?P=tag)\\]')
+
 
 # initializes properties of EMPTY_BLOCK
 static func _static_init() -> void:
@@ -173,3 +176,49 @@ static func _resolve_parts(taglist: Array[Variant], ctxt: ControlExpr.BaseContex
 				parts.push_back(str(node))
 	
 	return parts
+
+
+# parses engine-specific bbcode into a Dictionary
+# return value may be of form:
+# { line: String } for a non-spoken line
+# { line: String, speaker: Speaker } for a spoken line; auto-quotes are applied to the line
+# { full_img: Texture2D } for a full image line
+static func parse_line(line: String, context: VariableContext) -> Dictionary:
+	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
+	
+	if tag_bbcode != null:
+		match tag_bbcode.get_string('tag'):
+			'speaker':
+				var speaker_declaration: String = tag_bbcode.get_string('content')
+				
+				return {
+					'line': Localize.autoquote(line.substr(tag_bbcode.get_end(0)).strip_edges()),
+					'speaker': Speaker.resolve(speaker_declaration, context)
+				}
+				
+			'full_img':
+				var path: String
+				
+				for inner_tag in GET_BBCODE.search_all(tag_bbcode.get_string('content')):
+					match inner_tag.get_string('tag'):
+						'id':
+							path = Assets._resolve(TE.defs.imgs[inner_tag.get_string('content')], 'res://assets/img')
+						'path':
+							path = inner_tag.get_string('path')
+						_:
+							TE.log_error(TE.Error.FILE_ERROR,
+								"unknown argument to '%s' full_img, only 'id' and 'path' supported: %s " %
+								[inner_tag.get_string('tag'), line])
+				
+				if path == null:
+					TE.log_error(TE.Error.FILE_ERROR, 'path not specified to full_img: %s' % line)
+				
+				var full_img: Texture2D = load(path)
+				
+				return { 'full_img': full_img }
+				
+			_:
+				# other bbcode (unknown or not engine-specific); fall through to default path 
+				pass
+	
+	return { 'line': line }
