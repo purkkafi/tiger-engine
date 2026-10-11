@@ -8,11 +8,13 @@ var cutscene: Node2D
 var is_finished: bool
 var wait_input: bool = false # if true, user must advance at end & can be skipped with speedup
 var stop_audio: bool = true # if true, all playing audio is stopped
+var to_end_on_advance: bool = false # if true, animation is skipped to end on advance, possibly waiting for input (see wait_input)
 var custom_options: Dictionary[String, String] = {} # custom options
 var waiting_for_input: bool = true
 var anim_player: AnimationPlayer
 var was_playing_before_pause: bool
 var pause_position: float
+var waiting_for_unadvance: bool = false
 
 
 func parse_options(tags: Array[Tag]):
@@ -24,6 +26,8 @@ func parse_options(tags: Array[Tag]):
 				wait_input = tag.get_string() == 'true'
 			'stop_audio':
 				stop_audio = tag.get_string() == 'true'
+			'to_end_on_advance':
+				to_end_on_advance = tag.get_string() == 'true'
 			_:
 				custom_options[tag.name] = tag.get_string()
 
@@ -91,11 +95,21 @@ func _waiting_custom_condition() -> bool:
 		return !is_finished
 
 
-# hook into game_advanced to detech user input
+# hook into game_advanced to detect user input
 func game_advanced(delta: float):
 	super.game_advanced(delta)
-	if is_finished:
+	
+	if not is_finished and to_end_on_advance:
+		anim_player.advance(INF)
+		waiting_for_unadvance = true
+	
+	if is_finished and not waiting_for_unadvance:
 		waiting_for_input = false
+
+
+func game_not_advanced(_delta: float):
+	super.game_not_advanced(_delta)
+	waiting_for_unadvance = false
 
 
 func _process(_delta):
