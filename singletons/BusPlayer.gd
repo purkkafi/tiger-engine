@@ -40,8 +40,13 @@ func clear():
 
 
 # plays audio with the given id, crossfade duration (optional) and local volume multiplier (optional)
-# if 'new_id' is empty, silence is played instead
+# if 'new_audio_id' is empty, silence is played instead
 func play(new_audio_id: String, crossfade_duration: float = 0.0, with_local_volume: float = 1.0):
+	# no change, NOP
+	# this is an optimization; also fixes dynamic soundscapes acting janky with the back button
+	if audio_id == new_audio_id and local_volume == with_local_volume:
+		return
+	
 	audio_id = new_audio_id
 	self.local_volume = with_local_volume
 	var new_stream: AudioStream
@@ -111,12 +116,12 @@ func next_player() -> AudioStreamPlayer: return $NextPlayer
 # concludes transition between CurrentPlayer and NextPlayer, turning Next into Current
 # and creating a fresh Next
 func _swap_players():
-	var current_player: AudioStreamPlayer = $CurrentPlayer
+	var _current_player: AudioStreamPlayer = $CurrentPlayer
 	var new_player: AudioStreamPlayer = $NextPlayer
 	
-	current_player.stop()
-	remove_child(current_player)
-	current_player.queue_free()
+	_current_player.stop()
+	remove_child(_current_player)
+	_current_player.queue_free()
 	
 	new_player.name = 'CurrentPlayer'
 	
