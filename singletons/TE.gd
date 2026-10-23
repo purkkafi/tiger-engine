@@ -336,8 +336,8 @@ func quit_game(exit_code=0):
 		seen_blocks.write_to_disk()
 	
 	persistent.window = {
-		'position': var_to_str(get_window().position),
-		'size': var_to_str(get_window().size)
+		'position': var_to_str(get_window().position as Vector2i),
+		'size': var_to_str(get_window().size as Vector2i)
 	}
 	
 	persistent.save_to_file()

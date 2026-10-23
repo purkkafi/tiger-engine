@@ -91,8 +91,6 @@ func _display_line(line: String, speaker: Speaker = null, full_img: Texture2D = 
 		old_par.text = old_par.text.replace('[center][/center]', '')
 		old_par.custom_minimum_size.y = 0
 	
-	var tag_bbcode: RegExMatch = GET_BBCODE.search(line)
-	
 	# handle full image line
 	if full_img != null:
 		_handle_full_img_line(full_img, skip_animations)
