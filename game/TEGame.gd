@@ -313,8 +313,8 @@ func _unhandled_key_input(event):
 
 # spawns the user hide overlay
 func user_hide():
-	var user_hide: UserHideOverlay = preload("res://tiger-engine/game/UserHideOverlay.tscn").instantiate()
-	user_hide.initialize_for(self)
+	var _user_hide: UserHideOverlay = preload("res://tiger-engine/game/UserHideOverlay.tscn").instantiate()
+	_user_hide.initialize_for(self)
 
 
 func _process(delta):
@@ -697,6 +697,7 @@ func get_custom_data(key: String):
 
 
 # sets whether VNControls and the view are hidden
+@warning_ignore("shadowed_variable_base_class")
 func set_user_hide_controls(hidden: bool):
 	overlay_active = hidden
 	
